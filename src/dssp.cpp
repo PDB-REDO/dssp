@@ -9,6 +9,8 @@
 
 #include <cif++/Config.h>
 #include <cif++/Structure.h>
+#include <cif++/Secondary.h>
+#include <cif++/CifUtils.h>
 
 #include <boost/program_options.hpp>
 
@@ -33,6 +35,19 @@ void print_what (const std::exception& e)
 
 // --------------------------------------------------------------------
 
+void writeDSSP(const mmcif::Structure& structure, std::ostream& os)
+{
+	mmcif::DSSP dssp(structure);
+
+}
+
+void annotateDSSP(const mmcif::Structure& structure, std::ostream& os)
+{
+
+}
+
+// --------------------------------------------------------------------
+
 int main(int argc, char* argv[])
 {
 	using namespace std::literals;
@@ -47,7 +62,13 @@ int main(int argc, char* argv[])
 
 		("help,h",											"Display help message")
 		("version",											"Print version")
-		
+
+		("output-format",		po::value<std::string>(),	"Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any.")
+
+#if not USE_RSRC
+		("rsrc-dir",			po::value<std::string>(),	"Directory containing the 'resources' used by this application")
+#endif
+
 		("verbose,v",										"verbose output")
 		;
 	
@@ -88,10 +109,27 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
+	if (vm.count("output-format") and vm["output-format"].as<std::string>() != "dsps" and vm["output-format"].as<std::string>() != "mmcif")
+	{
+		std::cerr << "Output format should be one of 'dssp' or 'mmcif'" << std::endl;
+		exit(1);
+	}
+
 	cif::VERBOSE = vm.count("verbose") != 0;
 	if (vm.count("debug"))
 		cif::VERBOSE = vm["debug"].as<int>();
 
+	// --------------------------------------------------------------------
+	
+#if USE_RSRC
+	cif::rsrc_loader::init();
+#else
+	std::string rsrc_dir = ".";
+	cif::rsrc_loader::init({ { cif::rsrc_loader_type::file, rsrc_dir }});
+#endif
+
+	// --------------------------------------------------------------------
+	
 	if (vm.count("dict"))
 	{
 		for (auto dict: vm["dict"].as<std::vector<std::string>>())
@@ -102,6 +140,8 @@ int main(int argc, char* argv[])
 	mmcif::Structure structure(f);
 	
 	// --------------------------------------------------------------------
+
+	auto fmt = vm["output-format"].as<std::string>();
 	
 	if (vm.count("output"))
 	{
@@ -111,10 +151,19 @@ int main(int argc, char* argv[])
 			std::cerr << "Could not open output file" << std::endl;
 			exit(1);
 		}
-		// of << calculateZScores(structure, nShuffles);
+		
+		if (fmt == "dssp")
+			writeDSSP(structure, of);
+		else
+			annotateDSSP(structure, of);
 	}
-	// else
-	// 	cout << calculateZScores(structure, nShuffles) << endl;
+	else
+	{
+		if (fmt == "dssp")
+			writeDSSP(structure, std::cout);
+		else
+			annotateDSSP(structure, std::cout);
+	}
 	
 	return 0;
 }

@@ -62,6 +62,14 @@ CXXFLAGS			+= -O2
 DEFINES				+= NDEBUG
 endif
 
+MRC					= @MRC@
+CIFPP_RSRC			= @CIFPP_RSRC@
+
+ifneq "$(MRC)" ""
+
+DEFINES += USE_RSRC
+endif
+
 # targets
 
 VPATH += src:test
@@ -79,7 +87,14 @@ $(OBJDIR):
 APPLICATION = @PACKAGE_NAME@
 
 OBJECTS = $(APPLICATION:%=$(OBJDIR)/%.o)
-	
+
+ifneq "$(MRC)" ""
+OBJECTS += $(APPLICATION:%=$(OBJDIR)/%_rsrc.o)
+
+$(OBJDIR)/$(APPLICATION)_rsrc.o: $(CIFPP_RSRC)/dictionaries
+	$(MRC) -o $@ $^
+endif
+
 -include $(OBJECTS:%.o=%.d)
 
 $(OBJECTS:.o=.d):

@@ -16,6 +16,17 @@ AC_ARG_VAR([DEBUG], [Build a debug version of the application])
 
 AC_PATH_PROG([PKG_CONFIG], [pkg-config])
 
+AC_ARG_VAR([MRC], [Specify a location for the mrc executable])
+
+dnl We really want to use mrc
+if test "x$MRC" = "x"; then
+	AC_PATH_PROG([MRC], [mrc])
+fi
+
+if test "x$MRC" = "x"; then
+	AC_MSG_ERROR([mrc not found, the application will be built without resources])
+fi
+
 AX_PTHREAD
 
 AX_BOOST_BASE([1.65.1], [], [AC_MSG_ERROR([Could not find a recent version of boost])])
@@ -32,6 +43,7 @@ AC_ARG_WITH([cif++],
 			CXXFLAGS="$CXXFLAGS -I ${withval}/include"
 			LDFLAGS="$LDFLAGS -L${withval}/.libs"
 			LIBS="$LIBS -lcif++"
+			AC_SUBST([CIFPP_RSRC], [${withval}/rsrc]) 
 		])
 
 
@@ -98,6 +110,13 @@ AX_CHECK_LIBRARY([LIBZ], [zlib.h], [z],
 AX_CHECK_LIBRARY([LIBBZ2], [bzlib.h], [bz2],
 				 [ LIBS="$LIBS -lbz2"],
                  [AC_MSG_ERROR([libbz2 not found - compressed files not supported])])
+
+AC_SEARCH_LIBS([dladdr1], [dl],
+	[
+		AC_DEFINE([HAVE_DLADDR], 1, [Define if the system has dladdr])
+	], [], [])
+
+AC_SUBST([HAVE_DLADDR])
 
 dnl AC_MSG_CHECKING([clipper version])
 dnl AC_COMPILE_IFELSE(
