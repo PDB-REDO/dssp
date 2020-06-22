@@ -1,0 +1,16 @@
+.vscode
+node_modules
+rsrc/version.txt
+version-info*.txt
+docroot/fonts
+docroot/scripts
+obj
+obj.dbg
+mini-ibs
+make.config
+docroot/css/google-font*.css
+autom4te.cache/
+GNUmakefile
+config.status
+config.log
+aclocal.m4
