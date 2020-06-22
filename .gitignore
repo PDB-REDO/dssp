@@ -14,3 +14,4 @@ GNUmakefile
 config.status
 config.log
 aclocal.m4
+dssp
