@@ -39,115 +39,113 @@ void print_what (const std::exception& e)
 
 // --------------------------------------------------------------------
 
-#if 0
-std::string ResidueToDSSPLine(const MResidue& residue)
+std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 {
 /*
 	This is the header line for the residue lines in a DSSP file:
 
-	#  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA           CHAIN
+	#  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA
  */
 	boost::format kDSSPResidueLine(
-	"%5.5d%5.5d%1.1s%1.1s %c  %c %c%c%c%c%c%c%c%4.4d%4.4d%c%4.4d %11s%11s%11s%11s %6.3f%6.1f%6.1f%6.1f%6.1f %6.1f %6.1f %6.1f           %4.4s");
+		"%5.5d%5.5d%1.1s%1.1s %c  %c %c%c%c%c%c%c%c%4.4d%4.4d%c%4.4d %11s%11s%11s%11s  %6.3f%6.1f%6.1f%6.1f%6.1f %6.1f %6.1f %6.1f");
 
-	const MAtom& ca = residue.GetCAlpha();
+	auto& residue = info.residue();
 
-	char code = kResidueInfo[residue.GetType()].code;
-	if (residue.GetType() == kCysteine and residue.GetSSBridgeNr() != 0)
-		code = 'a' + ((residue.GetSSBridgeNr() - 1) % 26);
+	if (residue.asymID().length() > 1)
+		throw std::runtime_error("This file contains data that won't fit in the original DSSP format");
 
-	char ss;
-	switch (residue.GetSecondaryStructure())
+	auto ca = residue.atomByID("CA");
+
+	char code = 'X';
+	if (mmcif::kAAMap.find(residue.compoundID()) != mmcif::kAAMap.end())
+		code = mmcif::kAAMap.at(residue.compoundID());
+
+	if (code == 'C')	// a cysteine
 	{
-		case alphahelix:  ss = 'H'; break;
-		case betabridge:  ss = 'B'; break;
-		case strand:    ss = 'E'; break;
-		case helix_3:    ss = 'G'; break;
-		case helix_5:    ss = 'I'; break;
-		case turn:      ss = 'T'; break;
-		case bend:      ss = 'S'; break;
-		case loop:      ss = ' '; break;
+		auto ssbridgenr = info.ssBridgeNr();
+		if (ssbridgenr)
+			code = 'a' + ((ssbridgenr - 1) % 26);
 	}
 
-	char helix[3];
-	for (uint32_t stride = 3; stride <= 5; ++stride)
+	char ss;
+	switch (info.ss())
 	{
-		switch (residue.GetHelixFlag(stride))
+		case mmcif::ssAlphahelix:	ss = 'H'; break;
+		case mmcif::ssBetabridge:	ss = 'B'; break;
+		case mmcif::ssStrand:		ss = 'E'; break;
+		case mmcif::ssHelix_3:		ss = 'G'; break;
+		case mmcif::ssHelix_5:		ss = 'I'; break;
+		case mmcif::ssTurn:			ss = 'T'; break;
+		case mmcif::ssBend:			ss = 'S'; break;
+		case mmcif::ssLoop:			ss = ' '; break;
+	}
+
+	char helix[3] = { ' ', ' ', ' ' };
+	for (auto stride: { 3, 4, 5})
+	{
+		switch (info.helix(stride))
 		{
-			case helixNone:      helix[stride - 3] = ' '; break;
-			case helixStart:    helix[stride - 3] = '>'; break;
-			case helixEnd:      helix[stride - 3] = '<'; break;
-			case helixStartAndEnd:  helix[stride - 3] = 'X'; break;
-			case helixMiddle:    helix[stride - 3] = '0' + stride; break;
+			case mmcif::Helix::None:		helix[stride - 3] = ' '; break;
+			case mmcif::Helix::Start:		helix[stride - 3] = '>'; break;
+			case mmcif::Helix::End:			helix[stride - 3] = '<'; break;
+			case mmcif::Helix::StartAndEnd:	helix[stride - 3] = 'X'; break;
+			case mmcif::Helix::Middle:		helix[stride - 3] = '0' + stride; break;
 		}
 	}
 
 	char bend = ' ';
-	if (residue.IsBend())
+	if (info.bend())
 		bend = 'S';
 
-	double alpha;
-	char chirality;
-	std::tr1::tie(alpha,chirality) = residue.Alpha();
-
+	double alpha = residue.alpha();
+	char chirality = alpha == 360 ? ' ' : (alpha < 0 ? '-' : '+');
+	
 	uint32_t bp[2] = {};
 	char bridgelabel[2] = { ' ', ' ' };
-	for (uint32_t i = 0; i < 2; ++i)
+	for (uint32_t i: { 0, 1 })
 	{
-		MBridgeParner p = residue.GetBetaPartner(i);
-		if (p.residue != nullptr)
-		{
-			bp[i] = p.residue->GetNumber();
-			bp[i] %= 10000;  // won't fit otherwise...
-			bridgelabel[i] = 'A' + p.ladder % 26;
-			if (p.parallel)
-				bridgelabel[i] = tolower(bridgelabel[i]);
-		}
+		const auto& [p, ladder, parallel] = info.bridgePartner(i);
+		if (not p)
+			continue;
+
+		bp[i] = p.nr() % 10000;  // won't fit otherwise...
+		bridgelabel[i] = (parallel ? 'a' : 'A') + ladder % 26;
 	}
 
 	char sheet = ' ';
-	if (residue.GetSheet() != 0)
-		sheet = 'A' + (residue.GetSheet() - 1) % 26;
+	if (info.sheet() != 0)
+		sheet = 'A' + (info.sheet() - 1) % 26;
 
 	std::string NHO[2], ONH[2];
-	const HBond* acceptors = residue.Acceptor();
-	const HBond* donors = residue.Donor();
-	for (uint32_t i = 0; i < 2; ++i)
+	for (int i: { 0, 1 })
 	{
+		const auto& [donor, donorE] = info.donor(i);
+		const auto& [acceptor, acceptorE] = info.acceptor(i);
+		
 		NHO[i] = ONH[i] = "0, 0.0";
 
-		if (acceptors[i].residue != nullptr)
+		if (acceptor)
 		{
-			int32 d = acceptors[i].residue->GetNumber() - residue.GetNumber();
-			NHO[i] = (boost::format("%d,%3.1f") % d % acceptors[i].energy).str();
+			auto d = acceptor.nr() - info.nr();
+			NHO[i] = (boost::format("%d,%3.1f") % d % acceptorE).str();
 		}
 
-		if (donors[i].residue != nullptr)
+		if (donor)
 		{
-			int32 d = donors[i].residue->GetNumber() - residue.GetNumber();
-			ONH[i] = (boost::format("%d,%3.1f") % d % donors[i].energy).str();
+			auto d = donor.nr() - info.nr();
+			ONH[i] = (boost::format("%d,%3.1f") % d % donorE).str();
 		}
 	}
 
-	std::string chainChar = ca.mChainID,
-													long_ChainID = "";
-	if (ca.mChainID.length () > 1)
-	{
-		// For mmCIF compatibility
+	auto const& [cax, cay, caz] = ca.location();
 
-		chainChar = ">";
-		long_ChainID = ca.mChainID;
-	}
-
-	return (kDSSPResidueLine % residue.GetNumber() % ca.mResSeq % ca.mICode % chainChar % code %
+	return (kDSSPResidueLine % info.nr() % ca.authSeqId() % ca.pdbxAuthInsCode() % ca.authAsymId() % code %
 		ss % helix[0] % helix[1] % helix[2] % bend % chirality % bridgelabel[0] % bridgelabel[1] %
-		bp[0] % bp[1] % sheet % floor(residue.Accessibility() + 0.5) %
+		bp[0] % bp[1] % sheet % floor(info.accessibility() + 0.5) %
 		NHO[0] % ONH[0] % NHO[1] % ONH[1] %
-		residue.TCO() % residue.Kappa() % alpha % residue.Phi() % residue.Psi() %
-		ca.mLoc.mX % ca.mLoc.mY % ca.mLoc.mZ % long_ChainID).str();
+		residue.tco() % residue.kappa() % alpha % residue.phi() % residue.psi() %
+		cax % cay % caz).str();
 }
-
-#endif
 
 void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ostream& os)
 {
@@ -156,10 +154,7 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 
 	using namespace boost::gregorian;
 
-	// uint32_t nrOfResidues, nrOfChains, nrOfSSBridges, nrOfIntraChainSSBridges, nrOfHBonds;
-	// uint32_t nrOfHBondsPerDistance[11] = {};
-
-	// dssp.GetStatistics(nrOfResidues, nrOfChains, nrOfSSBridges, nrOfIntraChainSSBridges, nrOfHBonds, nrOfHBondsPerDistance);
+	auto stats = dssp.GetStatistics();
 
 	date today = day_clock::local_day();
 
@@ -172,69 +167,66 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 	   << GetPDBSOURCELine(cf, 127) << '.' << std::endl
 	   << GetPDBAUTHORLine(cf, 127) << '.' << std::endl;
 
-	// double accessibleSurface = 0;  // calculate accessibility as
-	// foreach (const MChain* chain, protein.GetChains())
-	// {
-	// 	foreach (const MResidue* residue, chain->GetResidues())
-	// 		accessibleSurface += residue->Accessibility();
-	// }
+	os << boost::format("%5.5d%3.3d%3.3d%3.3d%3.3d TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN) %|127t|%c") %
+			 stats.nrOfResidues % stats.nrOfChains % stats.nrOfSSBridges % stats.nrOfIntraChainSSBridges % (stats.nrOfSSBridges - stats.nrOfIntraChainSSBridges) % '.' << std::endl;
+		 os << kHeaderLine % (boost::format("%8.1f   ACCESSIBLE SURFACE OF PROTEIN (ANGSTROM**2)") % stats.accessibleSurface) % '.' << std::endl;
 
-	// os << boost::format("%5.5d%3.3d%3.3d%3.3d%3.3d TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN) %|127t|%c") %
-	// 		 nrOfResidues % nrOfChains % nrOfSSBridges % nrOfIntraChainSSBridges % (nrOfSSBridges - nrOfIntraChainSSBridges) % '.' << std::endl;
-	// 	 os << kHeaderLine % (boost::format("%8.1f   ACCESSIBLE SURFACE OF PROTEIN (ANGSTROM**2)") % accessibleSurface) % '.' << std::endl;
+	// hydrogenbond summary
 
-	// // hydrogenbond summary
+	os << kHeaderLine % (
+		boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(J)  , SAME NUMBER PER 100 RESIDUES")
+			% stats.nrOfHBonds % (stats.nrOfHBonds * 100.0 / stats.nrOfResidues)) % '.' << std::endl;
 
-	// os << kHeaderLine % (
-	// 	boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(J)  , SAME NUMBER PER 100 RESIDUES")
-	// 		% nrOfHBonds % (nrOfHBonds * 100.0 / nrOfResidues)) % '.' << std::endl;
+	os << kHeaderLine % (
+		boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN     PARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES")
+			% stats.nrOfHBondsInParallelBridges % (stats.nrOfHBondsInParallelBridges * 100.0 / stats.nrOfResidues)) % '.' << std::endl;
 
-	// uint32_t nrOfHBondsInParallelBridges = protein.GetNrOfHBondsInParallelBridges();
-	// os << kHeaderLine % (
-	// 	boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN     PARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES")
-	// 		% nrOfHBondsInParallelBridges % (nrOfHBondsInParallelBridges * 100.0 / nrOfResidues)) % '.' << std::endl;
+	os << kHeaderLine % (
+		boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN ANTIPARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES")
+			% stats.nrOfHBondsInAntiparallelBridges % (stats.nrOfHBondsInAntiparallelBridges * 100.0 / stats.nrOfResidues)) % '.' << std::endl;
 
-	// uint32_t nrOfHBondsInAntiparallelBridges = protein.GetNrOfHBondsInAntiparallelBridges();
-	// os << kHeaderLine % (
-	// 	boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN ANTIPARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES")
-	// 		% nrOfHBondsInAntiparallelBridges % (nrOfHBondsInAntiparallelBridges * 100.0 / nrOfResidues)) % '.' << std::endl;
+	boost::format kHBondsLine("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(I%c%1.1d), SAME NUMBER PER 100 RESIDUES");
+	for (int k = 0; k < 11; ++k)
+		os << kHeaderLine % (kHBondsLine % stats.nrOfHBondsPerDistance[k] % (stats.nrOfHBondsPerDistance[k] * 100.0 / stats.nrOfResidues) % (k - 5 < 0 ? '-' : '+') % abs(k - 5)) % '.' << std::endl;
 
-	// boost::format kHBondsLine("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(I%c%1.1d), SAME NUMBER PER 100 RESIDUES");
-	// 	 for (int32 k = 0; k < 11; ++k)
-	// {
-	// 	os << kHeaderLine % (kHBondsLine % nrOfHBondsPerDistance[k] % (nrOfHBondsPerDistance[k] * 100.0 / nrOfResidues) % (k - 5 < 0 ? '-' : '+') % abs(k - 5)) % '.' << std::endl;
-	// }
+	// histograms...
+	os << "  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30     *** HISTOGRAMS OF ***           ." << std::endl;
 
-	// // histograms...
+	for (auto hi: stats.residuesPerAlphaHelixHistogram)
+		os << boost::format("%3.3d") % hi;
+	os << "    RESIDUES PER ALPHA HELIX         ." << std::endl;
 
-	// uint32_t histogram[kHistogramSize];
-	// os << "  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30     *** HISTOGRAMS OF ***           ." << std::endl;
+	for (auto hi: stats.parallelBridgesPerLadderHistogram)
+		os << boost::format("%3.3d") % hi;
+	os << "    PARALLEL BRIDGES PER LADDER      ." << std::endl;
 
-	// protein.GetResiduesPerAlphaHelixHistogram(histogram);
-	// for (uint32_t i = 0; i < kHistogramSize; ++i)
-	// 	os << boost::format("%3.3d") % histogram[i];
-	// os << "    RESIDUES PER ALPHA HELIX         ." << std::endl;
+	for (auto hi: stats.antiparallelBridgesPerLadderHistogram)
+		os << boost::format("%3.3d") % hi;
+	os << "    ANTIPARALLEL BRIDGES PER LADDER  ." << std::endl;
 
-	// protein.GetParallelBridgesPerLadderHistogram(histogram);
-	// for (uint32_t i = 0; i < kHistogramSize; ++i)
-	// 	os << boost::format("%3.3d") % histogram[i];
-	// os << "    PARALLEL BRIDGES PER LADDER      ." << std::endl;
+	for (auto hi: stats.laddersPerSheetHistogram)
+		os << boost::format("%3.3d") % hi;
+	os << "    LADDERS PER SHEET                ." << std::endl;
 
-	// protein.GetAntiparallelBridgesPerLadderHistogram(histogram);
-	// for (uint32_t i = 0; i < kHistogramSize; ++i)
-	// 	os << boost::format("%3.3d") % histogram[i];
-	// os << "    ANTIPARALLEL BRIDGES PER LADDER  ." << std::endl;
+	// per residue information
 
-	// protein.GetLaddersPerSheetHistogram(histogram);
-	// for (uint32_t i = 0; i < kHistogramSize; ++i)
-	// 	os << boost::format("%3.3d") % histogram[i];
-	// os << "    LADDERS PER SHEET                ." << std::endl;
+	os << "  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA         CHAIN" << std::endl;
+	boost::format kDSSPResidueLine(
+		"%5.5d        !%c             0   0    0      0, 0.0     0, 0.0     0, 0.0     0, 0.0   0.000 360.0 360.0 360.0 360.0    0.0    0.0    0.0");
 
-	// // per residue information
+	int last = 0;
+	for (auto ri: dssp)
+	{
+		// insert a break line whenever we detect missing residues
+		// can be the transition to a different chain, or missing residues in the current chain
 
-	// os << "  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA            CHAIN" << std::endl;
-	// boost::format kDSSPResidueLine(
-	// 	"%5.5d        !%c             0   0    0      0, 0.0     0, 0.0     0, 0.0     0, 0.0   0.000 360.0 360.0 360.0 360.0    0.0    0.0    0.0");
+		auto b = ri.chainBreak();
+		if (b != mmcif::ChainBreak::None)
+			os << (kDSSPResidueLine % (last + 1) % (b == mmcif::ChainBreak::Gap ? '*' : ' ')) << std::endl;
+		
+		os << ResidueToDSSPLine(ri) << std::endl;
+		last = ri.nr();
+	}
 
 	// std::vector<const MResidue*> residues;
 
