@@ -91,8 +91,8 @@ OBJECTS = $(APPLICATION:%=$(OBJDIR)/%.o)
 ifneq "$(MRC)" ""
 OBJECTS += $(APPLICATION:%=$(OBJDIR)/%_rsrc.o)
 
-$(OBJDIR)/$(APPLICATION)_rsrc.o: $(CIFPP_RSRC)/dictionaries
-	$(MRC) -o $@ $^
+$(OBJDIR)/$(APPLICATION)_rsrc.o: $(wildcard $(CIFPP_RSRC)/dictionaries/*)
+	$(MRC) -o $@ $(CIFPP_RSRC)/dictionaries
 endif
 
 -include $(OBJECTS:%.o=%.d)
@@ -121,3 +121,7 @@ distclean: clean
 
 .PHONY: FORCE
 FORCE:
+
+.PHONY: test
+test:
+	echo $(wildcard $(CIFPP_RSRC)/dictionaries/*)

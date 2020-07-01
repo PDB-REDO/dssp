@@ -10,11 +10,12 @@
 #include <boost/format.hpp>
 #include <boost/date_time/gregorian/formatters.hpp>
 
-#include <cif++/Config.h>
-#include <cif++/Structure.h>
-#include <cif++/Secondary.h>
-#include <cif++/CifUtils.h>
-#include <cif++/Cif2PDB.h>
+#include <cif++/Config.hpp>
+#include <cif++/Structure.hpp>
+#include <cif++/Secondary.hpp>
+#include <cif++/CifUtils.hpp>
+#include <cif++/Cif2PDB.hpp>
+#include <cif++/FixDMC.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -53,8 +54,6 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 
 	if (residue.asymID().length() > 1)
 		throw std::runtime_error("This file contains data that won't fit in the original DSSP format");
-
-	auto ca = residue.atomByID("CA");
 
 	char code = 'X';
 	if (mmcif::kAAMap.find(residue.compoundID()) != mmcif::kAAMap.end())
@@ -137,9 +136,10 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 		}
 	}
 
+	auto ca = residue.atomByID("CA");
 	auto const& [cax, cay, caz] = ca.location();
 
-	return (kDSSPResidueLine % info.nr() % ca.authSeqId() % ca.pdbxAuthInsCode() % ca.authAsymId() % code %
+	return (kDSSPResidueLine % info.nr() % ca.authSeqID() % ca.pdbxAuthInsCode() % ca.authAsymID() % code %
 		ss % helix[0] % helix[1] % helix[2] % bend % chirality % bridgelabel[0] % bridgelabel[1] %
 		bp[0] % bp[1] % sheet % floor(info.accessibility() + 0.5) %
 		NHO[0] % ONH[0] % NHO[1] % ONH[1] %
@@ -220,9 +220,8 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 		// insert a break line whenever we detect missing residues
 		// can be the transition to a different chain, or missing residues in the current chain
 
-		auto b = ri.chainBreak();
-		if (b != mmcif::ChainBreak::None)
-			os << (kDSSPResidueLine % (last + 1) % (b == mmcif::ChainBreak::Gap ? '*' : ' ')) << std::endl;
+		if (ri.nr() != last + 1)
+			os << (kDSSPResidueLine % (last + 1) % (ri.chainBreak() == mmcif::ChainBreak::NewChain ? '*' : ' ')) << std::endl;
 		
 		os << ResidueToDSSPLine(ri) << std::endl;
 		last = ri.nr();
@@ -263,7 +262,7 @@ void annotateDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, st
 
 // --------------------------------------------------------------------
 
-int main(int argc, char* argv[])
+int d_main(int argc, const char* argv[])
 {
 	using namespace std::literals;
 
@@ -279,6 +278,8 @@ int main(int argc, char* argv[])
 		("version",											"Print version")
 
 		("output-format",		po::value<std::string>(),	"Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any.")
+
+		("create-missing",									"Create missing backbone atoms")
 
 #if not USE_RSRC
 		("rsrc-dir",			po::value<std::string>(),	"Directory containing the 'resources' used by this application")
@@ -352,8 +353,13 @@ int main(int argc, char* argv[])
 	}
 
 	mmcif::File f(vm["xyzin"].as<std::string>());
-	mmcif::Structure structure(f);
+	mmcif::Structure structure(f, mmcif::StructureOpenOptions::SkipHydrogen);
+
+	// --------------------------------------------------------------------
 	
+	if (vm.count("create-missing"))
+		mmcif::CreateMissingBackboneAtoms(structure, true);
+
 	// --------------------------------------------------------------------
 
 	mmcif::DSSP dssp(structure);
@@ -383,4 +389,23 @@ int main(int argc, char* argv[])
 	}
 	
 	return 0;
+}
+
+// --------------------------------------------------------------------
+
+int main(int argc, const char* argv[])
+{
+	int result = 0;
+
+	try
+	{
+		result = d_main(argc, argv);
+	}
+	catch (const std::exception& ex)
+	{
+		print_what(ex);
+		exit(1);
+	}
+
+	return result;
 }

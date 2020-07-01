@@ -1,8 +1,8 @@
-AC_INIT([dssp], 3.0, [m.hekkelman@nki.nl])
+AC_INIT([dssp], 4.0, [m.hekkelman@nki.nl])
 
 dnl Switch to a C++ compiler, and check if it works.
 AC_LANG(C++)
-AX_CXX_COMPILE_STDCXX_14([noext])
+AX_CXX_COMPILE_STDCXX_17([noext])
 
 AC_CONFIG_SRCDIR([src/dssp.cpp])
 AC_CONFIG_AUX_DIR(config)
@@ -47,7 +47,7 @@ AC_ARG_WITH([cif++],
 		])
 
 
-AX_CHECK_LIBRARY([LIBCIFPP], [cif++/Config.h], [cif++],
+AX_CHECK_LIBRARY([LIBCIFPP], [cif++/Config.hpp], [cif++],
 	[],
 	[AC_MSG_ERROR([libcif++ not found - cannot continue])])
 
