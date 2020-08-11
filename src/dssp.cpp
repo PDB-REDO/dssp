@@ -48,7 +48,7 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 	#  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA
  */
 	boost::format kDSSPResidueLine(
-		"%5.5d%5.5d%1.1s%1.1s %c  %c %c%c%c%c%c%c%c%4.4d%4.4d%c%4.4d %11s%11s%11s%11s  %6.3f%6.1f%6.1f%6.1f%6.1f %6.1f %6.1f %6.1f");
+		"%5.5d%5.5d%1.1s%1.1s %c  %c%c%c%c%c%c%c%c%c%4.4d%4.4d%c%4.4d %11s%11s%11s%11s  %6.3f%6.1f%6.1f%6.1f%6.1f %6.1f %6.1f %6.1f");
 
 	auto& residue = info.residue();
 
@@ -74,21 +74,22 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 		case mmcif::ssStrand:		ss = 'E'; break;
 		case mmcif::ssHelix_3:		ss = 'G'; break;
 		case mmcif::ssHelix_5:		ss = 'I'; break;
+		case mmcif::ssHelix_PPII:		ss = 'P'; break;
 		case mmcif::ssTurn:			ss = 'T'; break;
 		case mmcif::ssBend:			ss = 'S'; break;
 		case mmcif::ssLoop:			ss = ' '; break;
 	}
 
-	char helix[3] = { ' ', ' ', ' ' };
-	for (auto stride: { 3, 4, 5})
+	char helix[4] = { ' ', ' ', ' ', ' ' };
+	for (mmcif::HelixType helixType: { mmcif::HelixType::rh_3_10, mmcif::HelixType::rh_alpha, mmcif::HelixType::rh_pi, mmcif::HelixType::rh_pp })
 	{
-		switch (info.helix(stride))
+		switch (info.helix(helixType))
 		{
-			case mmcif::Helix::None:		helix[stride - 3] = ' '; break;
-			case mmcif::Helix::Start:		helix[stride - 3] = '>'; break;
-			case mmcif::Helix::End:			helix[stride - 3] = '<'; break;
-			case mmcif::Helix::StartAndEnd:	helix[stride - 3] = 'X'; break;
-			case mmcif::Helix::Middle:		helix[stride - 3] = '0' + stride; break;
+			case mmcif::Helix::None:		helix[static_cast<int>(helixType)] = ' '; break;
+			case mmcif::Helix::Start:		helix[static_cast<int>(helixType)] = '>'; break;
+			case mmcif::Helix::End:			helix[static_cast<int>(helixType)] = '<'; break;
+			case mmcif::Helix::StartAndEnd:	helix[static_cast<int>(helixType)] = 'X'; break;
+			case mmcif::Helix::Middle:		helix[static_cast<int>(helixType)] = (helixType == mmcif::HelixType::rh_pp ? 'P' : ('3' + static_cast<int>(helixType))); break;
 		}
 	}
 
@@ -140,7 +141,7 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 	auto const& [cax, cay, caz] = ca.location();
 
 	return (kDSSPResidueLine % info.nr() % ca.authSeqID() % ca.pdbxAuthInsCode() % ca.authAsymID() % code %
-		ss % helix[0] % helix[1] % helix[2] % bend % chirality % bridgelabel[0] % bridgelabel[1] %
+		ss % helix[3] % helix[0] % helix[1] % helix[2] % bend % chirality % bridgelabel[0] % bridgelabel[1] %
 		bp[0] % bp[1] % sheet % floor(info.accessibility() + 0.5) %
 		NHO[0] % ONH[0] % NHO[1] % ONH[1] %
 		residue.tco() % residue.kappa() % alpha % residue.phi() % residue.psi() %
@@ -210,7 +211,7 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 
 	// per residue information
 
-	os << "  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA         CHAIN" << std::endl;
+	os << "  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA" << std::endl;
 	boost::format kDSSPResidueLine(
 		"%5.5d        !%c             0   0    0      0, 0.0     0, 0.0     0, 0.0     0, 0.0   0.000 360.0 360.0 360.0 360.0    0.0    0.0    0.0");
 
@@ -255,9 +256,329 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 	// }
 }
 
-void annotateDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ostream& os)
+void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ostream& os)
 {
+	auto& db = structure.getFile().data();
 
+	// replace all struct_conf and struct_conf_type records
+	auto& structConfType = db["struct_conf_type"];
+	structConfType.clear();
+
+	auto& structConf = db["struct_conf"];
+	structConf.clear();
+
+
+	std::map<std::string,int> foundTypes;
+
+	auto st = dssp.begin(), lt = st;
+	auto lastSS = st->ss();
+	std::string id;
+
+	for (auto t = dssp.begin(); ; lt = t, ++t)
+	{
+		bool stop = t == dssp.end();
+
+		bool flush = (stop or t->ss() != lastSS);
+
+		if (flush and lastSS != mmcif::SecondaryStructureType::ssLoop)
+		{
+			auto& rb = st->residue();
+			auto& re = lt->residue();
+
+			structConf.emplace({
+				{ "conf_type_id", id },
+				{ "id", id + std::to_string(foundTypes[id]++) },
+				// { "pdbx_PDB_helix_id", vS(12, 14) },
+				{ "beg_label_comp_id", rb.compoundID() },
+				{ "beg_label_asym_id", rb.asymID() },
+				{ "beg_label_seq_id", rb.seqID() },
+				{ "pdbx_beg_PDB_ins_code", rb.authInsCode() },
+				{ "end_label_comp_id", re.compoundID() },
+				{ "end_label_asym_id", re.asymID() },
+				{ "end_label_seq_id", re.seqID() },
+				{ "pdbx_end_PDB_ins_code", re.authInsCode() },
+	
+				{ "beg_auth_comp_id", rb.compoundID() },
+				{ "beg_auth_asym_id", rb.authAsymID() },
+				{ "beg_auth_seq_id", rb.authSeqID() },
+				{ "end_auth_comp_id", re.compoundID() },
+				{ "end_auth_asym_id", re.authAsymID() },
+				{ "end_auth_seq_id", re.authSeqID() },
+	
+				// { "pdbx_PDB_helix_class", vS(39, 40) },
+				// { "details", vS(41, 70) },
+				// { "pdbx_PDB_helix_length", vI(72, 76) }
+			});
+
+			st = t;
+		}
+
+		if (lastSS != t->ss())
+		{
+			st = t;
+			lastSS = t->ss();
+		}
+
+		if (stop)
+			break;
+
+		if (not flush)
+			continue;
+
+		switch (t->ss())
+		{
+			case mmcif::SecondaryStructureType::ssHelix_3:
+				id = "HELX_RH_3T_P";
+				break;
+
+			case mmcif::SecondaryStructureType::ssAlphahelix:
+				id = "HELX_RH_AL_P";
+				break;
+
+			case mmcif::SecondaryStructureType::ssHelix_5:
+				id = "HELX_RH_PI_P";
+				break;
+
+			case mmcif::SecondaryStructureType::ssHelix_PPII:
+				id = "HELX_LH_PP_P";
+				break;
+
+			case mmcif::SecondaryStructureType::ssTurn:
+				id = "TURN_TY1_P";
+				break;
+
+			case mmcif::SecondaryStructureType::ssBend:
+				id = "TURN_P";
+				break;
+
+			case mmcif::SecondaryStructureType::ssBetabridge:
+			case mmcif::SecondaryStructureType::ssStrand:
+				id = "STRN";
+				break;
+
+			default:
+				id.clear();
+				break;
+		}
+
+		if (id.empty())
+			continue;
+
+		if (foundTypes.count(id) == 0)
+		{
+			structConfType.emplace({
+				{ "id", id }
+			});
+			foundTypes[id] = 1;
+		}
+	}
+
+	db.write(os);
+
+// 	cif::File df;
+	
+// 	df.append(new cif::Datablock("DSSP_" + structure.getFile().data().getName()));
+
+// 	auto& db = df.firstDatablock();
+
+// 	int last = 0;
+// 	for (auto info: dssp)
+// 	{
+// 		// insert a break line whenever we detect missing residues
+// 		// can be the transition to a different chain, or missing residues in the current chain
+
+
+// 		// 	os << (kDSSPResidueLine % (last + 1) % (ri.chainBreak() == mmcif::ChainBreak::NewChain ? '*' : ' ')) << std::endl;
+		
+// 		// os << ResidueToDSSPLine(ri) << std::endl;
+
+// 		auto& mon = info.residue();
+
+// 		auto&& [row, rn] = db["struct_mon_prot"].emplace({
+// 			{ "chain_break", (info.chainBreak() == mmcif::ChainBreak::Gap ? 'Y' : '.') },
+// 			{ "label_comp_id", mon.compoundID() },
+// 			{ "label_asym_id", mon.asymID() },
+// 			{ "label_seq_id", mon.seqID() },
+// 			{ "label_alt_id", info.alt_id() },
+// 			{ "auth_asym_id", mon.authAsymID() },
+// 			{ "auth_seq_id", mon.authSeqID() },
+// 			{ "auth_ins_code", mon.authInsCode() },
+// 		});
+
+// 		if (mon.is_first_in_chain())
+// 			row["phi"] = ".";
+// 		else
+// 			row["phi"].os(std::fixed, std::setprecision(1), mon.phi());
+
+// 		if (mon.is_last_in_chain())
+// 			row["psi"] = ".";
+// 		else
+// 			row["psi"].os(std::fixed, std::setprecision(1), mon.psi());
+
+// 		if (mon.is_last_in_chain())
+// 			row["omega"] = ".";
+// 		else
+// 			row["omega"].os(std::fixed, std::setprecision(1), mon.omega());
+
+// 		int nrOfChis = mon.nrOfChis();
+// 		for (int i = 0; i < 5; ++i)
+// 		{
+// 			auto cl = "chi" + std::to_string(i + 1);
+// 			if (i < nrOfChis)
+// 				row[cl].os(std::fixed, std::setprecision(1), mon.chi(i));
+// 			else
+// 				row[cl] = '.';
+// 		}
+
+// 		if (not mon.has_alpha())
+// 			row["alpha"] = ".";
+// 		else
+// 			row["alpha"].os(std::fixed, std::setprecision(1), mon.alpha());
+
+// 		if (not mon.has_kappa())
+// 			row["kappa"] = ".";
+// 		else
+// 			row["kappa"].os(std::fixed, std::setprecision(1), mon.kappa());
+
+// 		if (mon.is_first_in_chain())
+// 			row["tco"] = ".";
+// 		else
+// 			row["tco"].os(std::fixed, std::setprecision(1), mon.tco());
+
+// 		// sec structure info
+
+// 		char ss;
+// 		switch (info.ss())
+// 		{
+// 			case mmcif::ssAlphahelix:	ss = 'H'; break;
+// 			case mmcif::ssBetabridge:	ss = 'B'; break;
+// 			case mmcif::ssStrand:		ss = 'E'; break;
+// 			case mmcif::ssHelix_3:		ss = 'G'; break;
+// 			case mmcif::ssHelix_5:		ss = 'I'; break;
+// 			case mmcif::ssHelix_PPII:		ss = 'P'; break;
+// 			case mmcif::ssTurn:			ss = 'T'; break;
+// 			case mmcif::ssBend:			ss = 'S'; break;
+// 			case mmcif::ssLoop:			ss = '.'; break;
+// 		}
+// 		row["dssp_symbol"] = ss;
+
+// 		if (mon.has_alpha())
+// 			row["Calpha_chiral_sign"] = mon.alpha() < 0 ? "neg" : "pos";
+// 		else
+// 			row["Calpha_chiral_sign"] = ".";
+
+// 		row["sheet_id"] = info.sheet() ? std::to_string(info.sheet()) : ".";
+
+// 		for (uint32_t i: { 0, 1 })
+// 		{
+// 			std::string il = "bridge_partner_" + std::to_string(i + 1);
+
+// 			const auto& [p, ladder, parallel] = info.bridgePartner(i);
+// 			if (not p)
+// 			{
+// 				row[il + "_label_comp_id"] = ".";
+// 				row[il + "_label_asym_id"] = ".";
+// 				row[il + "_label_seq_id"] = ".";
+// 				row[il + "_auth_asym_id"] = ".";
+// 				row[il + "_auth_seq_id"] = ".";
+// 				row[il + "_ladder"] = ".";
+// 				row[il + "_sense"] = ".";
+// 				continue;
+// 			}
+
+// 			auto& pm = p.residue();
+
+// 			row[il + "_label_comp_id"] = pm.compoundID();
+// 			row[il + "_label_asym_id"] = pm.asymID();
+// 			row[il + "_label_seq_id"] = pm.seqID();
+// 			row[il + "_auth_asym_id"] = pm.authAsymID();
+// 			row[il + "_auth_seq_id"] = pm.authSeqID();
+// 			row[il + "_ladder"] = ladder;
+// 			row[il + "_sense"] = parallel ? "parallel" : "anti-parallel";
+// 		}
+
+// 		for (auto stride: { 3, 4, 5})
+// 		{
+// 			std::string hs = "helix_info_" + std::to_string(stride);
+// 			switch (info.helix(stride))
+// 			{
+// #if 0
+// 				case mmcif::Helix::None:		row[hs] = '.'; break;
+// 				case mmcif::Helix::Start:		row[hs] = "start"; break;
+// 				case mmcif::Helix::End:			row[hs] = "end"; break;
+// 				case mmcif::Helix::StartAndEnd:	row[hs] = "start-and-end"; break;
+// 				case mmcif::Helix::Middle:		row[hs] = "middle"; break;
+// #else
+// 				case mmcif::Helix::None:		row[hs] = '.'; break;
+// 				case mmcif::Helix::Start:		row[hs] = '>'; break;
+// 				case mmcif::Helix::End:			row[hs] = '<'; break;
+// 				case mmcif::Helix::StartAndEnd:	row[hs] = 'X'; break;
+// 				case mmcif::Helix::Middle:		row[hs] = '0' + stride; break;
+// #endif
+// 			}
+// 		}
+
+// 		if (info.bend())
+// 			row["bend"] = 'S';
+// 		else
+// 			row["bend"] = ".";
+
+// 		for (int i: { 0, 1 })
+// 		{
+// 			const auto& [donor, donorE] = info.donor(i);
+// 			const auto& [acceptor, acceptorE] = info.acceptor(i);
+
+// 			std::string ds = "O_donor_" + std::to_string(i + 1);
+// 			std::string as = "NH_acceptor_" + std::to_string(i + 1);
+			
+// 			if (acceptor)
+// 			{
+// 				auto& am = acceptor.residue();
+
+// 				row[as + "_label_comp_id"] = am.compoundID();
+//  				row[as + "_label_asym_id"] = am.asymID();
+//  				row[as + "_label_seq_id"] = am.seqID();
+//  				row[as + "_auth_asym_id"] = am.authAsymID();
+//  				row[as + "_auth_seq_id"] = am.authSeqID();
+// 				row[as + "_energy"].os(std::fixed, std::setprecision(2), acceptorE);
+// 			}
+// 			else
+// 			{
+// 				row[as + "_label_comp_id"] = ".";
+//  				row[as + "_label_asym_id"] = ".";
+//  				row[as + "_label_seq_id"] = ".";
+//  				row[as + "_auth_asym_id"] = ".";
+//  				row[as + "_auth_seq_id"] = ".";
+// 				row[as + "_energy"] = ".";
+// 			}
+
+// 			if (donor)
+// 			{
+// 				auto& dm = donor.residue();
+
+// 				row[ds + "_label_comp_id"] = dm.compoundID();
+//  				row[ds + "_label_asym_id"] = dm.asymID();
+//  				row[ds + "_label_seq_id"] = dm.seqID();
+//  				row[ds + "_auth_asym_id"] = dm.authAsymID();
+//  				row[ds + "_auth_seq_id"] = dm.authSeqID();
+// 				row[ds + "_energy"].os(std::fixed, std::setprecision(2), donorE);
+// 			}
+// 			else
+// 			{
+// 				row[ds + "_label_comp_id"] = ".";
+//  				row[ds + "_label_asym_id"] = ".";
+//  				row[ds + "_label_seq_id"] = ".";
+//  				row[ds + "_auth_asym_id"] = ".";
+//  				row[ds + "_auth_seq_id"] = ".";
+// 				row[ds + "_energy"] = ".";
+// 			}
+// 		}
+
+// 		last = info.nr();
+// 	}
+
+
+// 	df.write(os, {});
 }
 
 // --------------------------------------------------------------------
@@ -353,7 +674,7 @@ int d_main(int argc, const char* argv[])
 	}
 
 	mmcif::File f(vm["xyzin"].as<std::string>());
-	mmcif::Structure structure(f, mmcif::StructureOpenOptions::SkipHydrogen);
+	mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
 	// --------------------------------------------------------------------
 	
@@ -364,7 +685,9 @@ int d_main(int argc, const char* argv[])
 
 	mmcif::DSSP dssp(structure);
 
-	auto fmt = vm.count("output-format") ? vm["output-format"].as<std::string>() : "";
+	std::string fmt;
+	if (vm.count("output-format"))
+		fmt = vm["output-format"].as<std::string>();
 	
 	if (vm.count("output"))
 	{
