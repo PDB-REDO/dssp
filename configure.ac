@@ -43,6 +43,27 @@ AX_CHECK_LIBRARY([LIBCIFPP], [cif++/Config.hpp], [cif++],
 	[],
 	[AC_MSG_ERROR([libcif++ not found - cannot continue])])
 
+AC_CHECK_HEADER([filesystem], [], [AC_MSG_ERROR([The file <filesystem> is missing, perhaps you should install a more recent libstdc++ implementation.])])
+
+dnl check if we need stdc++fs as library
+AC_TRY_LINK(
+	[#include <filesystem>],
+	[(void)std::filesystem::current_path();],
+	[],
+	[
+		LIBS="$LIBS -lstdc++fs"
+
+		AC_TRY_LINK(
+			[#include <filesystem>],
+			[(void)std::filesystem::current_path();],
+			[],
+			[
+				AC_MSG_ERROR([Could not link filesystem])
+			]
+		)
+	]
+)
+
 AX_BOOST_BASE([1.65.1], [], [AC_MSG_ERROR([Could not find a recent version of boost])])
 AX_BOOST_IOSTREAMS
 AX_BOOST_THREAD
