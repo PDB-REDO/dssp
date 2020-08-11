@@ -29,12 +29,6 @@ fi
 
 AX_PTHREAD
 
-AX_BOOST_BASE([1.65.1], [], [AC_MSG_ERROR([Could not find a recent version of boost])])
-AX_BOOST_IOSTREAMS
-AX_BOOST_THREAD
-AX_BOOST_REGEX
-AX_BOOST_PROGRAM_OPTIONS
-
 AC_ARG_WITH([cif++],
 	AS_HELP_STRING([--with-cif++=@<:@location@:>@],
 		[Use the cif++ library as specified.]),
@@ -42,14 +36,18 @@ AC_ARG_WITH([cif++],
 			CPPFLAGS="$CPPFLAGS -I ${withval}/include"
 			CXXFLAGS="$CXXFLAGS -I ${withval}/include"
 			LDFLAGS="$LDFLAGS -L${withval}/.libs"
-			LIBS="$LIBS -lcif++"
 			AC_SUBST([CIFPP_RSRC], [${withval}/rsrc]) 
 		])
-
 
 AX_CHECK_LIBRARY([LIBCIFPP], [cif++/Config.hpp], [cif++],
 	[],
 	[AC_MSG_ERROR([libcif++ not found - cannot continue])])
+
+AX_BOOST_BASE([1.65.1], [], [AC_MSG_ERROR([Could not find a recent version of boost])])
+AX_BOOST_IOSTREAMS
+AX_BOOST_THREAD
+AX_BOOST_REGEX
+AX_BOOST_PROGRAM_OPTIONS
 
 AC_ARG_VAR([CCP4], [The location where CCP4 is installed])
 
