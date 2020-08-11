@@ -17,6 +17,8 @@
 #include <cif++/Cif2PDB.hpp>
 #include <cif++/FixDMC.hpp>
 
+#include <zeep/streambuf.hpp>
+
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -36,6 +38,62 @@ void print_what (const std::exception& e)
 		std::cerr << " >> ";
 		print_what(nested);
 	}
+}
+
+// --------------------------------------------------------------------
+
+namespace {
+	std::string gVersionNr, gVersionDate, VERSION_STRING;
+}
+
+void load_version_info()
+{
+	const std::regex
+		rxVersionNr(R"(build-(\d+)-g[0-9a-f]{7}(-dirty)?)"),
+		rxVersionDate(R"(Date: +(\d{4}-\d{2}-\d{2}).*)");
+
+	auto version = cif::rsrc_loader::load("version.txt");
+	if (not version)
+		VERSION_STRING = "unknown version, version resource is missing";
+	else
+	{
+		zeep::char_streambuf buffer(version.data(), version.size());
+		std::istream is(&buffer);
+		std::string line;
+
+		while (getline(is, line))
+		{
+			std::smatch m;
+
+			if (std::regex_match(line, m, rxVersionNr))
+			{
+				gVersionNr = m[1];
+				if (m[2].matched)
+					gVersionNr += '*';
+				continue;
+			}
+
+			if (regex_match(line, m, rxVersionDate))
+			{
+				gVersionDate = m[1];
+				continue;
+			}
+		}
+
+		if (not VERSION_STRING.empty())
+			VERSION_STRING += "\n";
+		VERSION_STRING += gVersionNr + " " + gVersionDate;
+	}
+}
+
+std::string get_version_nr()
+{
+	return gVersionNr;
+}
+
+std::string get_version_date()
+{
+	return gVersionDate;
 }
 
 // --------------------------------------------------------------------
@@ -267,7 +325,6 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 	auto& structConf = db["struct_conf"];
 	structConf.clear();
 
-
 	std::map<std::string,int> foundTypes;
 
 	auto st = dssp.begin(), lt = st;
@@ -372,6 +429,8 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 			foundTypes[id] = 1;
 		}
 	}
+
+	db.add_software("dssp " VERSION, "other", get_version_nr(), get_version_date());
 
 	db.write(os);
 
@@ -630,7 +689,7 @@ int d_main(int argc, const char* argv[])
 
 	if (vm.count("version"))
 	{
-		std::cout << argv[0] << " version " << VERSION << std::endl;
+		std::cout << argv[0] << ' ' << VERSION " version " << VERSION_STRING << std::endl;
 		exit(0);
 	}
 
@@ -722,6 +781,16 @@ int main(int argc, const char* argv[])
 
 	try
 	{
+
+		cif::rsrc_loader::init({
+#if USE_RSRC
+			{ cif::rsrc_loader_type::mrsrc, "", { gResourceIndex, gResourceData, gResourceName } },
+#endif
+			{ cif::rsrc_loader_type::file, "." }
+		});
+
+		load_version_info();
+
 		result = d_main(argc, argv);
 	}
 	catch (const std::exception& ex)

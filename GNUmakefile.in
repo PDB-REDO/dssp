@@ -92,8 +92,8 @@ OBJECTS = $(APPLICATION:%=$(OBJDIR)/%.o)
 ifneq "$(MRC)" ""
 OBJECTS += $(APPLICATION:%=$(OBJDIR)/%_rsrc.o)
 
-$(OBJDIR)/$(APPLICATION)_rsrc.o: $(wildcard $(CIFPP_RSRC)/dictionaries/*)
-	$(MRC) -o $@ $(CIFPP_RSRC)/dictionaries
+$(OBJDIR)/$(APPLICATION)_rsrc.o: $(wildcard $(CIFPP_RSRC)/dictionaries/*) rsrc/version.txt
+	$(MRC) -o $@ $(CIFPP_RSRC)/dictionaries rsrc/version.txt
 endif
 
 -include $(OBJECTS:%.o=%.d)
@@ -103,6 +103,20 @@ $(OBJECTS:.o=.d):
 $(OBJDIR)/%.o: %.cpp | $(OBJDIR) GNUmakefile
 	@ echo ">>" $<
 	@ $(CXX) -MD -c -o $@ $< $(CFLAGS) $(CXXFLAGS)
+
+REVISION = $(shell git log --pretty=format:%h --max-count=1)
+REVISION_FILE = version-info-$(REVISION).txt
+
+$(REVISION_FILE): $(OBJDIR) src
+	rm -f version-info-*.txt
+	git describe --match=build --dirty > $@
+	git log --pretty=medium --date=iso8601 -1 >> $@
+
+rsrc:
+	@ mkdir -p $@
+
+rsrc/version.txt: $(REVISION_FILE) | rsrc
+	cp $? $@
 
 all: $(APPLICATION)
 .PHONY: all
