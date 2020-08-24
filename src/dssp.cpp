@@ -665,6 +665,8 @@ int d_main(int argc, const char* argv[])
 		("rsrc-dir",			po::value<std::string>(),	"Directory containing the 'resources' used by this application")
 #endif
 
+		("min-pp-stretch",		po::value<short>(),			"Minimal number of residues having PSI/PHI in range for a PP helix, default is 3")
+
 		("verbose,v",										"verbose output")
 		;
 	
@@ -717,15 +719,6 @@ int d_main(int argc, const char* argv[])
 
 	// --------------------------------------------------------------------
 	
-#if USE_RSRC
-	cif::rsrc_loader::init();
-#else
-	std::string rsrc_dir = ".";
-	cif::rsrc_loader::init({ { cif::rsrc_loader_type::file, rsrc_dir }});
-#endif
-
-	// --------------------------------------------------------------------
-	
 	if (vm.count("dict"))
 	{
 		for (auto dict: vm["dict"].as<std::vector<std::string>>())
@@ -742,7 +735,11 @@ int d_main(int argc, const char* argv[])
 
 	// --------------------------------------------------------------------
 
-	mmcif::DSSP dssp(structure);
+	short pp_stretch = 3;
+	if (vm.count("min-pp-stretch"))
+		pp_stretch = vm["min-pp-stretch"].as<short>();
+
+	mmcif::DSSP dssp(structure, pp_stretch);
 
 	std::string fmt;
 	if (vm.count("output-format"))
