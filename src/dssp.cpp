@@ -350,8 +350,8 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 				auto& re = lt->residue();
 
 				structConf.emplace({
-					{ "conf_type_id", id },
 					{ "id", id + std::to_string(foundTypes[id]++) },
+					{ "conf_type_id", id },
 					// { "pdbx_PDB_helix_id", vS(12, 14) },
 					{ "beg_label_comp_id", rb.compoundID() },
 					{ "beg_label_asym_id", rb.asymID() },
