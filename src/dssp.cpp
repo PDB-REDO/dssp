@@ -318,120 +318,127 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 {
 	auto& db = structure.getFile().data();
 
-	// replace all struct_conf and struct_conf_type records
-	auto& structConfType = db["struct_conf_type"];
-	structConfType.clear();
-
-	auto& structConf = db["struct_conf"];
-	structConf.clear();
-
-	std::map<std::string,int> foundTypes;
-
-	auto st = dssp.begin(), lt = st;
-	auto lastSS = st->ss();
-	std::string id;
-
-	for (auto t = dssp.begin(); ; lt = t, ++t)
+	if (dssp.empty())
 	{
-		bool stop = t == dssp.end();
+		if (cif::VERBOSE)
+			std::cout << "No secondary structure information found" << std::endl;
+	}
+	else
+	{
+		// replace all struct_conf and struct_conf_type records
+		auto& structConfType = db["struct_conf_type"];
+		structConfType.clear();
 
-		bool flush = (stop or t->ss() != lastSS);
+		auto& structConf = db["struct_conf"];
+		structConf.clear();
 
-		if (flush and lastSS != mmcif::SecondaryStructureType::ssLoop)
+		std::map<std::string,int> foundTypes;
+
+		auto st = dssp.begin(), lt = st;
+		auto lastSS = st->ss();
+		std::string id;
+
+		for (auto t = dssp.begin(); ; lt = t, ++t)
 		{
-			auto& rb = st->residue();
-			auto& re = lt->residue();
+			bool stop = t == dssp.end();
 
-			structConf.emplace({
-				{ "conf_type_id", id },
-				{ "id", id + std::to_string(foundTypes[id]++) },
-				// { "pdbx_PDB_helix_id", vS(12, 14) },
-				{ "beg_label_comp_id", rb.compoundID() },
-				{ "beg_label_asym_id", rb.asymID() },
-				{ "beg_label_seq_id", rb.seqID() },
-				{ "pdbx_beg_PDB_ins_code", rb.authInsCode() },
-				{ "end_label_comp_id", re.compoundID() },
-				{ "end_label_asym_id", re.asymID() },
-				{ "end_label_seq_id", re.seqID() },
-				{ "pdbx_end_PDB_ins_code", re.authInsCode() },
-	
-				{ "beg_auth_comp_id", rb.compoundID() },
-				{ "beg_auth_asym_id", rb.authAsymID() },
-				{ "beg_auth_seq_id", rb.authSeqID() },
-				{ "end_auth_comp_id", re.compoundID() },
-				{ "end_auth_asym_id", re.authAsymID() },
-				{ "end_auth_seq_id", re.authSeqID() },
-	
-				// { "pdbx_PDB_helix_class", vS(39, 40) },
-				// { "details", vS(41, 70) },
-				// { "pdbx_PDB_helix_length", vI(72, 76) }
-			});
+			bool flush = (stop or t->ss() != lastSS);
 
-			st = t;
-		}
+			if (flush and lastSS != mmcif::SecondaryStructureType::ssLoop)
+			{
+				auto& rb = st->residue();
+				auto& re = lt->residue();
 
-		if (lastSS != t->ss())
-		{
-			st = t;
-			lastSS = t->ss();
-		}
+				structConf.emplace({
+					{ "conf_type_id", id },
+					{ "id", id + std::to_string(foundTypes[id]++) },
+					// { "pdbx_PDB_helix_id", vS(12, 14) },
+					{ "beg_label_comp_id", rb.compoundID() },
+					{ "beg_label_asym_id", rb.asymID() },
+					{ "beg_label_seq_id", rb.seqID() },
+					{ "pdbx_beg_PDB_ins_code", rb.authInsCode() },
+					{ "end_label_comp_id", re.compoundID() },
+					{ "end_label_asym_id", re.asymID() },
+					{ "end_label_seq_id", re.seqID() },
+					{ "pdbx_end_PDB_ins_code", re.authInsCode() },
+		
+					{ "beg_auth_comp_id", rb.compoundID() },
+					{ "beg_auth_asym_id", rb.authAsymID() },
+					{ "beg_auth_seq_id", rb.authSeqID() },
+					{ "end_auth_comp_id", re.compoundID() },
+					{ "end_auth_asym_id", re.authAsymID() },
+					{ "end_auth_seq_id", re.authSeqID() },
+		
+					// { "pdbx_PDB_helix_class", vS(39, 40) },
+					// { "details", vS(41, 70) },
+					// { "pdbx_PDB_helix_length", vI(72, 76) }
+				});
 
-		if (stop)
-			break;
+				st = t;
+			}
 
-		if (not flush)
-			continue;
+			if (lastSS != t->ss())
+			{
+				st = t;
+				lastSS = t->ss();
+			}
 
-		switch (t->ss())
-		{
-			case mmcif::SecondaryStructureType::ssHelix_3:
-				id = "HELX_RH_3T_P";
+			if (stop)
 				break;
 
-			case mmcif::SecondaryStructureType::ssAlphahelix:
-				id = "HELX_RH_AL_P";
-				break;
+			if (not flush)
+				continue;
 
-			case mmcif::SecondaryStructureType::ssHelix_5:
-				id = "HELX_RH_PI_P";
-				break;
+			switch (t->ss())
+			{
+				case mmcif::SecondaryStructureType::ssHelix_3:
+					id = "HELX_RH_3T_P";
+					break;
 
-			case mmcif::SecondaryStructureType::ssHelix_PPII:
-				id = "HELX_LH_PP_P";
-				break;
+				case mmcif::SecondaryStructureType::ssAlphahelix:
+					id = "HELX_RH_AL_P";
+					break;
 
-			case mmcif::SecondaryStructureType::ssTurn:
-				id = "TURN_TY1_P";
-				break;
+				case mmcif::SecondaryStructureType::ssHelix_5:
+					id = "HELX_RH_PI_P";
+					break;
 
-			case mmcif::SecondaryStructureType::ssBend:
-				id = "TURN_P";
-				break;
+				case mmcif::SecondaryStructureType::ssHelix_PPII:
+					id = "HELX_LH_PP_P";
+					break;
 
-			case mmcif::SecondaryStructureType::ssBetabridge:
-			case mmcif::SecondaryStructureType::ssStrand:
-				id = "STRN";
-				break;
+				case mmcif::SecondaryStructureType::ssTurn:
+					id = "TURN_TY1_P";
+					break;
 
-			default:
-				id.clear();
-				break;
-		}
+				case mmcif::SecondaryStructureType::ssBend:
+					id = "TURN_P";
+					break;
 
-		if (id.empty())
-			continue;
+				case mmcif::SecondaryStructureType::ssBetabridge:
+				case mmcif::SecondaryStructureType::ssStrand:
+					id = "STRN";
+					break;
 
-		if (foundTypes.count(id) == 0)
-		{
-			structConfType.emplace({
-				{ "id", id }
-			});
-			foundTypes[id] = 1;
+				default:
+					id.clear();
+					break;
+			}
+
+			if (id.empty())
+				continue;
+
+			if (foundTypes.count(id) == 0)
+			{
+				structConfType.emplace({
+					{ "id", id }
+				});
+				foundTypes[id] = 1;
+			}
 		}
 	}
 
 	db.add_software("dssp " VERSION, "other", get_version_nr(), get_version_date());
-
 	db.write(os);
 
 // 	cif::File df;
