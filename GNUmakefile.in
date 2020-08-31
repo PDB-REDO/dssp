@@ -22,6 +22,7 @@ LIBS				= -lcif++ \
 					  @BOOST_REGEX_LIB@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
 					  -lboost_timer -lboost_chrono \
+					  -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic \
 					  @LIBS@
 
 prefix				= @prefix@
@@ -47,6 +48,8 @@ ifneq ($(PACKAGES),)
 CXXFLAGS			+= $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --cflags $(PACKAGES))
 LDFLAGS				+= $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs $(PACKAGES) )
 endif
+
+LDFLAGS				+= -static-libgcc
 
 # Use the DEBUG flag to build debug versions of the code
 DEBUG               = @DEBUG@
