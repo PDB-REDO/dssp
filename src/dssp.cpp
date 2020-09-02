@@ -367,9 +367,7 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 					{ "beg_auth_seq_id", rb.authSeqID() },
 					{ "end_auth_comp_id", re.compoundID() },
 					{ "end_auth_asym_id", re.authAsymID() },
-					{ "end_auth_seq_id", re.authSeqID() },
-		
-					{ "criteria", "DSSP" }
+					{ "end_auth_seq_id", re.authSeqID() }
 
 					// { "pdbx_PDB_helix_class", vS(39, 40) },
 					// { "details", vS(41, 70) },
@@ -433,7 +431,8 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 			if (foundTypes.count(id) == 0)
 			{
 				structConfType.emplace({
-					{ "id", id }
+					{ "id", id },
+					{ "criteria", "DSSP" }
 				});
 				foundTypes[id] = 1;
 			}
