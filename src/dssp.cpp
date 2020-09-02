@@ -20,7 +20,12 @@
 #include <zeep/streambuf.hpp>
 
 #include <boost/program_options.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 
+namespace fs = std::filesystem;
+namespace io = boost::iostreams;
 namespace po = boost::program_options;
 
 // --------------------------------------------------------------------
@@ -756,17 +761,42 @@ int d_main(int argc, const char* argv[])
 	
 	if (vm.count("output"))
 	{
-		std::ofstream of(vm["output"].as<std::string>());
+		fs::path p = vm["output"].as<std::string>();
+		std::ofstream of(p, std::ios_base::out | std::ios_base::binary);
+
 		if (not of.is_open())
 		{
 			std::cerr << "Could not open output file" << std::endl;
 			exit(1);
 		}
+
+		io::filtering_stream<io::output> out;
 		
+		if (p.extension() == ".gz")
+		{
+			out.push(io::gzip_compressor());
+			p = p.stem();
+		}
+		else if (p.extension() == ".bz2")
+		{
+			out.push(io::bzip2_compressor());
+			p = p.stem();
+		}
+
+		out.push(of);
+
+		if (fmt.empty())
+		{
+			if (p.extension() == ".dssp")
+				fmt = "dssp";
+			else
+				fmt = "cif";
+		}
+
 		if (fmt == "dssp")
-			writeDSSP(structure, dssp, of);
+			writeDSSP(structure, dssp, out);
 		else
-			annotateDSSP(structure, dssp, of);
+			annotateDSSP(structure, dssp, out);
 	}
 	else
 	{
