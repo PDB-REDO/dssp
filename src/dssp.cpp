@@ -369,6 +369,8 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 					{ "end_auth_asym_id", re.authAsymID() },
 					{ "end_auth_seq_id", re.authSeqID() },
 		
+					{ "criteria", "DSSP" }
+
 					// { "pdbx_PDB_helix_class", vS(39, 40) },
 					// { "details", vS(41, 70) },
 					// { "pdbx_PDB_helix_length", vI(72, 76) }
