@@ -753,12 +753,28 @@ int d_main(int argc, const char* argv[])
 	if (vm.count("min-pp-stretch"))
 		pp_stretch = vm["min-pp-stretch"].as<short>();
 
-	mmcif::DSSP dssp(structure, pp_stretch);
-
 	std::string fmt;
 	if (vm.count("output-format"))
 		fmt = vm["output-format"].as<std::string>();
+
+	if (fmt.empty() and vm.count("output"))
+	{
+		fs::path p = vm["output"].as<std::string>();
 	
+		if (p.extension() == ".gz")
+			p = p.stem();
+		else if (p.extension() == ".bz2")
+			p = p.stem();
+
+		if (p.extension() == ".dssp")
+			fmt = "dssp";
+		else
+			fmt = "cif";
+	}
+
+
+	mmcif::DSSP dssp(structure, pp_stretch, fmt == "dssp");
+
 	if (vm.count("output"))
 	{
 		fs::path p = vm["output"].as<std::string>();
@@ -773,25 +789,11 @@ int d_main(int argc, const char* argv[])
 		io::filtering_stream<io::output> out;
 		
 		if (p.extension() == ".gz")
-		{
 			out.push(io::gzip_compressor());
-			p = p.stem();
-		}
 		else if (p.extension() == ".bz2")
-		{
 			out.push(io::bzip2_compressor());
-			p = p.stem();
-		}
 
 		out.push(of);
-
-		if (fmt.empty())
-		{
-			if (p.extension() == ".dssp")
-				fmt = "dssp";
-			else
-				fmt = "cif";
-		}
 
 		if (fmt == "dssp")
 			writeDSSP(structure, dssp, out);
