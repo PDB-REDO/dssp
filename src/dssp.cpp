@@ -1,7 +1,28 @@
-//           Copyright Maarten L. Hekkelman 2020
-// Distributed under the Boost Software License, Version 1.0.
-//    (See accompanying file LICENSE_1_0.txt or copy at
-//          http://www.boost.org/LICENSE_1_0.txt)
+/*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ * 
+ * Copyright (c) 2020 NKI/AVL, Netherlands Cancer Institute
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include <exception>
 #include <iostream>
@@ -673,7 +694,7 @@ int d_main(int argc, const char* argv[])
 
 		("output-format",		po::value<std::string>(),	"Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any.")
 
-		("create-missing",									"Create missing backbone atoms")
+		// ("create-missing",									"Create missing backbone atoms")
 
 #if not USE_RSRC
 		("rsrc-dir",			po::value<std::string>(),	"Directory containing the 'resources' used by this application")
@@ -742,10 +763,10 @@ int d_main(int argc, const char* argv[])
 	mmcif::File f(vm["xyzin"].as<std::string>());
 	mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
-	// --------------------------------------------------------------------
+	// // --------------------------------------------------------------------
 	
-	if (vm.count("create-missing"))
-		mmcif::CreateMissingBackboneAtoms(structure, true);
+	// if (vm.count("create-missing"))
+	// 	mmcif::CreateMissingBackboneAtoms(structure, true);
 
 	// --------------------------------------------------------------------
 

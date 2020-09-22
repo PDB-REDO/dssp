@@ -1,13 +1,26 @@
-# Makefile for example app using libzeep
-#
-# Copyright Maarten L. Hekkelman, UMC St. Radboud 2008-2013.
-#        Copyright Maarten L. Hekkelman, 2014-2019
-# Distributed under the Boost Software License, Version 1.0.
-#    (See accompanying file LICENSE_1_0.txt or copy at
-#          http://www.boost.org/LICENSE_1_0.txt)
-#
-# Use the make.config file in the uplevel directory to
-# change the settings for this build
+# SPDX-License-Identifier: BSD-2-Clause
+# 
+# Copyright (c) 2020 NKI/AVL, Netherlands Cancer Institute
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 SHELL := /bin/bash
 
@@ -21,6 +34,7 @@ LIBS				= -lcif++ \
 					  @BOOST_THREAD_LIB@ \
 					  @BOOST_REGEX_LIB@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
+					  @BOOST_DATE_TIME_LIB@ \
 					  -lboost_timer -lboost_chrono \
 					  -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic \
 					  @LIBS@
@@ -59,7 +73,7 @@ DEFINES				+= VERSION='"$(VERSION)"'
 
 ifeq "$(DEBUG)" "1"
 DEFINES				+= DEBUG
-CXXFLAGS            += -g -O0 -fstandalone-debug
+CXXFLAGS            += -g -O0
 LDFLAGS				+= -g
 else
 CXXFLAGS			+= -O2
