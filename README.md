@@ -8,5 +8,5 @@ _struct_conf category.
 
 Building
 --------
-To build this, first install [@https://github.com/PDB-REDO/libcifpp.git libcif++]
+To build this, first install [libcif++](https://github.com/PDB-REDO/libcifpp.git)
 and then run `configure`, `make` and `make install`.
