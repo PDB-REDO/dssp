@@ -629,10 +629,13 @@ LIBBZ2_LDFLAGS
 LIBBZ2_CPPFLAGS
 LIBZ_LDFLAGS
 LIBZ_CPPFLAGS
-LIBCIFPP_LDFLAGS
-LIBCIFPP_CPPFLAGS
-CIFPP_LIB
-CIFPP_RSRC
+AX_PACKAGE_REQUIRES_PRIVATE
+AX_PACKAGE_REQUIRES
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
+PKG_CONFIG
+CIFPP_LIBS
+CIFPP_CFLAGS
 BOOST_DATE_TIME_LIB
 BOOST_PROGRAM_OPTIONS_LIB
 BOOST_IOSTREAMS_LIB
@@ -737,8 +740,11 @@ CPP
 DEBUG
 MRC
 CXXCPP
-LIBCIFPP_CPPFLAGS
-LIBCIFPP_LDFLAGS
+PKG_CONFIG
+PKG_CONFIG_PATH
+PKG_CONFIG_LIBDIR
+CIFPP_CFLAGS
+CIFPP_LIBS
 LIBZ_CPPFLAGS
 LIBZ_LDFLAGS
 LIBBZ2_CPPFLAGS
@@ -1412,10 +1418,14 @@ Some influential environment variables:
   DEBUG       Build a debug version of the application
   MRC         Specify a location for the mrc executable
   CXXCPP      C++ preprocessor
-  LIBCIFPP_CPPFLAGS
-              C preprocessor flags for LIBCIFPP headers
-  LIBCIFPP_LDFLAGS
-              linker flags for LIBCIFPP libraries
+  PKG_CONFIG  path to pkg-config utility
+  PKG_CONFIG_PATH
+              directories to add to pkg-config's search path
+  PKG_CONFIG_LIBDIR
+              path overriding pkg-config's built-in search path
+  CIFPP_CFLAGS
+              C compiler flags for CIFPP, overriding pkg-config
+  CIFPP_LIBS  linker flags for CIFPP, overriding pkg-config
   LIBZ_CPPFLAGS
               C preprocessor flags for LIBZ headers
   LIBZ_LDFLAGS
@@ -6802,13 +6812,13 @@ fi
 # Check whether --with-cif++ was given.
 if test "${with_cif__+set}" = set; then :
   withval=$with_cif__;
-			CPPFLAGS="$CPPFLAGS -I ${withval}/include"
-			CXXFLAGS="$CXXFLAGS -I ${withval}/include"
-			LDFLAGS="$LDFLAGS -L${withval}/.libs"
-			LIBS="$LIBS -lcif++"
-			CIFPP_RSRC=${withval}/rsrc
 
-			CIFPP_LIB=${withval}/.libs/libcif++.la
+			CIFPP_CFLAGS="-I ${withval}/include"
+			CIFPP_LIBS="-L${withval}/.libs -lcif++"
+
+			CIFPP_CFLAGS=$CIFPP_CFLAGS
+
+			CIFPP_LIBS=$CIFPP_LIBS
 
 
 fi
@@ -6818,83 +6828,249 @@ fi
 
 
 
-  if ${ax_cv_have_LIBCIFPP+:} false; then :
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  save_CPPFLAGS="$CPPFLAGS"
-     save_LDFLAGS="$LDFLAGS"
-     save_LIBS="$LIBS"
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
 
-     if test "x$LIBCIFPP_CPPFLAGS" != "x"; then :
-  CPPFLAGS="$CPPFLAGS $LIBCIFPP_CPPFLAGS"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
 
-     if test "x$LIBCIFPP_LDFLAGS" != "x"; then :
-  LDFLAGS="$LDFLAGS $LIBCIFPP_LDFLAGS"
+
 fi
-
-     ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Config.hpp" "ac_cv_header_cifpp_Config_hpp" "$ac_includes_default"
-if test "x$ac_cv_header_cifpp_Config_hpp" = xyes; then :
-
-       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lcif++" >&5
-$as_echo_n "checking for main in -lcif++... " >&6; }
-if ${ac_cv_lib_cifpp_main+:} false; then :
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcif++  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
 
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_lib_cifpp_main=yes
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
 else
-  ac_cv_lib_cifpp_main=no
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_cifpp_main" >&5
-$as_echo "$ac_cv_lib_cifpp_main" >&6; }
-if test "x$ac_cv_lib_cifpp_main" = xyes; then :
-  ax_cv_have_LIBCIFPP=yes
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
 else
-  ax_cv_have_LIBCIFPP=no
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
 fi
 
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
+if test "x$CIFPP_LIBS" = "x"; then :
 
+	# Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
 else
-  ax_cv_have_LIBCIFPP=no
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
 fi
-
-
-
-     CPPFLAGS="$save_CPPFLAGS"
-     LDFLAGS="$save_LDFLAGS"
-     LIBS="$save_LIBS"
-
-fi
-
-
-  if test "$ax_cv_have_LIBCIFPP" = "yes"; then :
-
-$as_echo "#define HAVE_LIBCIFPP 1" >>confdefs.h
-
-
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
 else
-  as_fn_error $? "libcif++ not found - cannot continue" "$LINENO" 5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
 
+
+
+
+
+
+    AX_PACKAGE_REQUIRES="$AX_PACKAGE_REQUIRES libcif++"
+    AX_PACKAGE_REQUIRES_PRIVATE="$AX_PACKAGE_REQUIRES_PRIVATE "
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CIFPP" >&5
+$as_echo_n "checking for CIFPP... " >&6; }
+
+if test -n "$CIFPP_CFLAGS"; then
+    pkg_cv_CIFPP_CFLAGS="$CIFPP_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcif++ \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcif++ ") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_CIFPP_CFLAGS=`$PKG_CONFIG --cflags "libcif++ " 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$CIFPP_LIBS"; then
+    pkg_cv_CIFPP_LIBS="$CIFPP_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcif++ \""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcif++ ") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_CIFPP_LIBS=`$PKG_CONFIG --libs "libcif++ " 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        CIFPP_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcif++ " 2>&1`
+        else
+	        CIFPP_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcif++ " 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$CIFPP_PKG_ERRORS" >&5
+
+	as_fn_error $? "the required package libcif++ is not installed" "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	as_fn_error $? "the required package libcif++ is not installed" "$LINENO" 5
+else
+	CIFPP_CFLAGS=$pkg_cv_CIFPP_CFLAGS
+	CIFPP_LIBS=$pkg_cv_CIFPP_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+    # Substitute output.
+
+
+
+
+fi
 
 
 

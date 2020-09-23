@@ -25,9 +25,10 @@
 firstTarget: all
 
 CXX					= @CXX@
-CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @BOOST_CPPFLAGS@ @PTHREAD_CFLAGS@
+CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @BOOST_CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@
 LDFLAGS				= @LDFLAGS@ @BOOST_LDFLAGS@ @PTHREAD_CFLAGS@
 LIBS				= @LIBS@ \
+					  @CIFPP_LIBS@ \
 					  @BOOST_IOSTREAMS_LIB@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
 					  @BOOST_DATE_TIME_LIB@
@@ -72,7 +73,6 @@ endif
 
 MRC					= @MRC@
 USE_RSRC			= @USE_RSRC@
-CIFPP_RSRC			= $(DATADIR)
 
 # targets
 
@@ -97,7 +97,7 @@ COMMON_OBJECTS = pr-main.o
 $(OBJDIR)/pr-main.o: src/revision.hpp
 
 ifneq "$(USE_RSRC)" "0"
-COMMON_RSRC = @CIFPP_RSRC@/dictionaries
+COMMON_RSRC = $(DATADIR)/dictionaries
 endif
 
 # The program rules
@@ -144,12 +144,12 @@ REVISION_FILE = version-info-$(REVISION).txt
 $(REVISION_FILE): $(OBJDIR) src
 	rm -f version-info-*.txt
 	git describe --match=build --dirty > $@
-	git log --pretty=medium --date=iso8601 -1 >> $@
+	@ git log --pretty=medium --date=iso8601 -1 >> $@
 
 src/revision.hpp: $(REVISION_FILE)
-	echo 'const char kRevision[] = R"(' > $@
-	cat $? >> $@
-	echo ')";' >> $@
+	@ echo 'const char kRevision[] = R"(' > $@
+	@ cat $? >> $@
+	@ echo ')";' >> $@
 
 rsrc:
 	@ mkdir -p $@

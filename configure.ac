@@ -74,17 +74,20 @@ AC_ARG_WITH([cif++],
 	AS_HELP_STRING([--with-cif++=@<:@location@:>@],
 		[Use the cif++ library as specified.]),
 		[
-			CPPFLAGS="$CPPFLAGS -I ${withval}/include"
-			CXXFLAGS="$CXXFLAGS -I ${withval}/include"
-			LDFLAGS="$LDFLAGS -L${withval}/.libs"
-			LIBS="$LIBS -lcif++"
-			AC_SUBST([CIFPP_RSRC], [${withval}/rsrc]) 
-			AC_SUBST([CIFPP_LIB], [${withval}/.libs/libcif++.la]) 
+			dnl AC_SUBST([CIFPP_CFLAGS], ["-I ${withval}/include"])
+			dnl AC_SUBST([CIFPP_LIBS], ["-L${withval}/.libs -lcif++"])
+
+			CIFPP_CFLAGS="-I ${withval}/include"
+			CIFPP_LIBS="-L${withval}/.libs -lcif++"
+
+			AC_SUBST([CIFPP_CFLAGS], [$CIFPP_CFLAGS])
+			AC_SUBST([CIFPP_LIBS], [$CIFPP_LIBS])
 		])
 
-AX_CHECK_LIBRARY([LIBCIFPP], [cif++/Config.hpp], [cif++],
-	[],
-	[AC_MSG_ERROR([libcif++ not found - cannot continue])])
+AS_IF([test "x$CIFPP_LIBS" = "x"], [
+	AC_PATH_PROG([PKG_CONFIG], [pkg-config])
+	AX_PKG_CHECK_MODULES([CIFPP], [libcif++], [], [], [AC_MSG_ERROR([the required package libcif++ is not installed])])
+])
 
 AX_CHECK_LIBRARY([LIBZ], [zlib.h], [z],
 				 [ LIBS="$LIBS -lz" ],
