@@ -56,7 +56,7 @@ endif
 # main build variables
 CXXFLAGS            += -Wall -Wno-multichar
 
-DATADIR				= $(datadir)/@PACKAGE_NAME@
+DATADIR				= $(datadir)/cif-tools
 
 DEFINES				+= DATADIR='"$(DATADIR)"'
 
@@ -74,7 +74,7 @@ endif
 
 MRC					= @MRC@
 USE_RSRC			= @USE_RSRC@
-CIFPP_RSRC			= @CIFPP_RSRC@
+CIFPP_RSRC			= $(DATADIR)
 
 # targets
 
@@ -162,9 +162,6 @@ rsrc/version.txt: $(REVISION_FILE) | rsrc
 .PHONY: install
 install: $(PROGRAMS)
 	for p in $(PROGRAMS); do install -D $$p $(bindir)/$$p; done
-	for d in mmcif_ddl.dic  mmcif_pdbx.dic; do \
-		install -D -m644 $(CIFPP_RSRC)/dictionaries/$$d $(DATADIR)/dictionaries/$$d; \
-	done
 
 .PHONY: FORCE
 FORCE:
