@@ -29,20 +29,18 @@ firstTarget: all
 CXX					= @CXX@
 CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @BOOST_CPPFLAGS@ @PTHREAD_CFLAGS@
 LDFLAGS				= @LDFLAGS@ @BOOST_LDFLAGS@ @PTHREAD_CFLAGS@
-LIBS				= -lcif++ \
+LIBS				= @LIBS@ \
 					  @BOOST_IOSTREAMS_LIB@ \
-					  @BOOST_THREAD_LIB@ \
-					  @BOOST_REGEX_LIB@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
-					  @BOOST_DATE_TIME_LIB@ \
-					  -lboost_timer -lboost_chrono \
-					  -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic \
-					  @LIBS@
+					  @BOOST_DATE_TIME_LIB@
 
 prefix				= @prefix@
 exec_prefix			= @exec_prefix@
-libdir				= @libdir@
-includedir			= @includedir@
+bindir				= @bindir@
+datarootdir			= @datarootdir@
+datadir				= @datadir@
+
+ifneq "$(CHECK_CONFIG)" ""
 
 GNUmakefile: config.status GNUmakefile.in
 	$(SHELL) ./config.status
@@ -53,23 +51,17 @@ config.status: configure
 configure: configure.ac
 	autoconf
 
+endif
+
 # main build variables
 CXXFLAGS            += -Wall -Wno-multichar
 
-PACKAGES			+= 
+DATADIR				= $(datadir)/@PACKAGE_NAME@
 
-ifneq ($(PACKAGES),)
-CXXFLAGS			+= $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --cflags $(PACKAGES))
-LDFLAGS				+= $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs $(PACKAGES) )
-endif
-
-LDFLAGS				+= -static-libgcc
+DEFINES				+= DATADIR='"$(DATADIR)"'
 
 # Use the DEBUG flag to build debug versions of the code
 DEBUG               = @DEBUG@
-
-VERSION				= @PACKAGE_VERSION@
-DEFINES				+= VERSION='"$(VERSION)"'
 
 ifeq "$(DEBUG)" "1"
 DEFINES				+= DEBUG
@@ -81,12 +73,8 @@ DEFINES				+= NDEBUG
 endif
 
 MRC					= @MRC@
+USE_RSRC			= @USE_RSRC@
 CIFPP_RSRC			= @CIFPP_RSRC@
-
-ifneq "$(MRC)" ""
-
-DEFINES += USE_RSRC
-endif
 
 # targets
 
@@ -102,24 +90,55 @@ endif
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
-APPLICATION = @PACKAGE_NAME@
-
-OBJECTS = $(APPLICATION:%=$(OBJDIR)/%.o)
-
-ifneq "$(MRC)" ""
-OBJECTS += $(APPLICATION:%=$(OBJDIR)/%_rsrc.o)
-
-$(OBJDIR)/$(APPLICATION)_rsrc.o: $(wildcard $(CIFPP_RSRC)/dictionaries/*) rsrc/version.txt
-	$(MRC) -o $@ $(CIFPP_RSRC)/dictionaries rsrc/version.txt
-endif
-
--include $(OBJECTS:%.o=%.d)
-
-$(OBJECTS:.o=.d):
-
-$(OBJDIR)/%.o: %.cpp | $(OBJDIR) GNUmakefile
+$(OBJDIR)/%.o: %.cpp | $(OBJDIR)
 	@ echo ">>" $<
 	@ $(CXX) -MD -c -o $@ $< $(CFLAGS) $(CXXFLAGS)
+
+COMMON_OBJECTS = pr-main.o
+
+$(OBJDIR)/pr-main.o: src/revision.hpp
+
+ifneq "$(USE_RSRC)" "0"
+COMMON_RSRC = @CIFPP_RSRC@/dictionaries
+endif
+
+# The program rules
+
+# disabled for now: centrifuge map-maker
+PROGRAMS = dssp
+
+define PROGRAM_template =
+
+$(1)_OBJECTS += $(1).o $(COMMON_OBJECTS)
+
+ifneq "$(USE_RSRC)" "0"
+$(1)_OBJECTS += $(1).o $(1)_rsrc.o
+
+$$(OBJDIR)/$(1)_rsrc.o: $$($(1)_RSRC) $$(COMMON_RSRC)
+	$(MRC) -o $$@ $$^
+endif
+
+$(1): $$($(1)_OBJECTS:%=$(OBJDIR)/%)
+
+endef
+
+$(foreach program,$(PROGRAMS),$(eval $(call PROGRAM_template,$(program))))
+
+$(PROGRAMS):
+	@ echo '->' $@
+	@ $(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS) $(LIBS)
+
+OBJECTS = $(sort $(foreach program,$(PROGRAMS),$($(program)_OBJECTS)))
+
+$(OBJDIR)/%.d: $(OBJDIR)/%.o
+
+-include $(OBJECTS:%.o=$(OBJDIR)/%.d)
+
+.PHONY: clean all
+clean:
+	rm -rf $(PROGRAMS) $(OBJDIR)/* $(REVISION_FILE)
+
+all: $(PROGRAMS)
 
 REVISION = $(shell git log --pretty=format:%h --max-count=1)
 REVISION_FILE = version-info-$(REVISION).txt
@@ -129,31 +148,27 @@ $(REVISION_FILE): $(OBJDIR) src
 	git describe --match=build --dirty > $@
 	git log --pretty=medium --date=iso8601 -1 >> $@
 
+src/revision.hpp: $(REVISION_FILE)
+	echo 'const char kRevision[] = R"(' > $@
+	cat $? >> $@
+	echo ')";' >> $@
+
 rsrc:
 	@ mkdir -p $@
 
 rsrc/version.txt: $(REVISION_FILE) | rsrc
 	cp $? $@
 
-all: $(APPLICATION)
-.PHONY: all
-
-$(APPLICATION): %: $(OBJECTS)
-	@ echo '->' $@
-	@ $(CXX) -o $@ $^ $(LDFLAGS) $(LIBS)
-
-.PHONY: clean
-clean:
-	rm -rf $(OBJDIR)/* $(APPLICATION)
-
-.PHONY: distclean
-distclean: clean
-	rm -f config.status config.cache config.log configure.lineno config.status.lineno
-	rm -f GNUmakefile
+.PHONY: install
+install: $(PROGRAMS)
+	for p in $(PROGRAMS); do install -D $$p $(bindir)/$$p; done
+	for d in mmcif_ddl.dic  mmcif_pdbx.dic; do \
+		install -D -m644 $(CIFPP_RSRC)/dictionaries/$$d $(DATADIR)/dictionaries/$$d; \
+	done
 
 .PHONY: FORCE
 FORCE:
 
 .PHONY: test
 test:
-	echo $(wildcard $(CIFPP_RSRC)/dictionaries/*)
+	@ echo $(OBJECTS)

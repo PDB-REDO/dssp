@@ -24,9 +24,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "dssp.hpp"
+
 #include <exception>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 
 #include <boost/format.hpp>
 #include <boost/date_time/gregorian/formatters.hpp>
@@ -36,9 +39,6 @@
 #include <cif++/Secondary.hpp>
 #include <cif++/CifUtils.hpp>
 #include <cif++/Cif2PDB.hpp>
-#include <cif++/FixDMC.hpp>
-
-#include <zeep/streambuf.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
@@ -49,78 +49,7 @@ namespace fs = std::filesystem;
 namespace io = boost::iostreams;
 namespace po = boost::program_options;
 
-// --------------------------------------------------------------------
-
-// recursively print exception whats:
-void print_what (const std::exception& e)
-{
-	std::cerr << e.what() << std::endl;
-	try
-	{
-		std::rethrow_if_nested(e);
-	}
-	catch (const std::exception& nested)
-	{
-		std::cerr << " >> ";
-		print_what(nested);
-	}
-}
-
-// --------------------------------------------------------------------
-
-namespace {
-	std::string gVersionNr, gVersionDate, VERSION_STRING;
-}
-
-void load_version_info()
-{
-	const std::regex
-		rxVersionNr(R"(build-(\d+)-g[0-9a-f]{7}(-dirty)?)"),
-		rxVersionDate(R"(Date: +(\d{4}-\d{2}-\d{2}).*)");
-
-	auto version = cif::rsrc_loader::load("version.txt");
-	if (not version)
-		VERSION_STRING = "unknown version, version resource is missing";
-	else
-	{
-		zeep::char_streambuf buffer(version.data(), version.size());
-		std::istream is(&buffer);
-		std::string line;
-
-		while (getline(is, line))
-		{
-			std::smatch m;
-
-			if (std::regex_match(line, m, rxVersionNr))
-			{
-				gVersionNr = m[1];
-				if (m[2].matched)
-					gVersionNr += '*';
-				continue;
-			}
-
-			if (regex_match(line, m, rxVersionDate))
-			{
-				gVersionDate = m[1];
-				continue;
-			}
-		}
-
-		if (not VERSION_STRING.empty())
-			VERSION_STRING += "\n";
-		VERSION_STRING += gVersionNr + " " + gVersionDate;
-	}
-}
-
-std::string get_version_nr()
-{
-	return gVersionNr;
-}
-
-std::string get_version_date()
-{
-	return gVersionDate;
-}
+extern std::string VERSION_STRING;
 
 // --------------------------------------------------------------------
 
@@ -465,7 +394,7 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 		}
 	}
 
-	db.add_software("dssp " VERSION, "other", get_version_nr(), get_version_date());
+	db.add_software("dssp " PACKAGE_VERSION, "other", get_version_nr(), get_version_date());
 
 	db.write(os);
 
@@ -677,7 +606,7 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 
 // --------------------------------------------------------------------
 
-int d_main(int argc, const char* argv[])
+int pr_main(int argc, char* argv[])
 {
 	using namespace std::literals;
 
@@ -726,7 +655,7 @@ int d_main(int argc, const char* argv[])
 
 	if (vm.count("version"))
 	{
-		std::cout << argv[0] << ' ' << VERSION " version " << VERSION_STRING << std::endl;
+		std::cout << argv[0] << ' ' << PACKAGE_VERSION " version " << VERSION_STRING << std::endl;
 		exit(0);
 	}
 
@@ -830,33 +759,4 @@ int d_main(int argc, const char* argv[])
 	}
 	
 	return 0;
-}
-
-// --------------------------------------------------------------------
-
-int main(int argc, const char* argv[])
-{
-	int result = 0;
-
-	try
-	{
-
-		cif::rsrc_loader::init({
-#if USE_RSRC
-			{ cif::rsrc_loader_type::mrsrc, "", { gResourceIndex, gResourceData, gResourceName } },
-#endif
-			{ cif::rsrc_loader_type::file, "." }
-		});
-
-		load_version_info();
-
-		result = d_main(argc, argv);
-	}
-	catch (const std::exception& ex)
-	{
-		print_what(ex);
-		exit(1);
-	}
-
-	return result;
 }
