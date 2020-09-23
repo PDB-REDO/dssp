@@ -74,6 +74,9 @@ AC_ARG_WITH([cif++],
 	AS_HELP_STRING([--with-cif++=@<:@location@:>@],
 		[Use the cif++ library as specified.]),
 		[
+			AS_IF([test -d ${withval}/include], [], [
+				AC_MSG_ERROR(['${withval}'' is not a valid directory for --with-cif++])
+			])
 			dnl AC_SUBST([CIFPP_CFLAGS], ["-I ${withval}/include"])
 			dnl AC_SUBST([CIFPP_LIBS], ["-L${withval}/.libs -lcif++"])
 

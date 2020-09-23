@@ -6812,6 +6812,13 @@ fi
 # Check whether --with-cif++ was given.
 if test "${with_cif__+set}" = set; then :
   withval=$with_cif__;
+			if test -d ${withval}/include; then :
+
+else
+
+				as_fn_error $? "'${withval}'' is not a valid directory for --with-cif++" "$LINENO" 5
+
+fi
 
 			CIFPP_CFLAGS="-I ${withval}/include"
 			CIFPP_LIBS="-L${withval}/.libs -lcif++"
