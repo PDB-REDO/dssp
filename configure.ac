@@ -2,7 +2,7 @@ AC_PREREQ([2.69])
 
 AC_INIT([dssp], 4.0, [m.hekkelman@nki.nl])
 
-dnl Switch to a C++ compiler, and check if it works.
+dnl Switch to a decent C++ compiler, and check if it works.
 AC_LANG(C++)
 AX_CXX_COMPILE_STDCXX_17([noext])
 
@@ -70,6 +70,9 @@ AX_BOOST_IOSTREAMS
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_DATE_TIME
 
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+
 AC_ARG_WITH([cif++],
 	AS_HELP_STRING([--with-cif++=@<:@location@:>@],
 		[Use the cif++ library as specified.]),
@@ -89,7 +92,24 @@ AC_ARG_WITH([cif++],
 
 AS_IF([test "x$CIFPP_LIBS" = "x"], [
 	AC_PATH_PROG([PKG_CONFIG], [pkg-config])
-	AX_PKG_CHECK_MODULES([CIFPP], [libcif++], [], [], [AC_MSG_ERROR([the required package libcif++ is not installed])])
+	if test -x "$PKG_CONFIG"
+	then
+		AX_PKG_CHECK_MODULES([CIFPP], [libcif++], [], [], [AC_MSG_ERROR([the required package libcif++ is not installed])])
+	else
+		AC_CHECK_HEADER(
+	        [cif++/Config.hpp],
+	        [
+				dnl CIFPP_CFLAGS="-I ${withval}/include"
+			],
+			[AC_MSG_ERROR([
+Can't find the libcif++ header, Config.hpp.  Make sure that it
+is installed, and either use the --with-cif++ option or install
+pkg-config.])])
+
+			AX_CHECK_LIBRARY([CIFPP], [cif++/Config.hpp], [cif++],
+				 [ LIBS="-lcif++ $LIBS" ],
+                 [AC_MSG_ERROR([libcif++ not found])])
+	fi
 ])
 
 AX_CHECK_LIBRARY([LIBZ], [zlib.h], [z],

@@ -55,7 +55,7 @@ endif
 # main build variables
 CXXFLAGS            += -Wall -Wno-multichar
 
-DATADIR				= $(datadir)/cif-tools
+DATADIR				= $(datadir)/libcifpp
 
 DEFINES				+= DATADIR='"$(DATADIR)"'
 
