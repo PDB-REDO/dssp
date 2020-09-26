@@ -629,6 +629,8 @@ LIBBZ2_LDFLAGS
 LIBBZ2_CPPFLAGS
 LIBZ_LDFLAGS
 LIBZ_CPPFLAGS
+CIFPP_LDFLAGS
+CIFPP_CPPFLAGS
 AX_PACKAGE_REQUIRES_PRIVATE
 AX_PACKAGE_REQUIRES
 PKG_CONFIG_LIBDIR
@@ -745,6 +747,8 @@ PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 CIFPP_CFLAGS
 CIFPP_LIBS
+CIFPP_CPPFLAGS
+CIFPP_LDFLAGS
 LIBZ_CPPFLAGS
 LIBZ_LDFLAGS
 LIBBZ2_CPPFLAGS
@@ -1426,6 +1430,10 @@ Some influential environment variables:
   CIFPP_CFLAGS
               C compiler flags for CIFPP, overriding pkg-config
   CIFPP_LIBS  linker flags for CIFPP, overriding pkg-config
+  CIFPP_CPPFLAGS
+              C preprocessor flags for CIFPP headers
+  CIFPP_LDFLAGS
+              linker flags for CIFPP libraries
   LIBZ_CPPFLAGS
               C preprocessor flags for LIBZ headers
   LIBZ_LDFLAGS
@@ -6808,6 +6816,9 @@ fi
 	fi
 
 
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+
 
 # Check whether --with-cif++ was given.
 if test "${with_cif__+set}" = set; then :
@@ -6993,6 +7004,8 @@ $as_echo "no" >&6; }
 fi
 
 
+	if test -x "$PKG_CONFIG"
+	then
 
 
 
@@ -7076,6 +7089,102 @@ fi
 
 
 
+	else
+		ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Config.hpp" "ac_cv_header_cifpp_Config_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_cifpp_Config_hpp" = xyes; then :
+
+
+else
+  as_fn_error $? "
+Can't find the libcif++ header, Config.hpp.  Make sure that it
+is installed, and either use the --with-cif++ option or install
+pkg-config." "$LINENO" 5
+fi
+
+
+
+
+
+
+
+  if ${ax_cv_have_CIFPP+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  save_CPPFLAGS="$CPPFLAGS"
+     save_LDFLAGS="$LDFLAGS"
+     save_LIBS="$LIBS"
+
+     if test "x$CIFPP_CPPFLAGS" != "x"; then :
+  CPPFLAGS="$CPPFLAGS $CIFPP_CPPFLAGS"
+fi
+
+     if test "x$CIFPP_LDFLAGS" != "x"; then :
+  LDFLAGS="$LDFLAGS $CIFPP_LDFLAGS"
+fi
+
+     ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Config.hpp" "ac_cv_header_cifpp_Config_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_cifpp_Config_hpp" = xyes; then :
+
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lcif++" >&5
+$as_echo_n "checking for main in -lcif++... " >&6; }
+if ${ac_cv_lib_cifpp_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lcif++  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_cifpp_main=yes
+else
+  ac_cv_lib_cifpp_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_cifpp_main" >&5
+$as_echo "$ac_cv_lib_cifpp_main" >&6; }
+if test "x$ac_cv_lib_cifpp_main" = xyes; then :
+  ax_cv_have_CIFPP=yes
+else
+  ax_cv_have_CIFPP=no
+fi
+
+
+else
+  ax_cv_have_CIFPP=no
+fi
+
+
+
+     CPPFLAGS="$save_CPPFLAGS"
+     LDFLAGS="$save_LDFLAGS"
+     LIBS="$save_LIBS"
+
+fi
+
+
+  if test "$ax_cv_have_CIFPP" = "yes"; then :
+
+$as_echo "#define HAVE_CIFPP 1" >>confdefs.h
+
+     LIBS="-lcif++ $LIBS"
+else
+  as_fn_error $? "libcif++ not found" "$LINENO" 5
+fi
+
+	fi
 
 fi
 

@@ -12,6 +12,9 @@
 /* define if the Boost::PROGRAM_OPTIONS library is available */
 #undef HAVE_BOOST_PROGRAM_OPTIONS
 
+/* Define to 1 if CIFPP is found */
+#undef HAVE_CIFPP
+
 /* define if the compiler supports basic C++17 syntax */
 #undef HAVE_CXX17
 
@@ -20,9 +23,6 @@
 
 /* Define to 1 if LIBBZ2 is found */
 #undef HAVE_LIBBZ2
-
-/* Define to 1 if LIBCIFPP is found */
-#undef HAVE_LIBCIFPP
 
 /* Define to 1 if LIBZ is found */
 #undef HAVE_LIBZ
