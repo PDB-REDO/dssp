@@ -159,7 +159,8 @@ rsrc/version.txt: $(REVISION_FILE) | rsrc
 
 .PHONY: install
 install: $(PROGRAMS)
-	for p in $(PROGRAMS); do install -D $$p $(bindir)/$$p; done
+	install -d $(bindir)
+	for p in $(PROGRAMS); do install $$p $(bindir)/$$p; done
 
 .PHONY: FORCE
 FORCE:
