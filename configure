@@ -5412,6 +5412,8 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
+USE_RSRC=0
+
 if test "x$MRC" = "x"; then
 	# Extract the first word of "mrc", so it can be a program name with args.
 set dummy mrc; ac_word=$2
@@ -5458,20 +5460,20 @@ fi
 if test "x$MRC" = "x"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: The mrc application was not found, not using resources." >&5
 $as_echo "$as_me: WARNING: The mrc application was not found, not using resources." >&2;}
-fi
-
-# Check whether --enable-resources was given.
+else
+	# Check whether --enable-resources was given.
 if test "${enable_resources+set}" = set; then :
   enableval=$enable_resources;
 fi
 
 
-USE_RSRC=0
-if test "x$enable_resources" != "xno"; then :
+	if test "x$enable_resources" != "xno" ; then :
 
-	USE_RSRC=1
+		USE_RSRC=1
 
 fi
+fi
+
 USE_RSRC=$USE_RSRC
 
 

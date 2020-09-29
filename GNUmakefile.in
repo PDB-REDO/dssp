@@ -55,7 +55,7 @@ endif
 # main build variables
 CXXFLAGS            += -Wall -Wno-multichar
 
-DATADIR				= $(datadir)/libcifpp
+DATADIR				= $(datadir)/dssp
 
 DEFINES				+= DATADIR='"$(DATADIR)"'
 
@@ -94,16 +94,37 @@ $(OBJDIR)/%.o: %.cpp | $(OBJDIR)
 
 COMMON_OBJECTS = pr-main.o
 
+REVISION = $(shell git log --pretty=format:%h --max-count=1)
+REVISION_FILE = version-info-$(REVISION).txt
+
+$(REVISION_FILE):
+	rm -f version-info-*.txt
+	git describe --match=build --dirty > $@
+	@ git log --pretty=medium --date=iso8601 -1 >> $@
+
+src/revision.hpp: $(REVISION_FILE)
+	@ echo 'const char kRevision[] = R"(' > $@
+	@ cat $? >> $@
+	@ echo ')";' >> $@
+
 $(OBJDIR)/pr-main.o: src/revision.hpp
 
 ifneq "$(USE_RSRC)" "0"
-COMMON_RSRC = $(DATADIR)/dictionaries
+
+rsrc:
+	@ mkdir -p $@
+
+rsrc/version.txt: $(REVISION_FILE) | rsrc
+	cp $? $@
+
 endif
 
 # The program rules
 
 # disabled for now: centrifuge map-maker
 PROGRAMS = dssp
+
+dssp_RSRC = rsrc/
 
 define PROGRAM_template =
 
@@ -112,7 +133,7 @@ $(1)_OBJECTS += $(1).o $(COMMON_OBJECTS)
 ifneq "$(USE_RSRC)" "0"
 $(1)_OBJECTS += $(1).o $(1)_rsrc.o
 
-$$(OBJDIR)/$(1)_rsrc.o: $$($(1)_RSRC) $$(COMMON_RSRC)
+$$(OBJDIR)/$(1)_rsrc.o: $$($(1)_RSRC)
 	$(MRC) -o $$@ $$^
 endif
 
@@ -138,29 +159,14 @@ clean:
 
 all: $(PROGRAMS)
 
-REVISION = $(shell git log --pretty=format:%h --max-count=1)
-REVISION_FILE = version-info-$(REVISION).txt
-
-$(REVISION_FILE): $(OBJDIR) src
-	rm -f version-info-*.txt
-	git describe --match=build --dirty > $@
-	@ git log --pretty=medium --date=iso8601 -1 >> $@
-
-src/revision.hpp: $(REVISION_FILE)
-	@ echo 'const char kRevision[] = R"(' > $@
-	@ cat $? >> $@
-	@ echo ')";' >> $@
-
-rsrc:
-	@ mkdir -p $@
-
-rsrc/version.txt: $(REVISION_FILE) | rsrc
-	cp $? $@
-
 .PHONY: install
 install: $(PROGRAMS)
 	install -d $(bindir)
 	for p in $(PROGRAMS); do install $$p $(bindir)/$$p; done
+ifeq "$(USE_RSRC)" "0"
+	install -d $(DATADIR)/dictionaries
+	install -m644 rsrc/mmcif_pdbx.dic $(DATADIR)/dictionaries/mmcif_pdbx.dic
+endif
 
 .PHONY: FORCE
 FORCE:

@@ -23,23 +23,24 @@ AC_ARG_VAR([DEBUG], [Build a debug version of the application])
 
 AC_ARG_VAR([MRC], [Specify a location for the mrc executable])
 
-dnl We really want to use mrc
+USE_RSRC=0
+
 if test "x$MRC" = "x"; then
 	AC_PATH_PROG([MRC], [mrc])
 fi
 
 if test "x$MRC" = "x"; then
 	AC_MSG_WARN([The mrc application was not found, not using resources.])
+else
+	AC_ARG_ENABLE(
+		resources,
+		[AS_HELP_STRING([--disable-resources], [Do not use mrc to store data in resources])])
+
+	AS_IF([test "x$enable_resources" != "xno" ], [
+		USE_RSRC=1
+	])
 fi
 
-AC_ARG_ENABLE(
-	resources,
-	[AS_HELP_STRING([--disable-resources], [Do not use mrc to store data in resources])])
-
-USE_RSRC=0
-AS_IF([test "x$enable_resources" != "xno"], [
-	USE_RSRC=1
-])
 AC_SUBST([USE_RSRC], [$USE_RSRC])
 
 AC_DEFINE_UNQUOTED([USE_RSRC], [$USE_RSRC], [Use mrc to store resources])

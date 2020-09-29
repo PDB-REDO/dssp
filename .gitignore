@@ -16,3 +16,6 @@ config.log
 aclocal.m4
 dssp
 *.dssp
+src/config.hpp
+src/config.hpp.in~
+src/revision.hpp
