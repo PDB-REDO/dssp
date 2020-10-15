@@ -114,9 +114,10 @@ pkg-config.])])
 				 [
 					 LIBS="-lcif++ $LIBS"
 				 ],
-
+                 [AC_MSG_ERROR([libcif++ not found])])
 	fi
 ])
+
 
 AX_CHECK_LIBRARY([LIBZ], [zlib.h], [z],
 				 [ LIBS="$LIBS -lz" ],

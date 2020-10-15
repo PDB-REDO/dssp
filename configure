@@ -625,12 +625,12 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-CIFPP_LDFLAGS
-CIFPP_CPPFLAGS
 LIBBZ2_LDFLAGS
 LIBBZ2_CPPFLAGS
 LIBZ_LDFLAGS
 LIBZ_CPPFLAGS
+CIFPP_LDFLAGS
+CIFPP_CPPFLAGS
 AX_PACKAGE_REQUIRES_PRIVATE
 AX_PACKAGE_REQUIRES
 PKG_CONFIG_LIBDIR
@@ -748,12 +748,12 @@ PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 CIFPP_CFLAGS
 CIFPP_LIBS
+CIFPP_CPPFLAGS
+CIFPP_LDFLAGS
 LIBZ_CPPFLAGS
 LIBZ_LDFLAGS
 LIBBZ2_CPPFLAGS
-LIBBZ2_LDFLAGS
-CIFPP_CPPFLAGS
-CIFPP_LDFLAGS'
+LIBBZ2_LDFLAGS'
 
 
 # Initialize some variables set by options.
@@ -1435,6 +1435,14 @@ Some influential environment variables:
               C preprocessor flags for CIFPP headers
   CIFPP_LDFLAGS
               linker flags for CIFPP libraries
+  LIBZ_CPPFLAGS
+              C preprocessor flags for LIBZ headers
+  LIBZ_LDFLAGS
+              linker flags for LIBZ libraries
+  LIBBZ2_CPPFLAGS
+              C preprocessor flags for LIBBZ2 headers
+  LIBBZ2_LDFLAGS
+              linker flags for LIBBZ2 libraries
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -7182,16 +7190,16 @@ $as_echo "#define HAVE_CIFPP 1" >>confdefs.h
 					 LIBS="-lcif++ $LIBS"
 
 else
-  fi
+  as_fn_error $? "libcif++ not found" "$LINENO" 5
+fi
+
+	fi
 
 fi
 
 
-    LIBZ_CPPFLAGS
-              C preprocessor flags for LIBZ headers
 
-    LIBZ_LDFLAGS
-              linker flags for LIBZ libraries
+
 
 
   if ${ax_cv_have_LIBZ+:} false; then :
@@ -7272,11 +7280,7 @@ else
 fi
 
 
-    LIBBZ2_CPPFLAGS
-              C preprocessor flags for LIBBZ2 headers
 
-    LIBBZ2_LDFLAGS
-              linker flags for LIBBZ2 libraries
 
 
   if ${ax_cv_have_LIBBZ2+:} false; then :
@@ -7381,14 +7385,12 @@ _ACEOF
 # Ultrix sh set writes to stderr and can't be redirected directly,
 # and sets the high bit in the cache file unless we assign to the vars.
 (
-  for ac_var in `(set) 2>&1 | sed -n 's/^\(a-zA-Z_a-zA-Z0-9_*\)=.*/\1/p'`; do
+  for ac_var in `(set) 2>&1 | sed -n 's/^\([a-zA-Z_][a-zA-Z0-9_]*\)=.*/\1/p'`; do
     eval ac_val=\$$ac_var
     case $ac_val in #(
     *${as_nl}*)
       case $ac_var in #(
-      *_cv_*
-fi
- { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cache variable $ac_var contains a newline" >&5
+      *_cv_*) { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cache variable $ac_var contains a newline" >&5
 $as_echo "$as_me: WARNING: cache variable $ac_var contains a newline" >&2;} ;;
       esac
       case $ac_var in #(
