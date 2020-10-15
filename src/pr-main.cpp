@@ -176,12 +176,12 @@ void load_version_info()
 
 	if (not VERSION_STRING.empty())
 		VERSION_STRING += "\n";
-	VERSION_STRING += gVersionNr + " " + gVersionDate;
+	VERSION_STRING += gVersionNr + '.' + cif::get_version_nr() + " " + gVersionDate;
 }
 
 std::string get_version_nr()
 {
-	return gVersionNr;
+	return gVersionNr + '/' + cif::get_version_nr();
 }
 
 std::string get_version_date()
