@@ -87,7 +87,7 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 		case mmcif::ssStrand:		ss = 'E'; break;
 		case mmcif::ssHelix_3:		ss = 'G'; break;
 		case mmcif::ssHelix_5:		ss = 'I'; break;
-		case mmcif::ssHelix_PPII:		ss = 'P'; break;
+		case mmcif::ssHelix_PPII:	ss = 'P'; break;
 		case mmcif::ssTurn:			ss = 'T'; break;
 		case mmcif::ssBend:			ss = 'S'; break;
 		case mmcif::ssLoop:			ss = ' '; break;
@@ -269,7 +269,7 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 	// }
 }
 
-void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ostream& os)
+void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, bool writeOther, std::ostream& os)
 {
 	auto& db = structure.getFile().data();
 
@@ -291,7 +291,6 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 
 		auto st = dssp.begin(), lt = st;
 		auto lastSS = st->ss();
-		std::string id;
 
 		for (auto t = dssp.begin(); ; lt = t, ++t)
 		{
@@ -299,10 +298,56 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 
 			bool flush = (stop or t->ss() != lastSS);
 
-			if (flush and lastSS != mmcif::SecondaryStructureType::ssLoop)
+			if (flush and (writeOther or lastSS != mmcif::SecondaryStructureType::ssLoop))
 			{
 				auto& rb = st->residue();
 				auto& re = lt->residue();
+
+				std::string id;
+				switch (lastSS)
+				{
+					case mmcif::SecondaryStructureType::ssHelix_3:
+						id = "HELX_RH_3T_P";
+						break;
+
+					case mmcif::SecondaryStructureType::ssAlphahelix:
+						id = "HELX_RH_AL_P";
+						break;
+
+					case mmcif::SecondaryStructureType::ssHelix_5:
+						id = "HELX_RH_PI_P";
+						break;
+
+					case mmcif::SecondaryStructureType::ssHelix_PPII:
+						id = "HELX_LH_PP_P";
+						break;
+
+					case mmcif::SecondaryStructureType::ssTurn:
+						id = "TURN_TY1_P";
+						break;
+
+					case mmcif::SecondaryStructureType::ssBend:
+						id = "BEND";
+						break;
+
+					case mmcif::SecondaryStructureType::ssBetabridge:
+					case mmcif::SecondaryStructureType::ssStrand:
+						id = "STRN";
+						break;
+
+					case mmcif::SecondaryStructureType::ssLoop:
+						id = "OTHER";
+						break;
+				}
+
+				if (foundTypes.count(id) == 0)
+				{
+					structConfType.emplace({
+						{ "id", id },
+						{ "criteria", "DSSP" }
+					});
+					foundTypes[id] = 1;
+				}
 
 				structConf.emplace({
 					{ "conf_type_id", id },
@@ -340,57 +385,6 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ost
 
 			if (stop)
 				break;
-
-			if (not flush)
-				continue;
-
-			switch (t->ss())
-			{
-				case mmcif::SecondaryStructureType::ssHelix_3:
-					id = "HELX_RH_3T_P";
-					break;
-
-				case mmcif::SecondaryStructureType::ssAlphahelix:
-					id = "HELX_RH_AL_P";
-					break;
-
-				case mmcif::SecondaryStructureType::ssHelix_5:
-					id = "HELX_RH_PI_P";
-					break;
-
-				case mmcif::SecondaryStructureType::ssHelix_PPII:
-					id = "HELX_LH_PP_P";
-					break;
-
-				case mmcif::SecondaryStructureType::ssTurn:
-					id = "TURN_TY1_P";
-					break;
-
-				case mmcif::SecondaryStructureType::ssBend:
-					id = "TURN_P";
-					break;
-
-				case mmcif::SecondaryStructureType::ssBetabridge:
-				case mmcif::SecondaryStructureType::ssStrand:
-					id = "STRN";
-					break;
-
-				default:
-					id.clear();
-					break;
-			}
-
-			if (id.empty())
-				continue;
-
-			if (foundTypes.count(id) == 0)
-			{
-				structConfType.emplace({
-					{ "id", id },
-					{ "criteria", "DSSP" }
-				});
-				foundTypes[id] = 1;
-			}
 		}
 	}
 
@@ -631,6 +625,8 @@ int pr_main(int argc, char* argv[])
 
 		("min-pp-stretch",		po::value<short>(),			"Minimal number of residues having PSI/PHI in range for a PP helix, default is 3")
 
+		("write-other",										"If set, write the type OTHER for loops, default is to leave this out")
+
 		("verbose,v",										"verbose output")
 		;
 	
@@ -703,6 +699,8 @@ int pr_main(int argc, char* argv[])
 	if (vm.count("min-pp-stretch"))
 		pp_stretch = vm["min-pp-stretch"].as<short>();
 
+	bool writeOther = vm.count("write-other");
+
 	std::string fmt;
 	if (vm.count("output-format"))
 		fmt = vm["output-format"].as<std::string>();
@@ -748,14 +746,14 @@ int pr_main(int argc, char* argv[])
 		if (fmt == "dssp")
 			writeDSSP(structure, dssp, out);
 		else
-			annotateDSSP(structure, dssp, out);
+			annotateDSSP(structure, dssp, writeOther, out);
 	}
 	else
 	{
 		if (fmt == "dssp")
 			writeDSSP(structure, dssp, std::cout);
 		else
-			annotateDSSP(structure, dssp, std::cout);
+			annotateDSSP(structure, dssp, writeOther, std::cout);
 	}
 	
 	return 0;
