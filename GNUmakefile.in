@@ -22,11 +22,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+SHELL := /bin/bash
+
 firstTarget: all
 
 CXX					= @CXX@
-CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @BOOST_CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@
-LDFLAGS				= @LDFLAGS@ @BOOST_LDFLAGS@ @PTHREAD_CFLAGS@
+CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@
+LDFLAGS				= @LDFLAGS@ @PTHREAD_CFLAGS@
 LIBS				= @LIBS@ \
 					  @CIFPP_LIBS@ \
 					  @BOOST_IOSTREAMS_LIB@ \
@@ -38,6 +40,7 @@ exec_prefix			= @exec_prefix@
 bindir				= @bindir@
 datarootdir			= @datarootdir@
 datadir				= @datadir@
+mandir				= @mandir@
 
 GNUmakefile: config.status GNUmakefile.in
 	$(SHELL) ./config.status
@@ -53,6 +56,9 @@ configure: configure.ac
 endif
 
 # main build variables
+VERSION				= @PACKAGE_VERSION@.0
+DEFINES				+= VERSION='"$(VERSION)"'
+
 CXXFLAGS            += -Wall -Wno-multichar
 
 CIFPP_RSRC			= @CIFPP_RSRC@
@@ -97,14 +103,18 @@ $(OBJDIR)/%.o: %.cpp | $(OBJDIR)
 	@ echo ">>" $<
 	@ $(CXX) -MD -c -o $@ $< $(CFLAGS) $(CXXFLAGS)
 
-COMMON_OBJECTS = pr-main.o
+# We have development releases and official releases, for each we
+# maintain different versioning schemes.
+
+ifneq "x@UPDATE_REVISION@" "x"
 
 REVISION = $(shell git log --pretty=format:%h --max-count=1)
 REVISION_FILE = version-info-$(REVISION).txt
 
 $(REVISION_FILE):
 	rm -f version-info-*.txt
-	git describe --match=build --dirty > $@
+	@ echo dssp-version: $(VERSION) > $@
+	@ git describe --match=build --dirty >> $@
 	@ git log --pretty=medium --date=iso8601 -1 >> $@
 
 src/revision.hpp: $(REVISION_FILE)
@@ -112,10 +122,17 @@ src/revision.hpp: $(REVISION_FILE)
 	@ cat $? >> $@
 	@ echo ')";' >> $@
 
-$(OBJDIR)/pr-main.o: src/revision.hpp
+else
+
+src/revision.hpp:
+	@ echo 'const char kRevision[] = R"(' > $@
+	@ echo dssp-version: $(VERSION) >> $@
+	@ echo Date:   $$(date --iso-8601) >> $@
+	@ echo ')";' >> $@
+
+endif
 
 ifneq "$(USE_RSRC)" "0"
-COMMON_RSRC = $(DATADIR)/dictionaries
 
 rsrc:
 	@ mkdir -p $@
@@ -127,31 +144,21 @@ endif
 
 # The program rules
 
-# disabled for now: centrifuge map-maker
-PROGRAMS = dssp
-
-define PROGRAM_template =
-
-$(1)_OBJECTS += $(1).o $(COMMON_OBJECTS)
+OBJECTS = \
+	$(OBJDIR)/dssp.o
 
 ifneq "$(USE_RSRC)" "0"
-$(1)_OBJECTS += $(1).o $(1)_rsrc.o
+$OBJECTS += dssp_rsrc.o
 
-$$(OBJDIR)/$(1)_rsrc.o: $$($(1)_RSRC) $$(COMMON_RSRC)
+$(OBJDIR)/dssp_rsrc.o: $(DATADIR)/mmcif_pdbx_v50.dic
 	$(MRC) -o $$@ $$^
 endif
 
-$(1): $$($(1)_OBJECTS:%=$(OBJDIR)/%)
+$(OBJDIR)/dssp.o: src/revision.hpp
 
-endef
-
-$(foreach program,$(PROGRAMS),$(eval $(call PROGRAM_template,$(program))))
-
-$(PROGRAMS):
+mkdssp: $(OBJECTS)
 	@ echo '->' $@
 	@ $(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS) $(LIBS)
-
-OBJECTS = $(sort $(foreach program,$(PROGRAMS),$($(program)_OBJECTS)))
 
 $(OBJDIR)/%.d: $(OBJDIR)/%.o
 
@@ -159,14 +166,17 @@ $(OBJDIR)/%.d: $(OBJDIR)/%.o
 
 .PHONY: clean all
 clean:
-	rm -rf $(PROGRAMS) $(OBJDIR)/* $(REVISION_FILE)
+	rm -rf mkdssp $(OBJDIR)/* src/revision.hpp
 
-all: $(PROGRAMS)
+all: mkdssp
 
 .PHONY: install
-install: $(PROGRAMS)
+install: mkdssp
 	install -d $(bindir)
-	for p in $(PROGRAMS); do install $$p $(bindir)/$$p; done
+	install mkdssp $(bindir)/mkdssp
+	install -d $(mandir)/man1
+	install -m 644 mkdssp.1 $(mandir)/man1/mkdssp.1;
+	gzip $(mandir)/man1/mkdssp.1;
 
 .PHONY: FORCE
 FORCE:

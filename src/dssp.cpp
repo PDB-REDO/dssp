@@ -24,12 +24,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "dssp.hpp"
+#include "config.hpp"
 
 #include <exception>
 #include <iostream>
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 
 #include <boost/format.hpp>
 #include <boost/date_time/gregorian/formatters.hpp>
@@ -49,7 +49,87 @@ namespace fs = std::filesystem;
 namespace io = boost::iostreams;
 namespace po = boost::program_options;
 
-extern std::string VERSION_STRING;
+// --------------------------------------------------------------------
+
+// recursively print exception whats:
+void print_what (const std::exception& e)
+{
+	std::cerr << e.what() << std::endl;
+	try
+	{
+		std::rethrow_if_nested(e);
+	}
+	catch (const std::exception& nested)
+	{
+		std::cerr << " >> ";
+		print_what(nested);
+	}
+}
+
+// --------------------------------------------------------------------
+
+namespace {
+	std::string gVersionNr, gVersionDate, VERSION_STRING;
+}
+
+void load_version_info()
+{
+	const std::regex
+		rxVersionNr(R"(build-(\d+)-g[0-9a-f]{7}(-dirty)?)"),
+		rxVersionDate(R"(Date: +(\d{4}-\d{2}-\d{2}).*)"),
+		rxVersionNr2(R"(dssp-version: (\d+(?:\.\d+)+))");
+
+#include "revision.hpp"
+
+	struct membuf : public std::streambuf
+	{
+		membuf(char* data, size_t length)       { this->setg(data, data, data + length); }
+	} buffer(const_cast<char*>(kRevision), sizeof(kRevision));
+
+	std::istream is(&buffer);
+
+	std::string line;
+
+	while (getline(is, line))
+	{
+		std::smatch m;
+
+		if (std::regex_match(line, m, rxVersionNr))
+		{
+			gVersionNr = m[1];
+			if (m[2].matched)
+				gVersionNr += '*';
+			continue;
+		}
+
+		if (std::regex_match(line, m, rxVersionDate))
+		{
+			gVersionDate = m[1];
+			continue;
+		}
+
+		// always the first, replace with more specific if followed by the other info
+		if (std::regex_match(line, m, rxVersionNr2))
+		{
+			gVersionNr = m[1];
+			continue;
+		}
+	}
+
+	if (not VERSION_STRING.empty())
+		VERSION_STRING += "\n";
+	VERSION_STRING += gVersionNr + " " + gVersionDate;
+}
+
+std::string get_version_nr()
+{
+	return gVersionNr/* + '/' + cif::get_version_nr()*/;
+}
+
+std::string get_version_date()
+{
+	return gVersionDate;
+}
 
 // --------------------------------------------------------------------
 
@@ -240,33 +320,6 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 		os << ResidueToDSSPLine(ri) << std::endl;
 		last = ri.nr();
 	}
-
-	// std::vector<const MResidue*> residues;
-
-	// foreach (const MChain* chain, protein.GetChains())
-	// {
-	// 	foreach (const MResidue* residue, chain->GetResidues())
-	// 		residues.push_back(residue);
-	// }
-
-	// // keep residues sorted by residue number as assigned during reading the PDB file
-	// sort(residues.begin(), residues.end(), boost::bind(&MResidue::GetNumber, _1) < boost::bind(&MResidue::GetNumber, _2));
-
-	// const MResidue* last = nullptr;
-	// foreach (const MResidue* residue, residues)
-	// {
-	// 	// insert a break line whenever we detect missing residues
-	// 	// can be the transition to a different chain, or missing residues in the current chain
-	// 	if (last != nullptr and last->GetNumber() + 1 != residue->GetNumber())
-	// 	{
-	// 		char breaktype = ' ';
-	// 		if (last->GetChainID() != residue->GetChainID())
-	// 			breaktype = '*';
-	// 		os << (kDSSPResidueLine % (last->GetNumber() + 1) % breaktype) << std::endl;
-	// 	}
-	// 	os << ResidueToDSSPLine(*residue) << std::endl;
-	// 	last = residue;
-	// }
 }
 
 void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, bool writeOther, std::ostream& os)
@@ -388,250 +441,34 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, bool wri
 		}
 	}
 
-	db.add_software("dssp " PACKAGE_VERSION, "other", get_version_nr(), get_version_date());
+	db.add_software("dssp", "other", get_version_nr(), get_version_date());
 
 	db.write(os);
-
-// 	cif::File df;
-	
-// 	df.append(new cif::Datablock("DSSP_" + structure.getFile().data().getName()));
-
-// 	auto& db = df.firstDatablock();
-
-// 	int last = 0;
-// 	for (auto info: dssp)
-// 	{
-// 		// insert a break line whenever we detect missing residues
-// 		// can be the transition to a different chain, or missing residues in the current chain
-
-
-// 		// 	os << (kDSSPResidueLine % (last + 1) % (ri.chainBreak() == mmcif::ChainBreak::NewChain ? '*' : ' ')) << std::endl;
-		
-// 		// os << ResidueToDSSPLine(ri) << std::endl;
-
-// 		auto& mon = info.residue();
-
-// 		auto&& [row, rn] = db["struct_mon_prot"].emplace({
-// 			{ "chain_break", (info.chainBreak() == mmcif::ChainBreak::Gap ? 'Y' : '.') },
-// 			{ "label_comp_id", mon.compoundID() },
-// 			{ "label_asym_id", mon.asymID() },
-// 			{ "label_seq_id", mon.seqID() },
-// 			{ "label_alt_id", info.alt_id() },
-// 			{ "auth_asym_id", mon.authAsymID() },
-// 			{ "auth_seq_id", mon.authSeqID() },
-// 			{ "auth_ins_code", mon.authInsCode() },
-// 		});
-
-// 		if (mon.is_first_in_chain())
-// 			row["phi"] = ".";
-// 		else
-// 			row["phi"].os(std::fixed, std::setprecision(1), mon.phi());
-
-// 		if (mon.is_last_in_chain())
-// 			row["psi"] = ".";
-// 		else
-// 			row["psi"].os(std::fixed, std::setprecision(1), mon.psi());
-
-// 		if (mon.is_last_in_chain())
-// 			row["omega"] = ".";
-// 		else
-// 			row["omega"].os(std::fixed, std::setprecision(1), mon.omega());
-
-// 		int nrOfChis = mon.nrOfChis();
-// 		for (int i = 0; i < 5; ++i)
-// 		{
-// 			auto cl = "chi" + std::to_string(i + 1);
-// 			if (i < nrOfChis)
-// 				row[cl].os(std::fixed, std::setprecision(1), mon.chi(i));
-// 			else
-// 				row[cl] = '.';
-// 		}
-
-// 		if (not mon.has_alpha())
-// 			row["alpha"] = ".";
-// 		else
-// 			row["alpha"].os(std::fixed, std::setprecision(1), mon.alpha());
-
-// 		if (not mon.has_kappa())
-// 			row["kappa"] = ".";
-// 		else
-// 			row["kappa"].os(std::fixed, std::setprecision(1), mon.kappa());
-
-// 		if (mon.is_first_in_chain())
-// 			row["tco"] = ".";
-// 		else
-// 			row["tco"].os(std::fixed, std::setprecision(1), mon.tco());
-
-// 		// sec structure info
-
-// 		char ss;
-// 		switch (info.ss())
-// 		{
-// 			case mmcif::ssAlphahelix:	ss = 'H'; break;
-// 			case mmcif::ssBetabridge:	ss = 'B'; break;
-// 			case mmcif::ssStrand:		ss = 'E'; break;
-// 			case mmcif::ssHelix_3:		ss = 'G'; break;
-// 			case mmcif::ssHelix_5:		ss = 'I'; break;
-// 			case mmcif::ssHelix_PPII:		ss = 'P'; break;
-// 			case mmcif::ssTurn:			ss = 'T'; break;
-// 			case mmcif::ssBend:			ss = 'S'; break;
-// 			case mmcif::ssLoop:			ss = '.'; break;
-// 		}
-// 		row["dssp_symbol"] = ss;
-
-// 		if (mon.has_alpha())
-// 			row["Calpha_chiral_sign"] = mon.alpha() < 0 ? "neg" : "pos";
-// 		else
-// 			row["Calpha_chiral_sign"] = ".";
-
-// 		row["sheet_id"] = info.sheet() ? std::to_string(info.sheet()) : ".";
-
-// 		for (uint32_t i: { 0, 1 })
-// 		{
-// 			std::string il = "bridge_partner_" + std::to_string(i + 1);
-
-// 			const auto& [p, ladder, parallel] = info.bridgePartner(i);
-// 			if (not p)
-// 			{
-// 				row[il + "_label_comp_id"] = ".";
-// 				row[il + "_label_asym_id"] = ".";
-// 				row[il + "_label_seq_id"] = ".";
-// 				row[il + "_auth_asym_id"] = ".";
-// 				row[il + "_auth_seq_id"] = ".";
-// 				row[il + "_ladder"] = ".";
-// 				row[il + "_sense"] = ".";
-// 				continue;
-// 			}
-
-// 			auto& pm = p.residue();
-
-// 			row[il + "_label_comp_id"] = pm.compoundID();
-// 			row[il + "_label_asym_id"] = pm.asymID();
-// 			row[il + "_label_seq_id"] = pm.seqID();
-// 			row[il + "_auth_asym_id"] = pm.authAsymID();
-// 			row[il + "_auth_seq_id"] = pm.authSeqID();
-// 			row[il + "_ladder"] = ladder;
-// 			row[il + "_sense"] = parallel ? "parallel" : "anti-parallel";
-// 		}
-
-// 		for (auto stride: { 3, 4, 5})
-// 		{
-// 			std::string hs = "helix_info_" + std::to_string(stride);
-// 			switch (info.helix(stride))
-// 			{
-// #if 0
-// 				case mmcif::Helix::None:		row[hs] = '.'; break;
-// 				case mmcif::Helix::Start:		row[hs] = "start"; break;
-// 				case mmcif::Helix::End:			row[hs] = "end"; break;
-// 				case mmcif::Helix::StartAndEnd:	row[hs] = "start-and-end"; break;
-// 				case mmcif::Helix::Middle:		row[hs] = "middle"; break;
-// #else
-// 				case mmcif::Helix::None:		row[hs] = '.'; break;
-// 				case mmcif::Helix::Start:		row[hs] = '>'; break;
-// 				case mmcif::Helix::End:			row[hs] = '<'; break;
-// 				case mmcif::Helix::StartAndEnd:	row[hs] = 'X'; break;
-// 				case mmcif::Helix::Middle:		row[hs] = '0' + stride; break;
-// #endif
-// 			}
-// 		}
-
-// 		if (info.bend())
-// 			row["bend"] = 'S';
-// 		else
-// 			row["bend"] = ".";
-
-// 		for (int i: { 0, 1 })
-// 		{
-// 			const auto& [donor, donorE] = info.donor(i);
-// 			const auto& [acceptor, acceptorE] = info.acceptor(i);
-
-// 			std::string ds = "O_donor_" + std::to_string(i + 1);
-// 			std::string as = "NH_acceptor_" + std::to_string(i + 1);
-			
-// 			if (acceptor)
-// 			{
-// 				auto& am = acceptor.residue();
-
-// 				row[as + "_label_comp_id"] = am.compoundID();
-//  				row[as + "_label_asym_id"] = am.asymID();
-//  				row[as + "_label_seq_id"] = am.seqID();
-//  				row[as + "_auth_asym_id"] = am.authAsymID();
-//  				row[as + "_auth_seq_id"] = am.authSeqID();
-// 				row[as + "_energy"].os(std::fixed, std::setprecision(2), acceptorE);
-// 			}
-// 			else
-// 			{
-// 				row[as + "_label_comp_id"] = ".";
-//  				row[as + "_label_asym_id"] = ".";
-//  				row[as + "_label_seq_id"] = ".";
-//  				row[as + "_auth_asym_id"] = ".";
-//  				row[as + "_auth_seq_id"] = ".";
-// 				row[as + "_energy"] = ".";
-// 			}
-
-// 			if (donor)
-// 			{
-// 				auto& dm = donor.residue();
-
-// 				row[ds + "_label_comp_id"] = dm.compoundID();
-//  				row[ds + "_label_asym_id"] = dm.asymID();
-//  				row[ds + "_label_seq_id"] = dm.seqID();
-//  				row[ds + "_auth_asym_id"] = dm.authAsymID();
-//  				row[ds + "_auth_seq_id"] = dm.authSeqID();
-// 				row[ds + "_energy"].os(std::fixed, std::setprecision(2), donorE);
-// 			}
-// 			else
-// 			{
-// 				row[ds + "_label_comp_id"] = ".";
-//  				row[ds + "_label_asym_id"] = ".";
-//  				row[ds + "_label_seq_id"] = ".";
-//  				row[ds + "_auth_asym_id"] = ".";
-//  				row[ds + "_auth_seq_id"] = ".";
-// 				row[ds + "_energy"] = ".";
-// 			}
-// 		}
-
-// 		last = info.nr();
-// 	}
-
-
-// 	df.write(os, {});
 }
 
 // --------------------------------------------------------------------
 
-int pr_main(int argc, char* argv[])
+int d_main(int argc, const char* argv[])
 {
 	using namespace std::literals;
 
-	po::options_description visible_options(argv[0] + " input-file [output-file] [options]"s);
+	po::options_description visible_options(argv[0] + " [options] input-file [output-file]"s);
 	visible_options.add_options()
-		("xyzin",				po::value<std::string>(),	"coordinates file")
-		("output",              po::value<std::string>(),	"Output to this file")
-
 		("dict",				po::value<std::vector<std::string>>(),
 															"Dictionary file containing restraints for residues in this specific target, can be specified multiple times.")
+		("output-format",		po::value<std::string>(),	"Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any.")
+		("min-pp-stretch",		po::value<short>(),			"Minimal number of residues having PSI/PHI in range for a PP helix, default is 3")
+		("write-other",										"If set, write the type OTHER for loops, default is to leave this out")
 
 		("help,h",											"Display help message")
 		("version",											"Print version")
-
-		("output-format",		po::value<std::string>(),	"Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any.")
-
-		// ("create-missing",									"Create missing backbone atoms")
-
-#if not USE_RSRC
-		("rsrc-dir",			po::value<std::string>(),	"Directory containing the 'resources' used by this application")
-#endif
-
-		("min-pp-stretch",		po::value<short>(),			"Minimal number of residues having PSI/PHI in range for a PP helix, default is 3")
-
-		("write-other",										"If set, write the type OTHER for loops, default is to leave this out")
-
 		("verbose,v",										"verbose output")
 		;
 	
 	po::options_description hidden_options("hidden options");
 	hidden_options.add_options()
+		("xyzin",				po::value<std::string>(),	"coordinates file")
+		("output",              po::value<std::string>(),	"Output to this file")
 		("debug,d",				po::value<int>(),			"Debug level (for even more verbose output)")
 		;
 
@@ -651,7 +488,7 @@ int pr_main(int argc, char* argv[])
 
 	if (vm.count("version"))
 	{
-		std::cout << argv[0] << ' ' << PACKAGE_VERSION " version " << VERSION_STRING << std::endl;
+		std::cout << argv[0] << " version " << VERSION_STRING << std::endl;
 		exit(0);
 	}
 
@@ -687,11 +524,6 @@ int pr_main(int argc, char* argv[])
 
 	mmcif::File f(vm["xyzin"].as<std::string>());
 	mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
-
-	// // --------------------------------------------------------------------
-	
-	// if (vm.count("create-missing"))
-	// 	mmcif::CreateMissingBackboneAtoms(structure, true);
 
 	// --------------------------------------------------------------------
 
@@ -757,4 +589,25 @@ int pr_main(int argc, char* argv[])
 	}
 	
 	return 0;
+}
+
+// --------------------------------------------------------------------
+
+int main(int argc, const char* argv[])
+{
+	int result = 0;
+
+	try
+	{
+		load_version_info();
+
+		result = d_main(argc, argv);
+	}
+	catch (const std::exception& ex)
+	{
+		print_what(ex);
+		exit(1);
+	}
+
+	return result;
 }

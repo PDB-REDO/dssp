@@ -1,0 +1,76 @@
+.TH mkdssp 1 "2020-11-23" "version 1.0.0" "User Commands"
+.if n .ad l
+.nh
+.SH NAME
+mkdssp \- Assign secondary structure to proteins
+.SH SYNOPSIS
+mkdssp [OPTION] input [output]
+.SH DESCRIPTION
+The DSSP program was designed by Wolfgang Kabsch and Chris Sander to
+standardize secondary structure assignment. DSSP is a database of
+secondary structure assignments (and much more) for all protein entries
+in the Protein Data Bank (PDB). mkdssp is the program that calculates
+DSSP entries from PDB entries. mkdssp does \fBnot\fR predict secondary structure.
+.sp
+The original DSSP program wrote output in a fixed format, this version
+by default writes annotated mmCIF files, storing the secondary structure
+information in the _struct_conf category.
+.sp
+Since version 4.0 the mkdssp program also assigns PP helices.
+.SH OPTIONS
+The input file can be either mmCIF or PDB format and the file may be
+gzip or bzip2 compressed.
+.sp
+The output is optional, if ommited the output is written to \fIstdout\fR. If
+the name of the output file ends with either \fI.gz\fR or \fI.bz2\fR the
+output is compressed accordingly.
+.TP
+\fB--output-format\fR=[dssp|mmcif]
+If an output file is specified, the extension of the filename is used to
+choose to output format, but if it is unclear, mmcif is the default. Use
+this option to force output in either the old fixed column DSSP format or
+the new annotated mmCIF format.
+.TP
+\fB--min-pp-stretch\fR
+This option can be used to define the minimal number of residues with PHI/PSI
+angles within the range required to assing a PP helix.
+.TP
+\fB--write-other\fR
+By default the new format does not write the structure information for OTHER.
+Use this flag to change that.
+.SH DETAILS
+The DSSP algorithm assings secondary structure based on the energy calculated
+for H-bonds.
+.br
+.B Table\ \&1.\ \&Secondary\ Structures\ recognized
+.TS
+allbox;
+cb cb cb .
+DSSP Code	mmCIF Code	Description
+.T&
+l l l.
+H	HELX_RH_AL_P	Alphahelix
+B	STRN	Betabridge
+E	STRN	Strand
+G	HELX_RH_3T_P	Helix_3
+I	HELX_RH_PI_P	Helix_5
+P	HELX_LH_PP_P	Helix_PPII
+T	TURN_TY1_P	Turn
+S	BEND	Bend
+' '	OTHER	Loop
+.TE
+.SH BUGS
+The mmCIF format currently lacks a lot of information that was available
+in the old format like information about the bridge pairs or the span
+of the various helices recognized. Also the accessibility information
+is left out.
+.sp
+If you think this information should be part of the output, please contact
+the author.
+.SH AUTHOR
+Written by Maarten L. Hekkelman <maarten@hekkelman.com>
+.SH "REPORTING BUGS"
+Report bugs at https://github.com/PDB-REDO/cif-tools/issues
+.SH "SEE ALSO"
+\fBcif-drop\fR, \fBcif-grep\fR, \fBcif-merge\fR, \fBcif-validate\fR, 
+\fBcif2pdb\fR, \fBmmCQL\fR, \fBpdb2cif\fR.

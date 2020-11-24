@@ -2,48 +2,48 @@ AC_PREREQ([2.69])
 
 AC_INIT([dssp], 4.0, [m.hekkelman@nki.nl])
 
-dnl Switch to a decent C++ compiler, and check if it works.
+dnl Switch to a C++ compiler, and check if it works.
 AC_LANG(C++)
 AX_CXX_COMPILE_STDCXX_17([noext])
 
-AX_CHECK_COMPILE_FLAG([-fstandalone-debug], [ CXXFLAGS="$CXXFLAGS -fstandalone-debug" ], , [-Werror])
+AX_CHECK_COMPILE_FLAG([-fstandalone-debug],
+	[
+		CXXFLAGS="$CXXFLAGS -fstandalone-debug"
+	] , , [-Werror])
 
 AC_CONFIG_SRCDIR([src/dssp.cpp])
 AC_CONFIG_AUX_DIR(config)
-AC_CONFIG_MACRO_DIR([config/m4])
 AC_CONFIG_HEADERS([src/config.hpp])
 
 AC_PREFIX_DEFAULT(/usr/local)
 
 AC_PROG_INSTALL
 
-AX_PTHREAD
-
 AC_ARG_VAR([DEBUG], [Build a debug version of the application])
 
 AC_ARG_VAR([MRC], [Specify a location for the mrc executable])
 
-USE_RSRC=0
-
+dnl We would like to use mrc
 if test "x$MRC" = "x"; then
 	AC_PATH_PROG([MRC], [mrc])
 fi
 
 if test "x$MRC" = "x"; then
-	AC_MSG_WARN([The mrc application was not found, not using resources.])
-else
-	AC_ARG_ENABLE(
-		resources,
-		[AS_HELP_STRING([--disable-resources], [Do not use mrc to store data in resources])])
-
-	AS_IF([test "x$enable_resources" != "xno" ], [
-		USE_RSRC=1
-	])
+	AC_MSG_ERROR([mrc not found, the application will be built without resources])
 fi
 
-AC_SUBST([USE_RSRC], [$USE_RSRC])
+dnl revision numbering is something used internally at the NKI
+AC_ARG_ENABLE(
+	revision,
+	[AS_HELP_STRING([--disable-revision], [Create a build number as revision])])
 
-AC_DEFINE_UNQUOTED([USE_RSRC], [$USE_RSRC], [Use mrc to store resources])
+AS_IF([test "x$enable_revision" != "xno" ], [
+	UPDATE_REVISION=1
+])
+
+AC_SUBST([UPDATE_REVISION], [$UPDATE_REVISION])
+
+AX_PTHREAD
 
 AC_CHECK_HEADER([filesystem], [], [AC_MSG_ERROR([The file <filesystem> is missing, perhaps you should install a more recent libstdc++ implementation.])])
 
@@ -98,7 +98,7 @@ AS_IF([test "x$CIFPP_LIBS" = "x"], [
 	AC_PATH_PROG([PKG_CONFIG], [pkg-config])
 	if test -x "$PKG_CONFIG"
 	then
-		AX_PKG_CHECK_MODULES([CIFPP], [libcif++], [], [], [AC_MSG_ERROR([the required package libcif++ is not installed])])
+		AX_PKG_CHECK_MODULES([CIFPP], [libcifpp], [], [], [AC_MSG_ERROR([the required package libcifpp is not installed])])
 	else
 		AC_CHECK_HEADER(
 	        [cif++/Config.hpp],
@@ -117,14 +117,6 @@ pkg-config.])])
                  [AC_MSG_ERROR([libcif++ not found])])
 	fi
 ])
-
-
-AX_CHECK_LIBRARY([LIBZ], [zlib.h], [z],
-				 [ LIBS="$LIBS -lz" ],
-                 [AC_MSG_ERROR([libz not found - compressed files not supported])])
-AX_CHECK_LIBRARY([LIBBZ2], [bzlib.h], [bz2],
-				 [ LIBS="$LIBS -lbz2"],
-                 [AC_MSG_ERROR([libbz2 not found - compressed files not supported])])
 
 dnl Process Makefile.in to create Makefile
 AC_OUTPUT([GNUmakefile])
