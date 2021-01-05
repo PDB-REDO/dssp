@@ -6,6 +6,9 @@ with previous releases of DSSP is that it now writes out an annotated mmCIF
 file by default, storing the secondary structure information in the 
 _struct_conf category.
 
+Another new feature in this version of DSSP is that it now defines
+Poly-Proline helices as well.
+
 The DSSP program was designed by Wolfgang Kabsch and Chris Sander to
 standardize secondary structure assignment. DSSP is a database of secondary
 structure assignments (and much more) for all protein entries in the Protein
