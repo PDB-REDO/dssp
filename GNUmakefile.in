@@ -127,7 +127,7 @@ else
 src/revision.hpp:
 	@ echo 'const char kRevision[] = R"(' > $@
 	@ echo dssp-version: $(VERSION) >> $@
-	@ echo Date:   $$(date --utc --date=@$(SOURCE_DATE_EPOCH) --iso-8601) >> $@
+	@ echo Date:   $$(date --iso-8601) >> $@
 	@ echo ')";' >> $@
 
 endif
