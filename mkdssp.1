@@ -16,10 +16,12 @@ The original DSSP program wrote output in a fixed format, this version
 by default writes annotated mmCIF files, storing the secondary structure
 information in the _struct_conf category.
 .sp
-Since version 4.0 the mkdssp program also assigns PP helices.
+Since version 4.0 the mkdssp program also assigns PPII helices.
 .SH OPTIONS
 The input file can be either mmCIF or PDB format and the file may be
-gzip or bzip2 compressed.
+gzip or bzip2 compressed. Note that input files must be formatted correctly.
+E.g. PDB files must have a CRYST1 record. More info:
+https://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1
 .sp
 The output is optional, if omitted the output is written to \fIstdout\fR. If
 the name of the output file ends with either \fI.gz\fR or \fI.bz2\fR the
