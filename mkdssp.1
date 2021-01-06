@@ -21,7 +21,7 @@ Since version 4.0 the mkdssp program also assigns PP helices.
 The input file can be either mmCIF or PDB format and the file may be
 gzip or bzip2 compressed.
 .sp
-The output is optional, if ommited the output is written to \fIstdout\fR. If
+The output is optional, if omitted the output is written to \fIstdout\fR. If
 the name of the output file ends with either \fI.gz\fR or \fI.bz2\fR the
 output is compressed accordingly.
 .TP
@@ -57,7 +57,9 @@ I	HELX_RH_PI_P	Helix_5
 P	HELX_LH_PP_P	Helix_PPII
 T	TURN_TY1_P	Turn
 S	BEND	Bend
-' '	OTHER	Loop
+T{
+\(aq \(aq (space)
+T}	OTHER	Loop
 .TE
 .SH BUGS
 The mmCIF format currently lacks a lot of information that was available

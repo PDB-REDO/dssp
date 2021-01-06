@@ -35,7 +35,7 @@ LIBS				= @LIBS@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
 					  @BOOST_DATE_TIME_LIB@
 
-prefix				= @prefix@
+prefix				= $(DESTDIR)@prefix@
 exec_prefix			= @exec_prefix@
 bindir				= @bindir@
 datarootdir			= @datarootdir@
@@ -127,7 +127,7 @@ else
 src/revision.hpp:
 	@ echo 'const char kRevision[] = R"(' > $@
 	@ echo dssp-version: $(VERSION) >> $@
-	@ echo Date:   $$(date --iso-8601) >> $@
+	@ echo Date:   $$(date --utc --date=@$(SOURCE_DATE_EPOCH) --iso-8601) >> $@
 	@ echo ')";' >> $@
 
 endif

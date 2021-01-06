@@ -18,19 +18,33 @@ AC_CONFIG_HEADERS([src/config.hpp])
 AC_PREFIX_DEFAULT(/usr/local)
 
 AC_PROG_INSTALL
+PKG_PROG_PKG_CONFIG
 
 AC_ARG_VAR([DEBUG], [Build a debug version of the application])
 
 AC_ARG_VAR([MRC], [Specify a location for the mrc executable])
 
-dnl We would like to use mrc
+USE_RSRC=0
+
 if test "x$MRC" = "x"; then
 	AC_PATH_PROG([MRC], [mrc])
 fi
 
 if test "x$MRC" = "x"; then
-	AC_MSG_ERROR([mrc not found, the application will be built without resources])
+	AC_MSG_WARN([The mrc application was not found, not using resources.])
+else
+	AC_ARG_ENABLE(
+		resources,
+		[AS_HELP_STRING([--disable-resources], [Do not use mrc to store data in resources])])
+
+	AS_IF([test "x$enable_resources" != "xno" ], [
+		USE_RSRC=1
+	])
 fi
+
+AC_SUBST([USE_RSRC], [$USE_RSRC])
+
+AC_DEFINE_UNQUOTED([USE_RSRC], [$USE_RSRC], [Use mrc to store resources])
 
 dnl revision numbering is something used internally at the NKI
 AC_ARG_ENABLE(
@@ -95,7 +109,6 @@ AC_ARG_WITH([cif++],
 AC_SUBST([CIFPP_RSRC], [$CIFPP_RSRC])
 
 AS_IF([test "x$CIFPP_LIBS" = "x"], [
-	AC_PATH_PROG([PKG_CONFIG], [pkg-config])
 	if test -x "$PKG_CONFIG"
 	then
 		AX_PKG_CHECK_MODULES([CIFPP], [libcifpp], [], [], [AC_MSG_ERROR([the required package libcifpp is not installed])])
