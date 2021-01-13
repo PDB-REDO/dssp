@@ -52,9 +52,9 @@ AC_DEFINE_UNQUOTED([USE_RSRC], [$USE_RSRC], [Use mrc to store resources])
 dnl revision numbering is something used internally at the NKI
 AC_ARG_ENABLE(
 	revision,
-	[AS_HELP_STRING([--disable-revision], [Create a build number as revision])])
+	[AS_HELP_STRING([--enable-revision], [Create a build number as revision])])
 
-AS_IF([test "x$enable_revision" != "xno" ], [
+AS_IF([test "x$enable_revision" = "xyes" ], [
 	UPDATE_REVISION=1
 ])
 
@@ -99,10 +99,10 @@ AC_ARG_WITH([cif++],
 				AC_MSG_ERROR(['${withval}'' is not a valid directory for --with-cif++])
 			])
 			dnl AC_SUBST([CIFPP_CFLAGS], ["-I ${withval}/include"])
-			dnl AC_SUBST([CIFPP_LIBS], ["-L${withval}/.libs -lcif++"])
+			dnl AC_SUBST([CIFPP_LIBS], ["-L${withval}/.libs -lcifpp"])
 
 			CIFPP_CFLAGS="-I ${withval}/include"
-			CIFPP_LIBS="-L${withval}/.libs -lcif++"
+			CIFPP_LIBS="-L${withval}/.libs -lcifpp"
 			CIFPP_RSRC="${withval}/rsrc"
 
 			AC_SUBST([CIFPP_CFLAGS], [$CIFPP_CFLAGS])
@@ -126,9 +126,9 @@ Can't find the libcif++ header, Config.hpp.  Make sure that it
 is installed, and either use the --with-cif++ option or install
 pkg-config.])])
 
-			AX_CHECK_LIBRARY([CIFPP], [cif++/Config.hpp], [cif++],
+			AX_CHECK_LIBRARY([CIFPP], [cif++/Config.hpp], [cifpp],
 				 [
-					 LIBS="-lcif++ $LIBS"
+					 LIBS="-lcifpp $LIBS"
 				 ],
                  [AC_MSG_ERROR([libcif++ not found])])
 	fi

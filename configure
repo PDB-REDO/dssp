@@ -1373,7 +1373,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-resources      Use mrc to store data in resources
-  --disable-revision      Create a build number as revision
+  --enable-revision       Create a build number as revision
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -4129,7 +4129,7 @@ if test "${enable_revision+set}" = set; then :
 fi
 
 
-if test "x$enable_revision" != "xno" ; then :
+if test "x$enable_revision" = "xyes" ; then :
 
 	UPDATE_REVISION=1
 
@@ -7079,7 +7079,7 @@ else
 fi
 
 			CIFPP_CFLAGS="-I ${withval}/include"
-			CIFPP_LIBS="-L${withval}/.libs -lcif++"
+			CIFPP_LIBS="-L${withval}/.libs -lcifpp"
 			CIFPP_RSRC="${withval}/rsrc"
 
 			CIFPP_CFLAGS=$CIFPP_CFLAGS
@@ -7216,13 +7216,13 @@ fi
      ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Config.hpp" "ac_cv_header_cifpp_Config_hpp" "$ac_includes_default"
 if test "x$ac_cv_header_cifpp_Config_hpp" = xyes; then :
 
-       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lcif++" >&5
-$as_echo_n "checking for main in -lcif++... " >&6; }
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lcifpp" >&5
+$as_echo_n "checking for main in -lcifpp... " >&6; }
 if ${ac_cv_lib_cifpp_main+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcif++  $LIBS"
+LIBS="-lcifpp  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7271,7 +7271,7 @@ fi
 $as_echo "#define HAVE_CIFPP 1" >>confdefs.h
 
 
-					 LIBS="-lcif++ $LIBS"
+					 LIBS="-lcifpp $LIBS"
 
 else
   as_fn_error $? "libcif++ not found" "$LINENO" 5

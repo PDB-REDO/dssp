@@ -34,7 +34,6 @@
 #include <boost/format.hpp>
 #include <boost/date_time/gregorian/formatters.hpp>
 
-#include <cif++/Config.hpp>
 #include <cif++/Structure.hpp>
 #include <cif++/Secondary.hpp>
 #include <cif++/CifUtils.hpp>

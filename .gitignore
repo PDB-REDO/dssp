@@ -19,3 +19,4 @@ dssp
 src/config.hpp
 src/config.hpp.in~
 src/revision.hpp
+mkdssp
