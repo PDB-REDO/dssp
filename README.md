@@ -13,7 +13,9 @@ The DSSP program was designed by Wolfgang Kabsch and Chris Sander to
 standardize secondary structure assignment. DSSP is a database of secondary
 structure assignments (and much more) for all protein entries in the Protein
 Data Bank (PDB). DSSP is also the program that calculates DSSP entries from
-PDB entries. DSSP does not predict secondary structure.
+PDB entries.
+
+DSSP does not predict secondary structure.
 
 Requirements
 ------------
@@ -25,14 +27,14 @@ of handling C++17 code.
 Building
 --------
 
-Make sure you install libcif++ first before building.
+Make sure you install [libcif++](https://github.com/PDB-REDO/libcifpp) first before building.
 
 After that, building should be as easy as typing:
 
 ```
 ./configure
 make
-make install
+sudo make install
 ```
 
 Usage
