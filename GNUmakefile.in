@@ -33,7 +33,8 @@ LIBS				= @LIBS@ \
 					  @CIFPP_LIBS@ \
 					  @BOOST_IOSTREAMS_LIB@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
-					  @BOOST_DATE_TIME_LIB@
+					  @BOOST_DATE_TIME_LIB@ \
+					  @BOOST_REGEX_LIB@
 
 prefix				= $(DESTDIR)@prefix@
 exec_prefix			= @exec_prefix@

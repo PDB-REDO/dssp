@@ -87,6 +87,7 @@ AX_BOOST_BASE([1.65.1], [], [AC_MSG_ERROR([Could not find a recent version of bo
 AX_BOOST_IOSTREAMS
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_DATE_TIME
+AX_BOOST_REGEX
 
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
@@ -117,7 +118,7 @@ AS_IF([test "x$CIFPP_LIBS" = "x"], [
 		AX_PKG_CHECK_MODULES([CIFPP], [libcifpp], [], [], [AC_MSG_ERROR([the required package libcifpp is not installed])])
 	else
 		AC_CHECK_HEADER(
-	        [cif++/Config.hpp],
+	        [cif++/Cif++.hpp],
 	        [
 				dnl CIFPP_CFLAGS="-I ${withval}/include"
 			],
@@ -126,7 +127,7 @@ Can't find the libcif++ header, Config.hpp.  Make sure that it
 is installed, and either use the --with-cif++ option or install
 pkg-config.])])
 
-			AX_CHECK_LIBRARY([CIFPP], [cif++/Config.hpp], [cifpp],
+			AX_CHECK_LIBRARY([CIFPP], [cif++/Cif++.hpp], [cifpp],
 				 [
 					 LIBS="-lcifpp $LIBS"
 				 ],

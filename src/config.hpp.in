@@ -12,6 +12,9 @@
 /* define if the Boost::PROGRAM_OPTIONS library is available */
 #undef HAVE_BOOST_PROGRAM_OPTIONS
 
+/* define if the Boost::Regex library is available */
+#undef HAVE_BOOST_REGEX
+
 /* Define to 1 if CIFPP is found */
 #undef HAVE_CIFPP
 
