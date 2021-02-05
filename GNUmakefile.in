@@ -27,12 +27,12 @@ firstTarget: all
 CXX					= @CXX@
 CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@
 LDFLAGS				= @LDFLAGS@ @PTHREAD_CFLAGS@
-LIBS				= @LIBS@ \
-					  @CIFPP_LIBS@ \
+LIBS				= @CIFPP_LIBS@ \
 					  @BOOST_IOSTREAMS_LIB@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
 					  @BOOST_DATE_TIME_LIB@ \
-					  @BOOST_REGEX_LIB@
+					  @BOOST_REGEX_LIB@ \
+					  @LIBS@
 
 prefix				= $(DESTDIR)@prefix@
 exec_prefix			= @exec_prefix@
