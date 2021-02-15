@@ -20,11 +20,11 @@ AC_PREFIX_DEFAULT(/usr/local)
 AC_PROG_INSTALL
 PKG_PROG_PKG_CONFIG
 
+AX_PTHREAD
+
 AC_ARG_VAR([DEBUG], [Build a debug version of the application])
 
 AC_ARG_VAR([MRC], [Specify a location for the mrc executable])
-
-PKG_PROG_PKG_CONFIG
 
 dnl using resources?
 USE_RSRC=0
@@ -38,9 +38,9 @@ if test "x$MRC" = "x"; then
 else
 	AC_ARG_ENABLE(
 		resources,
-		[AS_HELP_STRING([--enable-resources], [Use mrc to store data in resources])])
+		[AS_HELP_STRING([--disable-resources], [Do not use mrc to store data in resources])])
 
-	AS_IF([test "x$enable_resources" = "xyes" ], [
+	AS_IF([test "x$enable_resources" != "xno" ], [
 		USE_RSRC=1
 	])
 fi
@@ -59,8 +59,6 @@ AS_IF([test "x$enable_revision" = "xyes" ], [
 ])
 
 AC_SUBST([UPDATE_REVISION], [$UPDATE_REVISION])
-
-AX_PTHREAD
 
 AC_CHECK_HEADER([filesystem], [], [AC_MSG_ERROR([The file <filesystem> is missing, perhaps you should install a more recent libstdc++ implementation.])])
 
@@ -132,6 +130,8 @@ pkg-config.])])
 					 LIBS="-lcifpp $LIBS"
 				 ],
                  [AC_MSG_ERROR([libcif++ not found])])
+
+		CIFPP_RSRC="\$(datadir)/libcifpp"
 	fi
 ])
 

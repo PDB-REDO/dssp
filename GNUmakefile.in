@@ -25,7 +25,7 @@
 firstTarget: all
 
 CXX					= @CXX@
-CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@
+CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@ @ZEEP_CFLAGS@
 LDFLAGS				= @LDFLAGS@ @PTHREAD_CFLAGS@
 LIBS				= @CIFPP_LIBS@ \
 					  @BOOST_IOSTREAMS_LIB@ \
@@ -147,10 +147,18 @@ OBJECTS = \
 	$(OBJDIR)/dssp.o
 
 ifneq "$(USE_RSRC)" "0"
+
+rsrc/%.dic: $(DATADIR)/%.dic.gz | rsrc
+	gzcat $^ > $@
+
+rsrc/%.dic: $(DATADIR)/%.dic | rsrc
+	ln -fs $^ $@
+
 $OBJECTS += dssp_rsrc.o
 
-$(OBJDIR)/dssp_rsrc.o: $(DATADIR)/mmcif_pdbx_v50.dic
+$(OBJDIR)/dssp_rsrc.o: rsrc/mmcif_pdbx_v50.dic
 	$(MRC) -o $$@ $$^
+
 endif
 
 $(OBJDIR)/dssp.o: src/revision.hpp

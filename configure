@@ -1382,7 +1382,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-resources      Use mrc to store data in resources
+  --disable-resources     Use mrc to store data in resources
   --enable-revision       Create a build number as revision
 
 Optional Packages:
@@ -4129,7 +4129,7 @@ if test "${enable_resources+set}" = set; then :
 fi
 
 
-	if test "x$enable_resources" = "xyes" ; then :
+	if test "x$enable_resources" != "xno" ; then :
 
 		USE_RSRC=1
 
