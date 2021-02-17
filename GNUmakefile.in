@@ -25,8 +25,8 @@
 firstTarget: all
 
 CXX					= @CXX@
-CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@
-LDFLAGS				= @LDFLAGS@ @PTHREAD_CFLAGS@
+CXXFLAGS			= @BOOST_CPPFLAGS@ @CXXFLAGS@ @CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@
+LDFLAGS				= @BOOST_LDFLAGS@ @LDFLAGS@ @PTHREAD_CFLAGS@
 LIBS				= @CIFPP_LIBS@ \
 					  @BOOST_IOSTREAMS_LIB@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
@@ -147,7 +147,7 @@ rsrc/%.dic: $(LIBCIFPP_DATA_DIR)/%.dic.gz | rsrc
 	zcat $^ > $@
 
 rsrc/%.dic: $(LIBCIFPP_DATA_DIR)/%.dic | rsrc
-	ln -fs $^ $@
+	ln -fs $(realpath $^) $@
 
 $(OBJDIR)/dssp_rsrc.o: rsrc/mmcif_pdbx_v50.dic
 	$(MRC) -o $@ $^
