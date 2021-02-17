@@ -144,7 +144,7 @@ rsrc:
 	@ mkdir -p $@
 
 rsrc/%.dic: $(LIBCIFPP_DATA_DIR)/%.dic.gz | rsrc
-	gzcat $^ > $@
+	zcat $^ > $@
 
 rsrc/%.dic: $(LIBCIFPP_DATA_DIR)/%.dic | rsrc
 	ln -fs $^ $@
