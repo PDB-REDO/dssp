@@ -25,7 +25,7 @@
 firstTarget: all
 
 CXX					= @CXX@
-CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@ @ZEEP_CFLAGS@
+CXXFLAGS			= @CXXFLAGS@ @CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@
 LDFLAGS				= @LDFLAGS@ @PTHREAD_CFLAGS@
 LIBS				= @CIFPP_LIBS@ \
 					  @BOOST_IOSTREAMS_LIB@ \
@@ -60,14 +60,7 @@ DEFINES				+= VERSION='"$(VERSION)"'
 
 CXXFLAGS            += -Wall -Wno-multichar
 
-CIFPP_RSRC			= @CIFPP_RSRC@
-
-ifneq "$(CIFPP_RSRC)" ""
-DATADIR				= $(CIFPP_RSRC)
-else
-DATADIR				= $(datadir)/libcifpp
-endif
-DEFINES				+= DATADIR='"$(DATADIR)"'
+LIBCIFPP_DATA_DIR	= @LIBCIFPP_DATA_DIR@
 
 # Use the DEBUG flag to build debug versions of the code
 DEBUG               = @DEBUG@
@@ -133,10 +126,7 @@ endif
 
 ifneq "$(USE_RSRC)" "0"
 
-rsrc:
-	@ mkdir -p $@
-
-rsrc/version.txt: $(REVISION_FILE) | rsrc
+rsrc/version.txt: $(REVISION_FILE)
 	cp $? $@
 
 endif
@@ -148,16 +138,19 @@ OBJECTS = \
 
 ifneq "$(USE_RSRC)" "0"
 
-rsrc/%.dic: $(DATADIR)/%.dic.gz | rsrc
+OBJECTS += $(OBJDIR)/dssp_rsrc.o
+
+rsrc:
+	@ mkdir -p $@
+
+rsrc/%.dic: $(LIBCIFPP_DATA_DIR)/%.dic.gz | rsrc
 	gzcat $^ > $@
 
-rsrc/%.dic: $(DATADIR)/%.dic | rsrc
+rsrc/%.dic: $(LIBCIFPP_DATA_DIR)/%.dic | rsrc
 	ln -fs $^ $@
 
-$OBJECTS += dssp_rsrc.o
-
 $(OBJDIR)/dssp_rsrc.o: rsrc/mmcif_pdbx_v50.dic
-	$(MRC) -o $$@ $$^
+	$(MRC) -o $@ $^
 
 endif
 

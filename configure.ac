@@ -52,9 +52,9 @@ AC_DEFINE_UNQUOTED([USE_RSRC], [$USE_RSRC], [Use mrc to store resources])
 dnl revision numbering is something used internally at the NKI
 AC_ARG_ENABLE(
 	revision,
-	[AS_HELP_STRING([--enable-revision], [Create a build number as revision])])
+	[AS_HELP_STRING([--disable-revision], [Create a build number as revision])])
 
-AS_IF([test "x$enable_revision" = "xyes" ], [
+AS_IF([test "x$enable_revision" != "xno" ], [
 	UPDATE_REVISION=1
 ])
 
@@ -90,6 +90,8 @@ AX_BOOST_REGEX
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
 
+dnl Check for libcifpp
+
 AC_ARG_WITH([cif++],
 	AS_HELP_STRING([--with-cif++=@<:@location@:>@],
 		[Use the cif++ library as specified.]),
@@ -98,22 +100,21 @@ AC_ARG_WITH([cif++],
 				AC_MSG_ERROR(['${withval}'' is not a valid directory for --with-cif++])
 			])
 			dnl AC_SUBST([CIFPP_CFLAGS], ["-I ${withval}/include"])
-			dnl AC_SUBST([CIFPP_LIBS], ["-L${withval}/.libs -lcifpp"])
+			dnl AC_SUBST([CIFPP_LIBS], ["-L${withval}/.libs -lcif++"])
 
 			CIFPP_CFLAGS="-I ${withval}/include"
 			CIFPP_LIBS="-L${withval}/.libs -lcifpp"
-			CIFPP_RSRC="${withval}/rsrc"
+			LIBCIFPP_DATA_DIR="${withval}/rsrc"
 
 			AC_SUBST([CIFPP_CFLAGS], [$CIFPP_CFLAGS])
 			AC_SUBST([CIFPP_LIBS], [$CIFPP_LIBS])
 		])
 
-AC_SUBST([CIFPP_RSRC], [$CIFPP_RSRC])
-
 AS_IF([test "x$CIFPP_LIBS" = "x"], [
 	if test -x "$PKG_CONFIG"
 	then
-		AX_PKG_CHECK_MODULES([CIFPP], [libcifpp], [], [], [AC_MSG_ERROR([the required package libcifpp is not installed])])
+		AX_PKG_CHECK_MODULES([CIFPP], [libcifpp], [], [], [AC_MSG_ERROR([the required package libcif++ is not installed])])
+		LIBCIFPP_DATA_DIR=$(pkg-config --variable=datalibdir libcifpp)
 	else
 		AC_CHECK_HEADER(
 	        [cif++/Cif++.hpp],
@@ -125,23 +126,26 @@ Can't find the libcif++ header, Config.hpp.  Make sure that it
 is installed, and either use the --with-cif++ option or install
 pkg-config.])])
 
-			AX_CHECK_LIBRARY([CIFPP], [cif++/Cif++.hpp], [cifpp],
-				 [
-					 LIBS="-lcifpp $LIBS"
-				 ],
-                 [AC_MSG_ERROR([libcif++ not found])])
-
-		CIFPP_RSRC="\$(datadir)/libcifpp"
+		AX_CHECK_LIBRARY([CIFPP], [cif++/Cif++.hpp], [cifpp],
+			[
+				LIBS="-lcifpp $LIBS"
+			],
+			[AC_MSG_ERROR([libcif++ not found])])
+		AS_IF([ test -f /usr/local/share/libcifpp/mmcif_pdbx_v50.dic.gz ], [LIBCIFPP_DATA_DIR=/usr/local/share/libcifpp/ ])
+		AS_IF([ test -f /var/cache/libcifpp/mmcif_pdbx_v50.dic.gz ], [LIBCIFPP_DATA_DIR=/var/cache/libcifpp ])
 	fi
 ])
 
+AC_ARG_VAR([LIBCIFPP_DATA_DIR], [Directory containing mmcif_pdbx_v50.dic file])
+AC_SUBST([LIBCIFPP_DATA_DIR], [$LIBCIFPP_DATA_DIR])
+
 dnl These are still needed outside the Debian environment
 AX_CHECK_LIBRARY([LIBZ], [zlib.h], [z],
-				 [ LIBS="$LIBS -lz" ],
-                 [AC_MSG_ERROR([libz not found - compressed files not supported])])
+	[ LIBS="$LIBS -lz" ],
+	[AC_MSG_ERROR([libz not found - compressed files not supported])])
 AX_CHECK_LIBRARY([LIBBZ2], [bzlib.h], [bz2],
-				 [ LIBS="$LIBS -lbz2"],
-                 [AC_MSG_ERROR([libbz2 not found - compressed files not supported])])
+	[ LIBS="$LIBS -lbz2"],
+	[AC_MSG_ERROR([libbz2 not found - compressed files not supported])])
 
 AC_SUBST([LIBS], [$LIBS])
 
