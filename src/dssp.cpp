@@ -466,8 +466,8 @@ int d_main(int argc, const char* argv[])
 	
 	po::options_description hidden_options("hidden options");
 	hidden_options.add_options()
-		("xyzin",				po::value<std::string>(),	"coordinates file")
-		("output",              po::value<std::string>(),	"Output to this file")
+		("xyzin,i",				po::value<std::string>(),	"coordinates file")
+		("output,o",            po::value<std::string>(),	"Output to this file")
 		("debug,d",				po::value<int>(),			"Debug level (for even more verbose output)")
 		;
 
