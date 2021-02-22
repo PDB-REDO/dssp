@@ -23,13 +23,22 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 firstTarget: all
+empty =
+space = $(empty) $(empty)
 
 CXX					= @CXX@
-CXXFLAGS			= @BOOST_CPPFLAGS@ @CXXFLAGS@ @CPPFLAGS@ @PTHREAD_CFLAGS@ @CIFPP_CFLAGS@
-LDFLAGS				= @BOOST_LDFLAGS@ @LDFLAGS@ @PTHREAD_CFLAGS@
-LIBS				= @CIFPP_LIBS@ \
-					  @BOOST_IOSTREAMS_LIB@ \
+CXXFLAGS			= @BOOST_CPPFLAGS@ \
+					  @CXXFLAGS@ \
+					  @CPPFLAGS@ \
+					  @PTHREAD_CFLAGS@ \
+					  @CIFPP_CFLAGS@
+LDFLAGS				= @BOOST_LDFLAGS@ \
+					  @LDFLAGS@ \
+					  @PTHREAD_CFLAGS@
+LIBS				= @PTHREAD_LIBS@ \
+					  @CIFPP_LIBS@ \
 					  @BOOST_PROGRAM_OPTIONS_LIB@ \
+					  @BOOST_IOSTREAMS_LIB@ \
 					  @BOOST_DATE_TIME_LIB@ \
 					  @BOOST_REGEX_LIB@ \
 					  @LIBS@
@@ -44,26 +53,19 @@ mandir				= @mandir@
 GNUmakefile: config.status GNUmakefile.in
 	$(SHELL) ./config.status
 
-ifneq "$(CHECK_CONFIG)" ""
-
-config.status: configure
-	$(SHELL) ./config.status --recheck
-
-configure: configure.ac
-	autoconf
-
-endif
-
 # main build variables
-VERSION				= @PACKAGE_VERSION@.0
-DEFINES				+= VERSION='"$(VERSION)"'
+PROGRAM				= @PACKAGE_NAME@
 
-CXXFLAGS            += -Wall -Wno-multichar
+VERSION				= @PACKAGE_VERSION@
 
-LIBCIFPP_DATA_DIR	= @LIBCIFPP_DATA_DIR@
+SEARCH_PATHS		= src test @LIBCIFPP_DATA_DIR@
+
+OBJECTS				= $(PROGRAM).o
+
+RESOURCES			= mmcif_pdbx_v50.dic
 
 # Use the DEBUG flag to build debug versions of the code
-DEBUG               = @DEBUG@
+DEBUG				= @DEBUG@
 
 ifeq "$(DEBUG)" "1"
 DEFINES				+= DEBUG
@@ -77,10 +79,9 @@ endif
 MRC					= @MRC@
 USE_RSRC			= @USE_RSRC@
 
-# targets
+VPATH += $(subst $(space),:,$(SEARCH_PATHS))
 
-VPATH += src:test
-
+CXXFLAGS            += -Wall -Wno-multichar
 CXXFLAGS			+= $(DEFINES:%=-D%)
 
 OBJDIR = obj
@@ -105,7 +106,7 @@ REVISION_FILE = version-info-$(REVISION).txt
 
 $(REVISION_FILE):
 	rm -f version-info-*.txt
-	@ echo dssp-version: $(VERSION) > $@
+	@ echo $(PROGRAM)-version: $(VERSION) > $@
 	@ git describe --match=build --dirty >> $@
 	@ git log --pretty=medium --date=iso8601 -1 >> $@
 
@@ -118,45 +119,30 @@ else
 
 src/revision.hpp:
 	@ echo 'const char kRevision[] = R"(' > $@
-	@ echo dssp-version: $(VERSION) >> $@
+	@ echo $(PROGRAM)-version: $(VERSION) >> $@
 	@ echo Date:   $$(date --iso-8601) >> $@
 	@ echo ')";' >> $@
 
 endif
 
-ifneq "$(USE_RSRC)" "0"
-
-rsrc/version.txt: $(REVISION_FILE)
-	cp $? $@
-
-endif
-
 # The program rules
 
-OBJECTS = \
-	$(OBJDIR)/dssp.o
-
 ifneq "$(USE_RSRC)" "0"
 
-OBJECTS += $(OBJDIR)/dssp_rsrc.o
+OBJECTS += $(PROGRAM)_rsrc.o
 
-rsrc:
-	@ mkdir -p $@
-
-rsrc/%.dic: $(LIBCIFPP_DATA_DIR)/%.dic.gz | rsrc
+# dictionaries may be found compressed
+%.dic: %.dic.gz
 	gunzip -c $^ > $@
 
-rsrc/%.dic: $(LIBCIFPP_DATA_DIR)/%.dic | rsrc
-	ln -fs $(realpath $^) $@
-
-$(OBJDIR)/dssp_rsrc.o: rsrc/mmcif_pdbx_v50.dic
+$(OBJDIR)/$(PROGRAM)_rsrc.o: $(RESOURCES)
 	$(MRC) -o $@ $^
 
 endif
 
-$(OBJDIR)/dssp.o: src/revision.hpp
+$(OBJDIR)/$(PROGRAM).o: src/revision.hpp
 
-mkdssp: $(OBJECTS)
+$(PROGRAM): $(OBJECTS:%.o=$(OBJDIR)/%.o)
 	@ echo '->' $@
 	@ $(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS) $(LIBS)
 
@@ -166,17 +152,17 @@ $(OBJDIR)/%.d: $(OBJDIR)/%.o
 
 .PHONY: clean all
 clean:
-	rm -rf mkdssp $(OBJDIR)/* src/revision.hpp
+	rm -rf $(PROGRAM) $(OBJDIR)/* src/revision.hpp
 
-all: mkdssp
+all: $(PROGRAM)
 
 .PHONY: install
-install: mkdssp
+install: $(PROGRAM)
 	install -d $(bindir)
-	install mkdssp $(bindir)/mkdssp
+	install $(PROGRAM) $(bindir)/$(PROGRAM)
 	install -d $(mandir)/man1
-	install -m 644 mkdssp.1 $(mandir)/man1/mkdssp.1;
-	gzip $(mandir)/man1/mkdssp.1;
+	install -m 644 doc/$(PROGRAM).1 $(mandir)/man1/$(PROGRAM).1;
+	gzip $(mandir)/man1/$(PROGRAM).1;
 
 .PHONY: FORCE
 FORCE:
