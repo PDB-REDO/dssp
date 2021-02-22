@@ -585,7 +585,7 @@ PACKAGE_STRING='mkdssp 4.0.0'
 PACKAGE_BUGREPORT='m.hekkelman@nki.nl'
 PACKAGE_URL=''
 
-ac_unique_file="src/dssp.cpp"
+ac_unique_file="src/mkdssp.cpp"
 ac_default_prefix=/usr/local
 # Factoring default headers for most tests.
 ac_includes_default="\
@@ -3733,6 +3733,7 @@ ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
 ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
+
 ac_config_headers="$ac_config_headers src/config.hpp"
 
 
@@ -5546,10 +5547,11 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
-USE_RSRC=0
 
-if test "x$MRC" = "x"; then
-	# Extract the first word of "mrc", so it can be a program name with args.
+		USE_RSRC=0
+
+	if test "x$MRC" = "x"; then
+		# Extract the first word of "mrc", so it can be a program name with args.
 set dummy mrc; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
@@ -5589,32 +5591,33 @@ $as_echo "no" >&6; }
 fi
 
 
-fi
+	fi
 
-if test "x$MRC" = "x"; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: The mrc application was not found, not using resources." >&5
+	if test "x$MRC" = "x"; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: The mrc application was not found, not using resources." >&5
 $as_echo "$as_me: WARNING: The mrc application was not found, not using resources." >&2;}
-else
-	# Check whether --enable-resources was given.
+	else
+		# Check whether --enable-resources was given.
 if test "${enable_resources+set}" = set; then :
   enableval=$enable_resources;
 fi
 
 
-	if test "x$enable_resources" != "xno" ; then :
+		if test "x$enable_resources" != "xno" ; then :
 
-		USE_RSRC=1
+			USE_RSRC=1
 
 fi
-fi
+	fi
 
-USE_RSRC=$USE_RSRC
+	USE_RSRC=$USE_RSRC
 
 
 
 cat >>confdefs.h <<_ACEOF
 #define USE_RSRC $USE_RSRC
 _ACEOF
+
 
 
 # Check whether --enable-revision was given.
@@ -5895,7 +5898,8 @@ fi
 done
 
 
-ac_fn_cxx_check_header_mongrel "$LINENO" "filesystem" "ac_cv_header_filesystem" "$ac_includes_default"
+
+	ac_fn_cxx_check_header_mongrel "$LINENO" "filesystem" "ac_cv_header_filesystem" "$ac_includes_default"
 if test "x$ac_cv_header_filesystem" = xyes; then :
 
 else
@@ -5903,23 +5907,6 @@ else
 fi
 
 
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <filesystem>
-int
-main ()
-{
-(void)std::filesystem::current_path();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-
-else
-
-		LIBS="$LIBS -lstdc++fs"
 
 		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -5936,7 +5923,24 @@ if ac_fn_cxx_try_link "$LINENO"; then :
 
 else
 
-				as_fn_error $? "Could not link filesystem" "$LINENO" 5
+			LIBS="$LIBS -lstdc++fs"
+
+			cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <filesystem>
+int
+main ()
+{
+(void)std::filesystem::current_path();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+
+else
+
+					as_fn_error $? "Could not link filesystem" "$LINENO" 5
 
 
 fi
@@ -5947,6 +5951,7 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+
 
 
 
@@ -7194,38 +7199,34 @@ fi
 	fi
 
 
-CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-
-
 
 # Check whether --with-cif++ was given.
 if test "${with_cif__+set}" = set; then :
   withval=$with_cif__;
-			if test -d ${withval}/include; then :
+				if test -d ${withval}/include; then :
 
 else
 
-				as_fn_error $? "'${withval}'' is not a valid directory for --with-cif++" "$LINENO" 5
+					as_fn_error $? "'${withval}'' is not a valid directory for --with-cif++" "$LINENO" 5
 
 fi
 
-			CIFPP_CFLAGS="-I ${withval}/include"
-			CIFPP_LIBS="-L${withval}/.libs -lcifpp"
-			LIBCIFPP_DATA_DIR="${withval}/rsrc"
+				CIFPP_CFLAGS="-I ${withval}/include"
+				CIFPP_LIBS="-L${withval}/.libs -lcifpp"
+				LIBCIFPP_DATA_DIR="${withval}/rsrc"
 
-			CIFPP_CFLAGS=$CIFPP_CFLAGS
+				CIFPP_CFLAGS=$CIFPP_CFLAGS
 
-			CIFPP_LIBS=$CIFPP_LIBS
+				CIFPP_LIBS=$CIFPP_LIBS
 
 
 fi
 
 
-if test "x$CIFPP_LIBS" = "x"; then :
+	if test "x$CIFPP_LIBS" = "x"; then :
 
-	if test -x "$PKG_CONFIG"
-	then
+		if test -x "$PKG_CONFIG"
+		then
 
 
 
@@ -7309,17 +7310,17 @@ fi
 
 
 
-		LIBCIFPP_DATA_DIR=$(pkg-config --variable=datalibdir libcifpp)
-	else
-		ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Cif++.hpp" "ac_cv_header_cifpp_Cifpp_hpp" "$ac_includes_default"
+			LIBCIFPP_DATA_DIR=$(pkg-config --variable=datalibdir libcifpp)
+		else
+			ac_fn_cxx_check_header_mongrel "$LINENO" "cif++/Cif++.hpp" "ac_cv_header_cifpp_Cifpp_hpp" "$ac_includes_default"
 if test "x$ac_cv_header_cifpp_Cifpp_hpp" = xyes; then :
 
 
 else
   as_fn_error $? "
-Can't find the libcif++ header, Config.hpp.  Make sure that it
-is installed, and either use the --with-cif++ option or install
-pkg-config." "$LINENO" 5
+	Can't find the libcif++ header, Config.hpp.  Make sure that it
+	is installed, and either use the --with-cif++ option or install
+	pkg-config." "$LINENO" 5
 fi
 
 
@@ -7401,24 +7402,25 @@ fi
 $as_echo "#define HAVE_CIFPP 1" >>confdefs.h
 
 
-				LIBS="-lcifpp $LIBS"
+					LIBS="-lcifpp $LIBS"
 
 else
   as_fn_error $? "libcif++ not found" "$LINENO" 5
 fi
 
-		if  test -f /usr/local/share/libcifpp/mmcif_pdbx_v50.dic.gz ; then :
+			if  test -f /usr/local/share/libcifpp/mmcif_pdbx_v50.dic.gz ; then :
   LIBCIFPP_DATA_DIR=/usr/local/share/libcifpp/
 fi
-		if  test -f /var/cache/libcifpp/mmcif_pdbx_v50.dic.gz ; then :
+			if  test -f /var/cache/libcifpp/mmcif_pdbx_v50.dic.gz ; then :
   LIBCIFPP_DATA_DIR=/var/cache/libcifpp
 fi
-	fi
+		fi
 
 fi
 
 
-LIBCIFPP_DATA_DIR=$LIBCIFPP_DATA_DIR
+	LIBCIFPP_DATA_DIR=$LIBCIFPP_DATA_DIR
+
 
 
 
