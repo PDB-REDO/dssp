@@ -1,6 +1,12 @@
 AC_PREREQ([2.69])
 
-AC_INIT([dssp], 4.0, [m.hekkelman@nki.nl])
+m4_define([dssp_version_major],[4])
+m4_define([dssp_version_minor],[0])
+m4_define([dssp_version_micro],[0])
+m4_define([dssp_version_extra],[])
+m4_define([dssp_version],[dssp_version_major().dssp_version_minor().dssp_version_micro()dssp_version_extra])
+
+AC_INIT([mkdssp], [dssp_version], [m.hekkelman@nki.nl])
 
 dnl Switch to a C++ compiler, and check if it works.
 AC_LANG(C++)
