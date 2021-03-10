@@ -24,7 +24,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if __has_include("config.hpp")
 #include "config.hpp"
+#endif
 
 #include <exception>
 #include <iostream>
@@ -78,7 +80,11 @@ void load_version_info()
 		rxVersionDate(R"(Date: +(\d{4}-\d{2}-\d{2}).*)"),
 		rxVersionNr2(R"(mkdssp-version: (\d+(?:\.\d+)+))");
 
+#if __has_include("revision.hpp")
 #include "revision.hpp"
+#else
+	const char* kRevision = "";
+#endif
 
 	struct membuf : public std::streambuf
 	{

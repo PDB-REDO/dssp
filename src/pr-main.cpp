@@ -25,10 +25,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "dssp.hpp"
-
+#if _MSC_VER
+#include <time.h>
+#include <winsock.h>
+#else
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
 
 #include <stdexcept>
 #include <iostream>
@@ -113,6 +116,7 @@ class RUsage
   public:
 	~RUsage()
 	{
+#if not _MSC_VER
 		if (cif::VERBOSE)
 		{
 			struct rusage u;
@@ -127,6 +131,7 @@ class RUsage
 			else
 				perror("Failed to get rusage");
 		}
+#endif
 	}
 
 	std::chrono::time_point<std::chrono::system_clock>	start = std::chrono::system_clock::now();
@@ -144,7 +149,11 @@ void load_version_info()
 		rxVersionNr(R"(build-(\d+)-g[0-9a-f]{7}(-dirty)?)"),
 		rxVersionDate(R"(Date: +(\d{4}-\d{2}-\d{2}).*)");
 
+#if __has_include("revision.hpp")
 #include "revision.hpp"
+#else
+	const char* kRevision = "";
+#endif
 
 	struct membuf : public std::streambuf
 	{
@@ -214,6 +223,7 @@ int main(int argc, char* argv[])
 	
 	try
 	{
+#if not _MSC_VER
 		cif::rsrc_loader::init({
 			{ cif::rsrc_loader_type::file, "." },
 #if defined DATADIR
@@ -223,6 +233,7 @@ int main(int argc, char* argv[])
 			{ cif::rsrc_loader_type::mrsrc, "", { gResourceIndex, gResourceData, gResourceName } }
 #endif
 		});
+#endif
 
 		load_version_info();
 		
