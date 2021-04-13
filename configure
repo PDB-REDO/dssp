@@ -7200,6 +7200,224 @@ fi
 
 
 
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking need to link zlib" >&5
+$as_echo_n "checking need to link zlib... " >&6; }
+
+	save_CPPFLAGS="$CPPFLAGS"
+	CPPFLAGS="$BOOST_CPPFLAGS $CPPFLAGS "
+
+	save_LDFLAGS="$LDFLAGS"
+	LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+
+	save_LIBS="$LIBS"
+	LIBS="$LIBS $BOOST $BOOST_IOSTREAMS_LIB"
+
+	NEED_ZLIB=0
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+	#include <boost/iostreams/filtering_stream.hpp>
+
+#include <boost/iostreams/filter/gzip.hpp>
+
+
+
+namespace io = boost::iostreams;
+
+
+
+int main()
+
+{
+
+io::filtering_stream<io::input> in;
+
+in.push(io::gzip_decompressor());
+
+
+
+return 0;
+
+}
+
+
+
+
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+
+			LIBS="$LIBS -lz"
+
+			cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+	#include <boost/iostreams/filtering_stream.hpp>
+
+#include <boost/iostreams/filter/gzip.hpp>
+
+
+
+namespace io = boost::iostreams;
+
+
+
+int main()
+
+{
+
+io::filtering_stream<io::input> in;
+
+in.push(io::gzip_decompressor());
+
+
+
+return 0;
+
+}
+
+
+
+
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+
+					{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+					NEED_ZLIB=1
+
+else
+  as_fn_error $? "Could not link iostreams, even with zlib" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+	CPPFLAGS="$save_CPPFLAGS"
+	LDFLAGS="$save_LDFLAGS"
+	LIBS="$save_LIBS"
+
+	if  test "x$NEED_ZLIB" != "x" ; then
+		LIBS="$LIBS -lz"
+	fi
+
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking need to link bzip2" >&5
+$as_echo_n "checking need to link bzip2... " >&6; }
+
+	save_CPPFLAGS="$CPPFLAGS"
+	CPPFLAGS="$BOOST_CPPFLAGS $CPPFLAGS "
+
+	save_LDFLAGS="$LDFLAGS"
+	LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+
+	save_LIBS="$LIBS"
+	LIBS="$LIBS $BOOST $BOOST_IOSTREAMS_LIB"
+
+	NEED_BZLIB=0
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+	#include <boost/iostreams/filtering_stream.hpp>
+
+#include <boost/iostreams/filter/bzip2.hpp>
+
+
+
+namespace io = boost::iostreams;
+
+
+
+int main()
+
+{
+
+io::filtering_stream<io::input> in;
+
+in.push(io::bzip2_decompressor());
+
+
+
+return 0;
+
+}
+
+
+
+
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+
+			LIBS="$LIBS -lbz2"
+
+			cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+	#include <boost/iostreams/filtering_stream.hpp>
+
+#include <boost/iostreams/filter/bzip2.hpp>
+
+
+
+namespace io = boost::iostreams;
+
+
+
+int main()
+
+{
+
+io::filtering_stream<io::input> in;
+
+in.push(io::bzip2_decompressor());
+
+
+
+return 0;
+
+}
+
+
+
+
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+
+					{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+					NEED_BZLIB=1
+
+else
+  as_fn_error $? "Could not link iostreams, even with bzip2" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+	CPPFLAGS="$save_CPPFLAGS"
+	LDFLAGS="$save_LDFLAGS"
+	LIBS="$save_LIBS"
+
+	if  test "x$NEED_BZLIB" != "x" ; then
+		LIBS="$LIBS -lbz2"
+	fi
+
+
+
+
 # Check whether --with-cif++ was given.
 if test "${with_cif__+set}" = set; then :
   withval=$with_cif__;
