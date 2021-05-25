@@ -24,3 +24,4 @@ msvc/x64/
 .vscode/
 .vs/
 
+build

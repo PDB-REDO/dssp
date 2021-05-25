@@ -475,6 +475,11 @@ int d_main(int argc, const char* argv[])
 		("xyzin,i",				po::value<std::string>(),	"coordinates file")
 		("output,o",            po::value<std::string>(),	"Output to this file")
 		("debug,d",				po::value<int>(),			"Debug level (for even more verbose output)")
+
+		("compounds",			po::value<std::string>(),	"Location of the components.cif file from CCD")
+		("components",			po::value<std::string>(),	"Location of the components.cif file from CCD, alias")
+		("extra-compounds",		po::value<std::string>(),	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
+		("mmcif-dictionary",	po::value<std::string>(),	"Path to the mmcif_pdbx.dic file to use instead of default")
 		;
 
 	po::options_description cmdline_options;
@@ -520,7 +525,22 @@ int d_main(int argc, const char* argv[])
 		cif::VERBOSE = vm["debug"].as<int>();
 
 	// --------------------------------------------------------------------
+
+	// Load extra CCD definitions, if any
+
+	if (vm.count("compounds"))
+		cif::addFileResource("components.cif", vm["compounds"].as<std::string>());
+	else if (vm.count("components"))
+		cif::addFileResource("components.cif", vm["components"].as<std::string>());
 	
+	if (vm.count("extra-compounds"))
+		mmcif::CompoundFactory::instance().pushDictionary(vm["extra-compounds"].as<std::string>());
+	
+	// And perhaps a private mmcif_pdbx dictionary
+
+	if (vm.count("mmcif-dictionary"))
+		cif::addFileResource("mmcif_pdbx_v50.dic", vm["mmcif-dictionary"].as<std::string>());
+
 	if (vm.count("dict"))
 	{
 		for (auto dict: vm["dict"].as<std::vector<std::string>>())
