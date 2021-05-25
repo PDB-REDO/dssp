@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-include(FindPkgConfig)
-
 # set the project name
 project(mkdssp VERSION 4.0.0)
 
@@ -51,29 +49,28 @@ set (Boost_DETAILED_FAILURE_MSG ON)
 
 find_package(Boost 1.73.0 REQUIRED COMPONENTS system iostreams regex date_time program_options)
 
+find_package(cifpp 1.0 REQUIRED)
+
 set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-pkg_check_modules(LibcifPP libcifpp)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/src
+	PUBLIC ${cifpp_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
 )
 
 add_executable(mkdssp ${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
-
-include_directories(${PROJECT_NAME} PUBLIC ${LibcifPP_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
-target_link_libraries(${PROJECT_NAME} ${LibcifPP_LINK_LIBRARIES} ${Boost_LIBRARIES} z bz2 Threads::Threads)
+target_link_libraries(${PROJECT_NAME} CifPP::cifpp ${Boost_LIBRARIES} Threads::Threads)
 
 if(MSVC)
     # make msvc standards compliant...
     target_compile_options(${PROJECT_NAME} PRIVATE /permissive-)
-    target_compile_options(unit-test PRIVATE /permissive-)
 endif()
 

@@ -19,4 +19,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Object Include="..\mkdssp_rsrc.obj">
+      <Filter>Source Files</Filter>
+    </Object>
+  </ItemGroup>
 </Project>
