@@ -55,9 +55,6 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-find_library(Z z)
-find_library(BZ2 bz2)
-
 include_directories(
     ${PROJECT_SOURCE_DIR}/src
 	PUBLIC ${cifpp_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
@@ -69,10 +66,15 @@ install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
-target_link_libraries(${PROJECT_NAME} CifPP::cifpp ${Boost_LIBRARIES} Threads::Threads ${Z} ${BZ2})
+target_link_libraries(${PROJECT_NAME} CifPP::cifpp ${Boost_LIBRARIES} Threads::Threads)
 
 if(MSVC)
     # make msvc standards compliant...
     target_compile_options(${PROJECT_NAME} PRIVATE /permissive-)
+else()
+	find_library(Z z)
+	find_library(BZ2 bz2)
+
+	target_link_libraries(${PROJECT_NAME} ${Z} ${BZ2})
 endif()
 
