@@ -43,9 +43,9 @@ if(MSVC)
 	get_WIN32_WINNT(ver)
 	add_definitions(-D_WIN32_WINNT=${ver})
 
-	# On Windows, do not install in the system location by default
-	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-		message(WARNING "The library and auxiliary files will be installed in $ENV{LOCALAPPDATA}/${PROJECT_NAME}")
+	# On Windows, do not install in the system location
+	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT ($ENV{LOCALAPPDATA} STREQUAL ""))
+		message(WARNING "The executable will be installed in $ENV{LOCALAPPDATA}/${PROJECT_NAME}")
 		set(CMAKE_INSTALL_PREFIX "$ENV{LOCALAPPDATA}/${PROJECT_NAME}" CACHE PATH "..." FORCE)
 	endif()
 
@@ -121,7 +121,7 @@ find_package(ZLIB)
 find_package(BZip2)
 find_package(cifpp 1.0 REQUIRED)
 
-if(USE_RSRC)
+if(CIFPP_FOUND)
 	add_compile_definitions("DATA_DIR=\"${CIFPP_SHARE_DIR}\"")
 endif()
 
@@ -136,13 +136,22 @@ if (BZIP2_FOUND)
 	link_libraries(BZip2::BZip2)
 endif()
 
+if(USE_RSRC)
+	add_custom_command(OUTPUT mkdssp_rsrc.obj
+		COMMAND ${MRC} -o mkdssp_rsrc.obj ${CIFPP_SHARE_DIR}/mmcif_pdbx_v50.dic ${COFF_SPEC}
+	)
+
+	set(DSSP_RESOURCE mkdssp_rsrc.obj)
+endif()
+
 include_directories(
     ${PROJECT_SOURCE_DIR}/src
 	PUBLIC ${cifpp_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
 )
 
 add_executable(mkdssp
-	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
+	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp
+	${DSSP_RESOURCE})
 
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}

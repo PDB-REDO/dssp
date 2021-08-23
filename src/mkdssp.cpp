@@ -183,7 +183,7 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 			case mmcif::Helix::Start:		helix[static_cast<int>(helixType)] = '>'; break;
 			case mmcif::Helix::End:			helix[static_cast<int>(helixType)] = '<'; break;
 			case mmcif::Helix::StartAndEnd:	helix[static_cast<int>(helixType)] = 'X'; break;
-			case mmcif::Helix::Middle:		helix[static_cast<int>(helixType)] = (helixType == mmcif::HelixType::rh_pp ? 'P' : ('3' + static_cast<int>(helixType))); break;
+			case mmcif::Helix::Middle:		helix[static_cast<int>(helixType)] = (helixType == mmcif::HelixType::rh_pp ? 'P' : static_cast<char>('3' + static_cast<int>(helixType))); break;
 		}
 	}
 
@@ -560,14 +560,14 @@ int d_main(int argc, const char* argv[])
 
 	if (fmt.empty() and vm.count("output"))
 	{
-		fs::path p = vm["output"].as<std::string>();
+		fs::path output = vm["output"].as<std::string>();
 	
-		if (p.extension() == ".gz")
-			p = p.stem();
-		else if (p.extension() == ".bz2")
-			p = p.stem();
+		if (output.extension() == ".gz")
+			output = output.stem();
+		else if (output.extension() == ".bz2")
+			output = output.stem();
 
-		if (p.extension() == ".dssp")
+		if (output.extension() == ".dssp")
 			fmt = "dssp";
 		else
 			fmt = "cif";
@@ -578,8 +578,8 @@ int d_main(int argc, const char* argv[])
 
 	if (vm.count("output"))
 	{
-		fs::path p = vm["output"].as<std::string>();
-		std::ofstream of(p, std::ios_base::out | std::ios_base::binary);
+		fs::path output = vm["output"].as<std::string>();
+		std::ofstream of(output, std::ios_base::out | std::ios_base::binary);
 
 		if (not of.is_open())
 		{
@@ -589,9 +589,9 @@ int d_main(int argc, const char* argv[])
 
 		io::filtering_stream<io::output> out;
 		
-		if (p.extension() == ".gz")
+		if (output.extension() == ".gz")
 			out.push(io::gzip_compressor());
-		else if (p.extension() == ".bz2")
+		else if (output.extension() == ".bz2")
 			out.push(io::bzip2_compressor());
 
 		out.push(of);
