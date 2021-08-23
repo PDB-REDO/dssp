@@ -63,6 +63,14 @@ if(MSVC)
 	set(COFF_SPEC "--coff=${COFF_TYPE}")
 endif()
 
+if(UNIX AND NOT APPLE)
+	# On Linux, install in the $HOME/.local folder by default
+	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+		message(WARNING "The library and auxiliary files will be installed in $ENV{HOME}/.local")
+		set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "..." FORCE)
+	endif()
+endif()
+
 # Create a revision file, containing the current git version info
 
 find_package(Git)
