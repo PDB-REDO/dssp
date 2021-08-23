@@ -139,3 +139,8 @@ add_executable(mkdssp
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
+
+# manual
+
+install(FILES doc/mkdssp.1 DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
+
