@@ -80,11 +80,7 @@ void load_version_info()
 		rxVersionDate(R"(Date: +(\d{4}-\d{2}-\d{2}).*)"),
 		rxVersionNr2(R"(mkdssp-version: (\d+(?:\.\d+)+))");
 
-#if __has_include("revision.hpp")
 #include "revision.hpp"
-#else
-	const char* kRevision = "";
-#endif
 
 	struct membuf : public std::streambuf
 	{
@@ -624,6 +620,10 @@ int main(int argc, const char* argv[])
 
 	try
 	{
+#if defined(DATA_DIR)
+		cif::addDataDirectory(DATA_DIR);
+#endif
+
 		load_version_info();
 
 		result = d_main(argc, argv);
