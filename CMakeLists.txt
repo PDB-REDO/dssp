@@ -45,8 +45,8 @@ if(MSVC)
 
 	# On Windows, do not install in the system location
 	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT ($ENV{LOCALAPPDATA} STREQUAL ""))
-		message(WARNING "The executable will be installed in $ENV{LOCALAPPDATA}/${PROJECT_NAME}")
-		set(CMAKE_INSTALL_PREFIX "$ENV{LOCALAPPDATA}/${PROJECT_NAME}" CACHE PATH "..." FORCE)
+		message(WARNING "The executable will be installed in $ENV{LOCALAPPDATA}")
+		set(CMAKE_INSTALL_PREFIX "$ENV{LOCALAPPDATA}" CACHE PATH "..." FORCE)
 	endif()
 
 	# Find out the processor type for the target
@@ -92,7 +92,7 @@ string(TIMESTAMP BUILD_DATE_TIME "%Y-%m-%d" UTC)
 configure_file("${CMAKE_SOURCE_DIR}/src/revision.hpp.in" "${CMAKE_BINARY_DIR}/revision.hpp" @ONLY)
 
 # Optionally use mrc to create resources
-find_program(MRC mrc HINTS "$ENV{LOCALAPPDATA}/mrc" "${CMAKE_INSTALL_PREFIX}/../mrc" "/usr/local/bin")
+find_program(MRC mrc HINTS "$ENV{LOCALAPPDATA}/bin"  "$ENV{LOCALAPPDATA}/mrc" "${CMAKE_INSTALL_PREFIX}/../mrc" "/usr/local/bin")
 
 if(MRC)
 	option(USE_RSRC "Use mrc to create resources" ON)
@@ -119,7 +119,7 @@ message(STATUS "Boost libraries in: ${Boost_LIBRARY_DIRS}")
 
 find_package(ZLIB)
 find_package(BZip2)
-find_package(cifpp 1.0 REQUIRED)
+find_package(cifpp 1.0 REQUIRED HINTS $ENV{LOCALAPPDATA}/cifpp)
 
 if(CIFPP_FOUND)
 	add_compile_definitions("DATA_DIR=\"${CIFPP_SHARE_DIR}\"")
@@ -150,6 +150,8 @@ include_directories(
 )
 
 add_executable(mkdssp
+	${PROJECT_SOURCE_DIR}/src/dssp.cpp
+	${PROJECT_SOURCE_DIR}/src/dssp.hpp
 	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp
 	${DSSP_RESOURCE})
 
@@ -159,5 +161,32 @@ install(TARGETS ${PROJECT_NAME}
 
 # manual
 
-install(FILES doc/mkdssp.1 DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
+install(FILES doc/mkdssp.1
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
 
+# test
+
+add_executable(unit-test ${PROJECT_SOURCE_DIR}/test/unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp.cpp ${DSSP_RESOURCE})
+
+target_include_directories(unit-test PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(unit-test Threads::Threads ${Boost_LIBRARIES} cifpp::cifpp)
+
+if(${ZLIB_FOUND})
+	target_link_libraries(unit-test ZLIB::ZLIB)
+endif()
+
+if(${BZip2_FOUND})
+	target_link_libraries(unit-test BZip2::BZip2)
+endif()
+
+if(MSVC)
+	# Specify unwind semantics so that MSVC knowns how to handle exceptions
+	target_compile_options(unit-test PRIVATE /EHsc)
+endif()
+
+add_test(NAME unit-test
+	COMMAND $<TARGET_FILE:unit-test>
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)
