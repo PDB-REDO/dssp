@@ -60,9 +60,11 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 
 	std::string line_t, line_r;
 	BOOST_ASSERT (std::getline(test, line_t) and std::getline(reference, line_r));
-	BOOST_ASSERT(line_t.compare(0, 104,  "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== ") == 0);
 
-	for (int line_nr = 1; ; ++line_nr)
+	const char* kHeaderLineStart = "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ====";
+	BOOST_ASSERT(line_t.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
+
+	for (int line_nr = 2; ; ++line_nr)
 	{
 		bool done_t = not std::getline(test, line_t);
 		bool done_r = not std::getline(reference, line_r);
@@ -102,8 +104,6 @@ BOOST_AUTO_TEST_CASE(ut_mmcif)
 	BOOST_ASSERT(reference.is_open());
 
 	std::string line_t, line_r;
-	BOOST_ASSERT (std::getline(test, line_t) and std::getline(reference, line_r));
-	BOOST_ASSERT(line_t.compare(0, 104,  "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== ") == 0);
 
 	for (int line_nr = 1; ; ++line_nr)
 	{
