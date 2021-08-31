@@ -26,6 +26,17 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /W4")
 endif()
 
+if(NOT $ENV{CCP4} STREQUAL "")
+	set(BUILD_SHARED_LIBS ON)
+
+	set(CCP4 $ENV{CCP4})
+	list(PREPEND CMAKE_MODULE_PATH "${CCP4}/Lib")
+	list(APPEND CMAKE_PREFIX_PATH ${CCP4})
+	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+		set(CMAKE_PREFIX_PATH ${CCP4})
+	endif()
+endif()
+
 if(MSVC)
     # make msvc standards compliant...
     add_compile_options(/permissive-)
@@ -112,7 +123,7 @@ set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads REQUIRED)
 
 set (Boost_DETAILED_FAILURE_MSG ON)
-find_package(Boost 1.71.0 REQUIRED COMPONENTS program_options system iostreams regex date_time)
+find_package(Boost 1.70.0 REQUIRED COMPONENTS program_options system iostreams regex date_time)
 # extra diagnostic -- helpful for problem with FindBoost.cmake
 message(STATUS "Boost headers in: ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost libraries in: ${Boost_LIBRARY_DIRS}")
