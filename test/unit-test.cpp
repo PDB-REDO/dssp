@@ -54,15 +54,16 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 
 	writeDSSP(structure, dssp, test);
 
-	std::ifstream reference("1cbs.dssp");
+	std::ifstream reference("1cbs.dssp", std::ios::binary);
 
-	BOOST_ASSERT(reference.is_open());
+	BOOST_CHECK(reference.is_open());
 
 	std::string line_t, line_r;
-	BOOST_ASSERT (std::getline(test, line_t) and std::getline(reference, line_r));
+	BOOST_CHECK(std::getline(test, line_t) and std::getline(reference, line_r));
 
 	const char* kHeaderLineStart = "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ====";
-	BOOST_ASSERT(line_t.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
+	BOOST_CHECK(line_t.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
+	BOOST_CHECK(line_r.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
 
 	for (int line_nr = 2; ; ++line_nr)
 	{
