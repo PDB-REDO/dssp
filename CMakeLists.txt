@@ -172,8 +172,13 @@ install(TARGETS ${PROJECT_NAME}
 
 # manual
 
-install(FILES doc/mkdssp.1
-	DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
+if(UNIX)
+	install(FILES doc/mkdssp.1
+		DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
+elseif(MSVC AND EXISTS "${CCP4}/html")
+	install(FILES doc/mkdssp.html
+		DESTINATION ${CCP4}/html)
+endif()
 
 # test
 

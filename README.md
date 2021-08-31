@@ -32,12 +32,20 @@ Make sure you install [libcif++](https://github.com/PDB-REDO/libcifpp) first bef
 After that, building should be as easy as typing:
 
 ```
-./configure
-make
-sudo make install
+git clone https://github.com/PBD-REDO/dssp.git
+cd dssp
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+ctest -C Release
+cmake --install .
 ```
+
+This will install the `mkdssp` program in `$HOME/.local/bin`. If you want to
+install elsewhere, specify the prefix with the [CMAKE_INSTALL_PREFIX](https://cmake.org/cmake/help/v3.21/variable/CMAKE_INSTALL_PREFIX.html) variable.
 
 Usage
 -----
 
-See `man mkdssp` for more info.
+See [manual page](doc/mkdssp.pdf) for more info.
