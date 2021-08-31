@@ -94,7 +94,7 @@ if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
 else()
     message(WARNING "Git not found, cannot set version info")
 
-    SET(BUILD_VERSION_STRING "unknown")
+    SET(BUILD_VERSION_STRING ${PROJECT_VERSION})
 endif()
 
 # generate version.h
@@ -175,7 +175,9 @@ install(TARGETS ${PROJECT_NAME}
 if(UNIX)
 	install(FILES doc/mkdssp.1
 		DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
-elseif(MSVC AND EXISTS "${CCP4}/html")
+endif()
+
+if(EXISTS "${CCP4}/html")
 	install(FILES doc/mkdssp.html
 		DESTINATION ${CCP4}/html)
 endif()
