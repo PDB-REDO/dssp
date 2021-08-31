@@ -1,0 +1,7 @@
+Version 4.0.1
+- Switch from GNU configure to cmake as the build environment
+
+Version 4.0.0
+- Write the secondary structure information as an annotation to an mmCIF file
+  (old format is still available as an option)
+- Added the recognition of Poly-Proline helices
