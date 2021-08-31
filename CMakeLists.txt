@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(mkdssp VERSION 4.0.0 LANGUAGES CXX)
+project(mkdssp VERSION 4.0.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -26,7 +26,7 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /W4")
 endif()
 
-if(NOT $ENV{CCP4} STREQUAL "")
+if(NOT "$ENV{CCP4}" STREQUAL "")
 	set(BUILD_SHARED_LIBS ON)
 
 	set(CCP4 $ENV{CCP4})
