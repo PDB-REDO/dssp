@@ -208,3 +208,16 @@ endif()
 add_test(NAME unit-test
 	COMMAND $<TARGET_FILE:unit-test>
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)
+
+option(DSSP_BUILD_INSTALLER "Build an installer" OFF)
+if(DSSP_BUILD_INSTALLER)
+	include(InstallRequiredSystemLibraries)
+	set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+	
+	# NSIS options
+	set(CPACK_NSIS_MODIFY_PATH ON)
+
+	# configuration done, include CPack
+
+	include(CPack)
+endif()
