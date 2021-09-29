@@ -1,3 +1,6 @@
+Version 4.0.2
+- Dropped support for reading bzip2 files directly. gzipped is still supported
+
 Version 4.0.1
 - Switch from GNU configure to cmake as the build environment
 
