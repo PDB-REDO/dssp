@@ -1,3 +1,27 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+# Copyright (c) 2021 NKI/AVL, Netherlands Cancer Institute
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
@@ -5,30 +29,28 @@ project(mkdssp VERSION 4.0.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-enable_testing()
-
 include(GNUInstallDirs)
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CMakePackageConfigHelpers)
 include(Dart)
+include(FindFilesystem)
 include(GenerateExportHeader)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
-endif()
-if(MSVC)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /W4")
+find_package(Filesystem REQUIRED)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
+elseif(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 endif()
 
 if(NOT "$ENV{CCP4}" STREQUAL "")
-	set(BUILD_SHARED_LIBS ON)
-
 	set(CCP4 $ENV{CCP4})
 	list(PREPEND CMAKE_MODULE_PATH "${CCP4}/Lib")
 	list(APPEND CMAKE_PREFIX_PATH ${CCP4})
@@ -55,9 +77,9 @@ if(MSVC)
 	add_definitions(-D_WIN32_WINNT=${ver})
 
 	# On Windows, do not install in the system location
-	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT ($ENV{LOCALAPPDATA} STREQUAL ""))
-		message(WARNING "The executable will be installed in $ENV{LOCALAPPDATA}")
-		set(CMAKE_INSTALL_PREFIX "$ENV{LOCALAPPDATA}" CACHE PATH "..." FORCE)
+	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT BUILD_FOR_CCP4)
+		message(STATUS "The library and auxiliary files will be installed in $ENV{LOCALAPPDATA}/${PROJECT_NAME}")
+		set(CMAKE_INSTALL_PREFIX "$ENV{LOCALAPPDATA}/${PROJECT_NAME}" CACHE PATH "..." FORCE)
 	endif()
 
 	# Find out the processor type for the target
@@ -120,32 +142,9 @@ endif()
 
 set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
-find_package(Threads REQUIRED)
+find_package(Threads)
 
-set (Boost_DETAILED_FAILURE_MSG ON)
-find_package(Boost 1.70.0 REQUIRED COMPONENTS program_options system iostreams regex date_time)
-# extra diagnostic -- helpful for problem with FindBoost.cmake
-message(STATUS "Boost headers in: ${Boost_INCLUDE_DIR}")
-message(STATUS "Boost libraries in: ${Boost_LIBRARY_DIRS}")
-
-find_package(ZLIB)
-find_package(BZip2)
-find_package(cifpp 1.0 REQUIRED HINTS $ENV{LOCALAPPDATA}/cifpp)
-
-if(CIFPP_FOUND)
-	add_compile_definitions("DATA_DIR=\"${CIFPP_SHARE_DIR}\"")
-endif()
-
-include_directories(${Boost_INCLUDE_DIR} cifpp::cifpp ${CMAKE_SOURCE_DIR}/include)
-link_libraries(${Boost_LIBRARIES} cifpp::cifpp ${CMAKE_THREAD_LIBS_INIT})
-
-if (ZLIB_FOUND)
-	link_libraries(ZLIB::ZLIB)
-endif()
-
-if (BZIP2_FOUND)
-	link_libraries(BZip2::BZip2)
-endif()
+find_package(cifpp 2.0.0 REQUIRED)
 
 if(USE_RSRC)
 	add_custom_command(OUTPUT mkdssp_rsrc.obj
@@ -155,16 +154,14 @@ if(USE_RSRC)
 	set(DSSP_RESOURCE mkdssp_rsrc.obj)
 endif()
 
-include_directories(
-    ${PROJECT_SOURCE_DIR}/src
-	PUBLIC ${cifpp_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
-)
-
 add_executable(mkdssp
 	${PROJECT_SOURCE_DIR}/src/dssp.cpp
 	${PROJECT_SOURCE_DIR}/src/dssp.hpp
 	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp
 	${DSSP_RESOURCE})
+
+target_include_directories(mkdssp PRIVATE cifpp::cifpp ${CMAKE_SOURCE_DIR}/include ${cifpp_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${CMAKE_BINARY_DIR})
+target_link_libraries(mkdssp PRIVATE cifpp::cifpp ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
@@ -187,23 +184,18 @@ endif()
 add_executable(unit-test ${PROJECT_SOURCE_DIR}/test/unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp.cpp ${DSSP_RESOURCE})
 
 target_include_directories(unit-test PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(unit-test Threads::Threads ${Boost_LIBRARIES} cifpp::cifpp)
-
-if(${ZLIB_FOUND})
-	target_link_libraries(unit-test ZLIB::ZLIB)
-endif()
-
-if(${BZip2_FOUND})
-	target_link_libraries(unit-test BZip2::BZip2)
-endif()
+target_link_libraries(unit-test Threads::Threads cifpp::cifpp)
 
 if(MSVC)
 	# Specify unwind semantics so that MSVC knowns how to handle exceptions
 	target_compile_options(unit-test PRIVATE /EHsc)
 endif()
+
+enable_testing()
 
 add_test(NAME unit-test
 	COMMAND $<TARGET_FILE:unit-test>
