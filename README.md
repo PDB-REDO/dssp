@@ -32,7 +32,7 @@ Make sure you install [libcif++](https://github.com/PDB-REDO/libcifpp) first bef
 After that, building should be as easy as typing:
 
 ```
-git clone https://github.com/PBD-REDO/dssp.git
+git clone https://github.com/PDB-REDO/dssp.git
 cd dssp
 mkdir build
 cd build
