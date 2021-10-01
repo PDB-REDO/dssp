@@ -150,6 +150,7 @@ if(NOT BUILD_SHARED_LIBS)
 endif()
 
 find_package(cifpp 2.0.0 REQUIRED)
+find_package(Boost COMPONENTS date_time)
 
 if(USE_RSRC)
 	add_custom_command(OUTPUT mkdssp_rsrc.obj
@@ -166,7 +167,7 @@ add_executable(mkdssp
 	${DSSP_RESOURCE})
 
 target_include_directories(mkdssp PRIVATE cifpp::cifpp ${CMAKE_SOURCE_DIR}/include ${cifpp_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${CMAKE_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE cifpp::cifpp ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(mkdssp PRIVATE cifpp::cifpp Boost::date_time ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
@@ -193,7 +194,7 @@ target_include_directories(unit-test PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(unit-test Threads::Threads cifpp::cifpp)
+target_link_libraries(unit-test Threads::Threads cifpp::cifpp Boost::date_time)
 
 if(MSVC)
 	# Specify unwind semantics so that MSVC knowns how to handle exceptions
