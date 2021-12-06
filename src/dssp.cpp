@@ -1,17 +1,17 @@
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
- * 
+ *
  * Copyright (c) 2020 NKI/AVL, Netherlands Cancer Institute
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -114,15 +114,22 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 /*
 	This is the header line for the residue lines in a DSSP file:
 
-	#  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA
+	#  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA            CHAIN AUTHCHAIN     NUMBER     RESNUM        BP1        BP2    N-H-->O    O-->H-N    N-H-->O    O-->H-N
  */
 	boost::format kDSSPResidueLine(
-		"%5.5d%5.5d%1.1s%1.1s %c  %c%c%c%c%c%c%c%c%c%4.4d%4.4d%c%4.4d %11s%11s%11s%11s  %6.3f%6.1f%6.1f%6.1f%6.1f %6.1f %6.1f %6.1f");
+		"%5.5d%5.5d%1.1s%1.1s %c  %c%c%c%c%c%c%c%c%c%4.4s%4.4s%c%4.4s %11s%11s%11s%11s  %6.3f%6.1f%6.1f%6.1f%6.1f %6.1f %6.1f %6.1f             %4.4s      %4.4s %10d %10d %10d %10d %10d %10d %10d %10d");
 
 	auto& residue = info.residue();
 
+	char chainChar;
 	if (residue.asymID().length() > 1)
-		throw std::runtime_error("This file contains data that won't fit in the original DSSP format");
+	{
+		chainChar = '>';
+	}
+	else
+	{
+		chainChar = residue.asymID()[0];
+	}
 
 	char code = 'X';
 	if (mmcif::kAAMap.find(residue.compoundID()) != mmcif::kAAMap.end())
@@ -168,7 +175,7 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 
 	double alpha = residue.alpha();
 	char chirality = alpha == 360 ? ' ' : (alpha < 0 ? '-' : '+');
-	
+
 	uint32_t bp[2] = {};
 	char bridgelabel[2] = { ' ', ' ' };
 	for (uint32_t i: { 0, 1 })
@@ -186,35 +193,39 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 		sheet = 'A' + (info.sheet() - 1) % 26;
 
 	std::string NHO[2], ONH[2];
+	int nNHO[2], nONH[2];
 	for (int i: { 0, 1 })
 	{
 		const auto& [donor, donorE] = info.donor(i);
 		const auto& [acceptor, acceptorE] = info.acceptor(i);
-		
-		NHO[i] = ONH[i] = "0, 0.0";
 
+		NHO[i] = ONH[i] = "0, 0.0";
+		nNHO[i] = nONH[i] = 0;
 		if (acceptor)
 		{
 			auto d = acceptor.nr() - info.nr();
 			NHO[i] = (boost::format("%d,%3.1f") % d % acceptorE).str();
+			nNHO[i] = d;
 		}
 
 		if (donor)
 		{
 			auto d = donor.nr() - info.nr();
 			ONH[i] = (boost::format("%d,%3.1f") % d % donorE).str();
+			nONH[i] = d;
 		}
 	}
 
 	auto ca = residue.atomByID("CA");
 	auto const& [cax, cay, caz] = ca.location();
 
-	return (kDSSPResidueLine % info.nr() % ca.authSeqID() % ca.pdbxAuthInsCode() % ca.authAsymID() % code %
+	return (kDSSPResidueLine % info.nr() % ca.authSeqID() % ca.pdbxAuthInsCode() % chainChar % code %
 		ss % helix[3] % helix[0] % helix[1] % helix[2] % bend % chirality % bridgelabel[0] % bridgelabel[1] %
 		bp[0] % bp[1] % sheet % floor(info.accessibility() + 0.5) %
 		NHO[0] % ONH[0] % NHO[1] % ONH[1] %
 		residue.tco() % residue.kappa() % alpha % residue.phi() % residue.psi() %
-		cax % cay % caz).str();
+		cax % cay % caz % ca.labelAsymID() % ca.authAsymID() %
+		info.nr() % ca.authSeqID() % bp[0] % bp[1] % nNHO[0] % nONH[0] % nNHO[1] % nONH[1]).str();
 }
 
 void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ostream& os)
@@ -279,8 +290,7 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 	os << "    LADDERS PER SHEET                ." << std::endl;
 
 	// per residue information
-
-	os << "  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA" << std::endl;
+	os << "  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA            CHAIN AUTHCHAIN     NUMBER     RESNUM        BP1        BP2    N-H-->O    O-->H-N    N-H-->O    O-->H-N" << std::endl;
 	boost::format kDSSPResidueLine(
 		"%5.5d        !%c             0   0    0      0, 0.0     0, 0.0     0, 0.0     0, 0.0   0.000 360.0 360.0 360.0 360.0    0.0    0.0    0.0");
 
@@ -292,7 +302,7 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 
 		if (ri.nr() != last + 1)
 			os << (kDSSPResidueLine % (last + 1) % (ri.chainBreak() == mmcif::ChainBreak::NewChain ? '*' : ' ')) << std::endl;
-		
+
 		os << ResidueToDSSPLine(ri) << std::endl;
 		last = ri.nr();
 	}
@@ -390,7 +400,7 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, bool wri
 					{ "end_label_asym_id", re.asymID() },
 					{ "end_label_seq_id", re.seqID() },
 					{ "pdbx_end_PDB_ins_code", re.authInsCode() },
-		
+
 					{ "beg_auth_comp_id", rb.compoundID() },
 					{ "beg_auth_asym_id", rb.authAsymID() },
 					{ "beg_auth_seq_id", rb.authSeqID() },
