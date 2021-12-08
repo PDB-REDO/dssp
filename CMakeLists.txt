@@ -55,7 +55,7 @@ if(NOT "$ENV{CCP4}" STREQUAL "")
 	list(PREPEND CMAKE_MODULE_PATH "${CCP4}/Lib")
 	list(APPEND CMAKE_PREFIX_PATH ${CCP4})
 	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-		set(CMAKE_PREFIX_PATH ${CCP4})
+		set(CMAKE_INSTALL_PREFIX ${CCP4})
 	endif()
 endif()
 
@@ -81,19 +81,6 @@ if(MSVC)
 		message(STATUS "The library and auxiliary files will be installed in $ENV{LOCALAPPDATA}/${PROJECT_NAME}")
 		set(CMAKE_INSTALL_PREFIX "$ENV{LOCALAPPDATA}/${PROJECT_NAME}" CACHE PATH "..." FORCE)
 	endif()
-
-	# Find out the processor type for the target
-	if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
-		set(COFF_TYPE "x64")
-	elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
-		set(COFF_TYPE "x86")
-	elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ARM64")
-		set(COFF_TYPE "arm64")
-	else()
-		message(FATAL_ERROR "Unsupported or unknown processor type ${CMAKE_SYSTEM_PROCESSOR}")
-	endif()	
-
-	set(COFF_SPEC "--coff=${COFF_TYPE}")
 endif()
 
 if(UNIX AND NOT APPLE)
@@ -106,34 +93,32 @@ endif()
 
 # Create a revision file, containing the current git version info
 
-find_package(Git)
-if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
-	include(GetGitRevisionDescription)
+include(GetGitRevisionDescription)
+option(GENERATE_CUSTOM_VERSION "Generate a custom version string" OFF)
+if(GIT-NOTFOUND OR HEAD-HASH-NOTFOUND OR NOT GENERATE_CUSTOM_VERSION)
     get_git_head_revision(REFSPEC COMMITHASH)
 
 	# Generate our own version string
 	git_describe_working_tree(BUILD_VERSION_STRING --match=build --dirty)
 else()
-    message(WARNING "Git not found, cannot set version info")
-
     SET(BUILD_VERSION_STRING ${PROJECT_VERSION})
 endif()
 
 # generate version.h
 include_directories(${CMAKE_BINARY_DIR} PRIVATE)
-string(TIMESTAMP BUILD_DATE_TIME "%Y-%m-%d" UTC)
+string(TIMESTAMP BUILD_DATE_TIME "%Y-%m-%dT%H:%M:%SZ" UTC)
 configure_file("${CMAKE_SOURCE_DIR}/src/revision.hpp.in" "${CMAKE_BINARY_DIR}/revision.hpp" @ONLY)
 
 # Optionally use mrc to create resources
-find_program(MRC mrc HINTS "$ENV{LOCALAPPDATA}/bin"  "$ENV{LOCALAPPDATA}/mrc" "${CMAKE_INSTALL_PREFIX}/../mrc" "/usr/local/bin")
+find_package(Mrc)
 
-if(MRC)
+if(MRC_FOUND)
 	option(USE_RSRC "Use mrc to create resources" ON)
 else()
 	message(WARNING "Not using resources since mrc was not found")
 endif()
 
-if(USE_RSRC STREQUAL "ON")
+if(USE_RSRC)
 	set(USE_RSRC 1)
 
 	message("Using resources compiled with ${MRC}")
@@ -144,30 +129,22 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-set(Boost_DETAILED_FAILURE_MSG ON)
-if(NOT BUILD_SHARED_LIBS)
-	set(Boost_USE_STATIC_LIBS ON)
-endif()
+# Note: use -DBoost_USE_STATIC_LIBS=ON to use boost static libraries
 
 find_package(cifpp 2.0.0 REQUIRED)
 find_package(Boost COMPONENTS date_time)
 
-if(USE_RSRC)
-	add_custom_command(OUTPUT mkdssp_rsrc.obj
-		COMMAND ${MRC} -o mkdssp_rsrc.obj ${CIFPP_SHARE_DIR}/mmcif_pdbx_v50.dic ${COFF_SPEC}
-	)
-
-	set(DSSP_RESOURCE mkdssp_rsrc.obj)
-endif()
-
 add_executable(mkdssp
 	${PROJECT_SOURCE_DIR}/src/dssp.cpp
 	${PROJECT_SOURCE_DIR}/src/dssp.hpp
-	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp
-	${DSSP_RESOURCE})
+	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
 
 target_include_directories(mkdssp PRIVATE cifpp::cifpp ${CMAKE_SOURCE_DIR}/include ${cifpp_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${CMAKE_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE cifpp::cifpp Boost::date_time ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(mkdssp PRIVATE cifpp::cifpp Boost::date_time Threads::Threads)
+	
+if(USE_RSRC)
+	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx_v50.dic)
+endif()
 
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
@@ -187,7 +164,11 @@ endif()
 
 # test
 
-add_executable(unit-test ${PROJECT_SOURCE_DIR}/test/unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp.cpp ${DSSP_RESOURCE})
+add_executable(unit-test ${PROJECT_SOURCE_DIR}/test/unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp.cpp)
+
+if(USE_RSRC)
+	mrc_target_resources(unit-test ${CIFPP_SHARE_DIR}/mmcif_pdbx_v50.dic)
+endif()
 
 target_include_directories(unit-test PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src

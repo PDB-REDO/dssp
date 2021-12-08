@@ -86,12 +86,14 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 	BOOST_CHECK(reference.eof());
 }
 
-
-BOOST_AUTO_TEST_CASE(ut_mmcif)
+BOOST_AUTO_TEST_CASE(ut_mmcif_2)
 {
 	using namespace std::literals;
+	using namespace cif::literals;
 
 	mmcif::File f("1cbs.cif.gz");
+	f.file().loadDictionary("mmcif_pdbx_v50");
+
 	mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
 	mmcif::DSSP dssp(structure, 3, true);
@@ -100,29 +102,14 @@ BOOST_AUTO_TEST_CASE(ut_mmcif)
 
 	annotateDSSP(structure, dssp, true, test);
 
-	std::ifstream reference("1cbs-dssp.cif");
+	mmcif::File rf("1cbs-dssp.cif");
+	mmcif::Structure rs(rf, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
-	BOOST_ASSERT(reference.is_open());
+	structure.datablock()["software"].erase("name"_key == "dssp");
+	rs.datablock()["software"].erase("name"_key == "dssp");
+	
+	// generate some output on different files:
+	cif::VERBOSE = 2;
 
-	std::string line_t, line_r;
-
-	for (int line_nr = 1; ; ++line_nr)
-	{
-		bool done_t = not std::getline(test, line_t);
-		bool done_r = not std::getline(reference, line_r);
-
-		BOOST_CHECK_EQUAL(done_r, done_t);
-		if (done_r)
-			break;
-
-		if (line_t != line_r)
-			std::cerr << line_nr << std::endl
-					<< line_t << std::endl
-					<< line_r << std::endl;
-
-		BOOST_CHECK(line_t == line_r);
-	}
-
-	BOOST_CHECK(test.eof());
-	BOOST_CHECK(reference.eof());
+	BOOST_CHECK(structure.datablock() == rs.datablock());
 }
