@@ -1,5 +1,5 @@
 const char kRevision[] = R"(
-mkdssp-version: @PROJECT_VERSION@
+@PROJECT_NAME@-version: @PROJECT_VERSION@
 @BUILD_VERSION_STRING@
 Date: @BUILD_DATE_TIME@
 )";

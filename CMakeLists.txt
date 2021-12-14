@@ -94,14 +94,15 @@ endif()
 # Create a revision file, containing the current git version info
 
 include(GetGitRevisionDescription)
-option(GENERATE_CUSTOM_VERSION "Generate a custom version string" OFF)
-if(GIT-NOTFOUND OR HEAD-HASH-NOTFOUND OR NOT GENERATE_CUSTOM_VERSION)
-    get_git_head_revision(REFSPEC COMMITHASH)
+option(GENERATE_CUSTOM_VERSION "Generate a custom version string")
+
+if(NOT GENERATE_CUSTOM_VERSION OR GIT-NOTFOUND OR HEAD-HASH-NOTFOUND)
+	SET(BUILD_VERSION_STRING ${PROJECT_VERSION})
+else()
+	get_git_head_revision(REFSPEC COMMITHASH)
 
 	# Generate our own version string
 	git_describe_working_tree(BUILD_VERSION_STRING --match=build --dirty)
-else()
-    SET(BUILD_VERSION_STRING ${PROJECT_VERSION})
 endif()
 
 # generate version.h
