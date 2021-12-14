@@ -557,9 +557,24 @@ void writeHBonds(cif::Datablock &db, const mmcif::DSSP &dssp)
 	}
 }
 
-void writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
+using res_list = std::vector<ResInfo>;
+using strand_list = std::vector<std::tuple<int,res_list>>;
+
+int strandNrForResidue(const strand_list &strands, ResInfo const &res)
 {
-	using res_list = std::vector<ResInfo>;
+	int result = 0;
+	for (auto &&[sheet, strand] : strands)
+	{
+		if (std::find(strand.begin(), strand.end(), res) != strand.end())
+			break;
+		++result;
+	}
+	assert(result < strands.size());
+	return result + 1;
+};
+
+strand_list writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
+{
 	using ss_type = mmcif::SecondaryStructureType;
 
 	for (auto sheet_cat : { "struct_sheet", "struct_sheet_order", "struct_sheet_range", "pdbx_struct_sheet_hbond" })
@@ -568,7 +583,6 @@ void writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 		cat.clear();
 	}
 
-	std::set<std::tuple<int,int>> laddersSeen;
 	std::vector<std::tuple<int,res_list>> strands;
 
 	ss_type ss = ss_type::ssLoop;
@@ -593,21 +607,12 @@ void writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 		assert(sheetNr);
 
 		strands.emplace_back(std::make_tuple(sheetNr, res_list{ info }));
-		
-		for (int i : { 0, 1 })
-		{
-			const auto &[p, ladder, parallel] = info.bridgePartner(i);
-			if (not p)
-				continue;
-
-			laddersSeen.insert({ sheetNr, ladder });
-		}
-	}	
+	}
 
 	auto &struct_sheet = db["struct_sheet"];
 
 	int lastSheet = -1;
-	for (const auto &[ sheetNr, ladderNr ] : laddersSeen)
+	for (const auto &[ sheetNr, strand ] : strands)
 	{
 		if (sheetNr != lastSheet)
 		{
@@ -620,9 +625,72 @@ void writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 		}
 	}
 
+	for (auto &&[sheet, strand] : strands)
+		std::sort(strand.begin(), strand.end(), ResInfoLess());
+
+	std::set<std::tuple<int,int>> ladderSeen;
+	auto &struct_sheet_order = db["struct_sheet_order"];
+
+	for (auto &info : dssp)
+	{
+		if (info.ss() != ss_type::ssStrand)
+			continue;
+
+		int s1 = strandNrForResidue(strands, info);
+
+		for (int i : { 0, 1 })
+		{
+			const auto &[p, ladder, parallel] = info.bridgePartner(i);
+			if (not p or p.sheet() != info.sheet())
+				continue;
+
+			int s2 = strandNrForResidue(strands, p);
+			assert(s1 != s2);
+
+			auto k = s1 > s2 ? std::make_tuple(s2, s1) : std::make_tuple(s1, s2);
+			if (ladderSeen.count(k))
+				continue;
+			
+			struct_sheet_order.emplace({
+				{ "sheet_id", cif::cifIdForNumber(info.sheet() - 1) },
+				{ "range_id_1", s1 },
+				{ "range_id_2", s2 },
+				{ "sense", parallel ? "parallel" : "anti-parallel" }
+			});
+
+			ladderSeen.insert(k);
+		}
+	}
+
 	auto &struct_sheet_range = db["struct_sheet_range"];
 
-	
+	int strandID = 0;
+	for (auto &&[sheet, strand] : strands)
+	{
+		auto &beg = strand.front().residue();
+		auto &end = strand.back().residue();
+
+		struct_sheet_range.emplace({
+			{ "sheet_id", cif::cifIdForNumber(sheet - 1) },
+			{ "id", ++strandID },
+			{ "beg_label_comp_id", beg.compoundID() },
+			{ "beg_label_asym_id", beg.asymID() },
+			{ "beg_label_seq_id", beg.seqID() },
+			{ "pdbx_beg_PDB_ins_code", beg.authInsCode() },
+			{ "end_label_comp_id", end.compoundID() },
+			{ "end_label_asym_id", end.asymID() },
+			{ "end_label_seq_id", end.seqID() },
+			{ "pdbx_end_PDB_ins_code", end.authInsCode() },
+			{ "beg_auth_comp_id", beg.compoundID() },
+			{ "beg_auth_asym_id", beg.authAsymID() },
+			{ "beg_auth_seq_id", beg.authSeqID() },
+			{ "end_auth_comp_id", end.compoundID() },
+			{ "end_auth_asym_id", end.authAsymID() },
+			{ "end_auth_seq_id", end.authSeqID() }
+		});
+	}
+
+	return strands;
 }
 
 void annotateDSSP(mmcif::Structure &structure, const mmcif::DSSP &dssp, bool writeOther, std::ostream &os)
@@ -745,28 +813,10 @@ void annotateDSSP(mmcif::Structure &structure, const mmcif::DSSP &dssp, bool wri
 		}
 
 		// write out our concept of sheets
-		writeSheets(db, dssp);
+		auto strands = writeSheets(db, dssp);
 
 		// extra info
 		auto &dssp_info = db["dssp_res_info"];
-		auto &dssp_bridge = db["dssp_bridge"];
-
-		// auto sheets = Sheet::getSheets(dssp);
-		// Sheet::write(db, sheets);
-		// // for (auto &sheet : sheets)
-		// // 	sheet.write(db);
-
-		// struct Ladder
-		// {
-		// 	std::string name;
-		// 	bool parallel;
-		// 	ResInfo beg_1;
-		// 	ResInfo end_1;
-		// 	ResInfo beg_2;
-		// 	ResInfo end_2;
-		// };
-
-		// std::map<int, Ladder> ladders;
 
 		for (auto info : dssp)
 		{
@@ -834,8 +884,7 @@ void annotateDSSP(mmcif::Structure &structure, const mmcif::DSSP &dssp, bool wri
 				{"bend", info.bend() ? 'S' : '.'},
 				{"chirality", alpha == 360 ? '.' : (alpha < 0 ? '-' : '+')},
 				{"sheet_id", info.sheet() ? cif::cifIdForNumber(info.sheet() - 1) : ""},
-				{"sheet_ladder_1_id", ladderID[0]},
-				{"sheet_ladder_2_id", ladderID[1]},
+				{"sheet_range_id", info.ss() == mmcif::SecondaryStructureType::ssStrand ? std::to_string(strandNrForResidue(strands, info)) : "" },
 				{"tco", res.tco(), "%.3f"},
 				{"kappa", res.kappa(), "%.1f"},
 				{"alpha", res.alpha(), "%.1f"},
@@ -843,72 +892,9 @@ void annotateDSSP(mmcif::Structure &structure, const mmcif::DSSP &dssp, bool wri
 				{"psi", res.psi(), "%.1f"},
 				{"ca_cartn_x", ca_x, "%.3f"},
 				{"ca_cartn_y", ca_y, "%.3f"},
-				{"ca_cartn_z", ca_z, "%.3f"}});
+				{"ca_cartn_z", ca_z, "%.3f"}
+			});
 		}
-
-		// for (const auto &[id, ladder] : ladders)
-		// {
-		// 	auto &beg_1 = ladder.beg_1.residue();
-		// 	auto &beg_2 = ladder.beg_2.residue();
-		// 	auto &end_1 = ladder.end_1.residue();
-		// 	auto &end_2 = ladder.end_2.residue();
-
-		// 	dssp_bridge.emplace({
-		// 		{"id", ladder.name},
-		// 		{"sense", ladder.parallel ? "parallel" : "anti-parallel"},
-		// 		{"beg_label_comp_id", beg_1.compoundID()},
-		// 		{"beg_label_asym_id", beg_1.asymID()},
-		// 		{"beg_label_seq_id", beg_1.seqID()},
-		// 		{"end_label_comp_id", end_1.compoundID()},
-		// 		{"end_label_asym_id", end_1.asymID()},
-		// 		{"end_label_seq_id", end_1.seqID()},
-
-		// 		{"beg_auth_comp_id", beg_1.compoundID()},
-		// 		{"beg_auth_asym_id", beg_1.authAsymID()},
-		// 		{"beg_auth_seq_id", beg_1.authSeqID()},
-		// 		{"pdbx_beg_PDB_ins_code", beg_1.authInsCode()},
-		// 		{"end_auth_comp_id", end_1.compoundID()},
-		// 		{"end_auth_asym_id", end_1.authAsymID()},
-		// 		{"end_auth_seq_id", end_1.authSeqID()},
-		// 		{"pdbx_end_PDB_ins_code", end_1.authInsCode()}});
-		// }
-
-		// _dssp_res_info.id
-		// _dssp_res_info.label_comp_id
-		// _dssp_res_info.label_seq_id
-		// _dssp_res_info.label_asym_id
-		// _dssp_res_info.cysteine_bridge_nr
-		// _dssp_res_info.secondary_structure_code
-		// _dssp_res_info.helix_3_10
-		// _dssp_res_info.helix_alpha
-		// _dssp_res_info.helix_pi
-		// _dssp_res_info.helix_pp
-		// _dssp_res_info.bend
-		// _dssp_res_info.chirality
-		// _dssp_res_info.beta_bridge_1
-		// _dssp_res_info.beta_bridge_2
-		// _dssp_res_info.sheet
-		// _dssp_res_info.n_ho_id_1
-		// _dssp_res_info.n_ho_energy_1
-		// _dssp_res_info.ho_n_id_1
-		// _dssp_res_info.ho_n_energy_1
-		// _dssp_res_info.n_ho_id_2
-		// _dssp_res_info.n_ho_energy_2
-		// _dssp_res_info.ho_n_id_2
-		// _dssp_res_info.ho_n_energy_2
-		// _dssp_res_info.tco
-		// _dssp_res_info.kappa
-		// _dssp_res_info.alpha
-		// _dssp_res_info.phi
-		// _dssp_res_info.psi
-		// _dssp_res_info.ca_cartn_x
-		// _dssp_res_info.ca_cartn_y
-		// _dssp_res_info.ca_cartn_z
-
-		// _dssp_beta_bridge.id
-		// _dssp_beta.parallel
-		// _dssp_beta.residue_1
-		// _dssp_beta.residue_2
 	}
 
 	db.add_software("dssp", "model annotation", get_version_nr(), get_version_date());
