@@ -1,3 +1,10 @@
+Version 4.1.0
+- Added new category in mmCIF output: dssp_res_info
+  that contains more information from the original
+  DSSP formatted files.
+- Sheet information is now recorded in mmCIF files
+  in the struct_sheet{,_range,_order,_hbond} records
+
 Version 4.0.3
 - Fixed makefile
 
