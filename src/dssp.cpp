@@ -314,200 +314,6 @@ void writeDSSP(const mmcif::Structure &structure, const mmcif::DSSP &dssp, std::
 
 // --------------------------------------------------------------------
 
-using resinfo_set = std::set<ResInfo,ResInfoLess>;
-
-// class Sheet
-// {
-//   public:
-// 	Sheet(int sheetNr)
-// 		: mSheetNr(sheetNr)
-// 	{
-// 	}
-
-// 	static void write(cif::Datablock &db, const std::vector<Sheet> &sheets);
-// 	static std::vector<Sheet> getSheets(mmcif::DSSP const &dssp);
-
-//   private:
-
-// 	void write(cif::Datablock &db) const;
-// 	void createStrands();
-
-// 	int mSheetNr;
-
-// 	struct Ladder
-// 	{
-// 		int nr;
-// 		bool parallel;
-// 		resinfo_set bridges[2];
-
-// 		resinfo_set strand(int i)
-// 		{
-// 			assert(i == 0 or i == 1);
-// 			return bridges[i];
-// 		}
-// 	};
-
-// 	std::vector<Ladder> mLadders;
-
-// 	struct Strand
-// 	{
-// 		int nr;
-// 		resinfo_set residues;
-
-// 		bool overlaps(const Strand &s) const
-// 		{
-// assert(
-// 	(find_first_of(residues.begin(), residues.end(), s.residues.begin(), s.residues.end()) != residues.end()) ==
-// 	(find_first_of(s.residues.begin(), s.residues.end(), residues.begin(), residues.end()) != s.residues.end())
-// );
-
-// 			return find_first_of(residues.begin(), residues.end(), s.residues.begin(), s.residues.end()) != residues.end() or
-// 				   find_first_of(s.residues.begin(), s.residues.end(), residues.begin(), residues.end()) != s.residues.end();
-// 		}
-
-// 		bool overlaps(const resinfo_set &s) const
-// 		{
-// assert(
-// 	(find_first_of(residues.begin(), residues.end(), s.begin(), s.end()) != residues.end()) ==
-// 	(find_first_of(s.begin(), s.end(), residues.begin(), residues.end()) != s.end())
-// );
-
-// 			return find_first_of(residues.begin(), residues.end(), s.begin(), s.end()) != residues.end() or
-// 				   find_first_of(s.begin(), s.end(), residues.begin(), residues.end()) != s.end();
-// 		}
-// 	};
-
-// 	std::vector<Strand> mStrands;
-// };
-
-// void Sheet::createStrands()
-// {
-// 	// for (auto &ladder : mLadders)
-// 	// {
-// 	// 	for (int i : { 0, 1 })
-// 	// 	{
-// 	// 		auto s1 = ladder.strand(i);
-
-// 	// 		if (std::find_if(mStrands.begin(), mStrands.end(), [&s1](Strand &s) { return s.residues == s1; }) == mStrands.end())
-// 	// 			mStrands.emplace_back(Strand{{ -1, -1 }, std::move(s1) });
-// 	// 	}
-// 	// }
-
-// 	// auto findStrand = [this](ResInfo const &res)
-// 	// {
-// 	// 	auto si = std::find_if(mStrands.begin(), mStrands.end(), [&res](Strand const &s) { return s.residues.count(res); });
-		
-// 	// 	assert(si != mStrands.end());
-		
-// 	// 	return si - mStrands.begin();
-// 	// };
-
-// 	// for (auto &ladder : mLadders)
-// 	// {
-// 	// 	for (int i : { 0, 1 })
-// 	// 	{
-// 	// 		auto sIx1 = findStrand(bp1);
-// 	// 		auto sIx2 = findStrand(bp2);
-
-// 	// 		auto &s1 = mStrands[sIx1];
-// 	// 		auto &s2 = mStrands[sIx2];
-
-// 	// 		if (s1.ladder[0] != ladder.nr)
-// 	// 		{
-// 	// 			assert(s1.ladder[0] == -1);
-// 	// 			s1.ladder[0] = ladder.nr;
-// 	// 		}
-
-// 	// 		if (s2.ladder[1] != ladder.nr)
-// 	// 		{
-// 	// 			assert(s2.ladder[1] == -1);
-// 	// 			s2.ladder[1] = ladder.nr;
-// 	// 		}
-// 	// 	}
-// 	// }
-
-// }
-
-// void Sheet::write(cif::Datablock &db) const
-// {
-// 	auto &struct_sheet = db["struct_sheet"];
-
-
-// }
-
-// void Sheet::write(cif::Datablock &db, const std::vector<Sheet> &sheets)
-// {
-// 	for (auto sheet_cat : { "struct_sheet", "struct_sheet_order", "struct_sheet_range", "pdbx_struct_sheet_hbond" })
-// 	{
-// 		auto &cat = db[sheet_cat];
-// 		cat.clear();
-// 	}
-
-// 	for (auto sheet : sheets)
-// 		sheet.write(db);
-// }
-
-// std::vector<Sheet> Sheet::getSheets(mmcif::DSSP const &dssp)
-// {
-// 	std::vector<Sheet> result;
-
-// 	// std::map<int,std::pair<resinfo_set,resinfo_set>> ladders;
-
-// 	for (auto &info : dssp)
-// 	{
-// 		if (info.sheet() == 0)
-// 			continue;
-		
-// 		auto si = std::find_if(result.begin(), result.end(), [nr = info.sheet()](Sheet &s) { return s.mSheetNr == nr; });
-
-// 		Sheet &sheet = si != result.end() ? *si : result.emplace_back(info.sheet());
-// 		auto &ladders = sheet.mLadders;
-
-// 		for (uint32_t i : {0, 1})
-// 		{
-// 			const auto &[p, ladder, parallel] = info.bridgePartner(i);
-// 			if (not p)
-// 				continue;
-
-// 			auto li = std::find_if(ladders.begin(), ladders.end(), [nr=ladder](auto &l) { return l.nr == nr; });
-// 			if (li == ladders.end())
-// 				li = ladders.insert(ladders.end(), { ladder, parallel });
-
-// 			if (li->bridges[0].count(info) or li->bridges[1].count(info))
-// 				continue;
-
-// 			li->bridges[0].insert(info);
-// 			li->bridges[1].insert(p);
-// 		}
-// 	}
-
-// 	int strand_nr = 0;
-// 	for (auto &sheet : result)
-// 	{
-// 		for (auto &ladder : sheet.mLadders)
-// 		{
-// 			for (int i : { 0, 1 })
-// 			{
-// 				auto si = std::find_if(sheet.mStrands.begin(), sheet.mStrands.end(), [&ladder,i](Strand &str){ return str.overlaps(ladder.bridges[i]); });
-// 				if (si != sheet.mStrands.end())
-// 					continue;
-				
-// 				sheet.mStrands.emplace_back(Strand{strand_nr++, ladder.bridges[i]});
-// 			}
-// 		}
-
-// 		assert(sheet.mLadders.size() + 1 == sheet.mStrands.size());
-// 	}
-
-
-// 	for (auto &sheet : result)
-// 		sheet.createStrands();
-
-// 	return result;
-// }
-
-// --------------------------------------------------------------------
-
 void writeHBonds(cif::Datablock &db, const mmcif::DSSP &dssp)
 {
 	using ResidueInfo = mmcif::DSSP::ResidueInfo;
@@ -557,7 +363,7 @@ void writeHBonds(cif::Datablock &db, const mmcif::DSSP &dssp)
 	}
 }
 
-std::map<int,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
+std::map<std::tuple<std::string,int>,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 {
 	using res_list = std::vector<ResInfo>;
 	using ss_type = mmcif::SecondaryStructureType;
@@ -573,16 +379,16 @@ std::map<int,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 	// create a list of strands, based on the SS info in DSSP. Store sheet number along with the strand.
 
 	std::vector<std::tuple<int,res_list>> strands;
-	std::map<int,int> sheetMap;		// mapping from bridge number in DSSP to sheet ID
+	std::map<std::tuple<std::string,int>,int> sheetMap;		// mapping from bridge number (=info.sheet()) in DSSP to sheet ID
 
 	ss_type ss = ss_type::ssLoop;
 
 	for (auto &info : dssp)
 	{
-		int sheetNr = info.sheet();
+		std::tuple<std::string,int> sheetID{ info.residue().asymID(), info.sheet() };
 		ss_type iss = info.ss();
 
-		if (iss == ss and ss == ss_type::ssStrand and sheetMap[sheetNr] == std::get<0>(strands.back()))
+		if (iss == ss and ss == ss_type::ssStrand and sheetMap[sheetID] == std::get<0>(strands.back()))
 		{
 			std::get<1>(strands.back()).emplace_back(info);
 			continue;
@@ -593,12 +399,10 @@ std::map<int,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 		if (ss != ss_type::ssStrand)
 			continue;
 
-		assert(sheetNr);
+		if (not sheetMap.count(sheetID))
+			sheetMap[sheetID] = sheetMap.size();
 
-		if (not sheetMap.count(sheetNr))
-			sheetMap[sheetNr] = sheetMap.size();
-
-		strands.emplace_back(std::make_tuple(sheetMap[sheetNr], res_list{ info }));
+		strands.emplace_back(std::make_tuple(sheetMap[sheetID], res_list{ info }));
 	}
 
 	// sort the strands vector
@@ -668,7 +472,7 @@ std::map<int,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 		for (int i : { 0, 1 })
 		{
 			const auto &[p, ladder, parallel] = info.bridgePartner(i);
-			if (not p or p.sheet() != info.sheet() or p.ss() != ss_type::ssStrand)
+			if (not p or p.residue().asymID() != info.residue().asymID() or p.sheet() != info.sheet() or p.ss() != ss_type::ssStrand)
 				continue;
 
 			int s2 = strandNrForResidue(p);
@@ -676,12 +480,14 @@ std::map<int,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 			if (s2 == s1)
 				continue;
 
-			int sheet = sheetMap[info.sheet()];
+			std::tuple<std::string,int> sheetID{info.residue().asymID(), info.sheet() };
+			int sheet = sheetMap[sheetID];
 
 			auto k = s1 > s2 ? std::make_tuple(sheet, s2, s1) : std::make_tuple(sheet, s1, s2);
 			if (ladderSense.count(k))
 			{
-				assert(ladderSense[k] == std::make_tuple(ladder, parallel));
+				// assert(ladderSense[k] == std::make_tuple(ladder, parallel));
+				assert(std::get<1>(ladderSense[k]) == parallel);
 				continue;
 			}
 
@@ -699,7 +505,7 @@ std::map<int,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 
 		struct_sheet_order.emplace({
 			{ "sheet_id", cif::cifIdForNumber(sheet) },
-			{ "dssp_ladder_id", cif::cifIdForNumber(ladder) },
+			// { "dssp_ladder_id", cif::cifIdForNumber(ladder) },
 			{ "range_id_1", s1 + 1 },
 			{ "range_id_2", s2 + 1 },
 			{ "sense", parallel ? "parallel" : "anti-parallel" }
@@ -1195,7 +1001,7 @@ void annotateDSSP(mmcif::Structure &structure, const mmcif::DSSP &dssp, bool wri
 				{"helix_pp", helix[3]},
 				{"bend", info.bend() ? 'S' : '.'},
 				{"chirality", alpha == 360 ? '.' : (alpha < 0 ? '-' : '+')},
-				{"sheet_id", info.sheet() ? cif::cifIdForNumber(sheetMap[info.sheet()]) : ""},
+				{"sheet_id", info.sheet() ? cif::cifIdForNumber(sheetMap[{info.residue().asymID(), info.sheet()}]) : ""},
 				{"dssp_ladder_id_1", ladderID[0]},
 				{"dssp_ladder_id_2", ladderID[1]},
 				{"bridge_partner_id_1", bridge[0]},
