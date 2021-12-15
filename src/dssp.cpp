@@ -579,12 +579,12 @@ std::map<int,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 
 	for (auto &info : dssp)
 	{
+		int sheetNr = info.sheet();
 		ss_type iss = info.ss();
 
-		if (iss == ss)
+		if (iss == ss and ss == ss_type::ssStrand and sheetMap[sheetNr] == std::get<0>(strands.back()))
 		{
-			if (ss == ss_type::ssStrand)
-				std::get<1>(strands.back()).emplace_back(info);
+			std::get<1>(strands.back()).emplace_back(info);
 			continue;
 		}
 
@@ -593,7 +593,6 @@ std::map<int,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 		if (ss != ss_type::ssStrand)
 			continue;
 
-		int sheetNr = info.sheet();
 		assert(sheetNr);
 
 		if (not sheetMap.count(sheetNr))
@@ -669,11 +668,13 @@ std::map<int,int> writeSheets(cif::Datablock &db, const mmcif::DSSP &dssp)
 		for (int i : { 0, 1 })
 		{
 			const auto &[p, ladder, parallel] = info.bridgePartner(i);
-			if (not p or p.sheet() != info.sheet())
+			if (not p or p.sheet() != info.sheet() or p.ss() != ss_type::ssStrand)
 				continue;
 
 			int s2 = strandNrForResidue(p);
-			assert(s1 != s2);
+			// assert(s1 != s2);
+			if (s2 == s1)
+				continue;
 
 			int sheet = sheetMap[info.sheet()];
 
