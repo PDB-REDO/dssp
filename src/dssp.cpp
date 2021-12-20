@@ -35,11 +35,14 @@
 
 #include <boost/date_time/gregorian/formatters.hpp>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <cif++/Cif2PDB.hpp>
 #include <cif++/CifUtils.hpp>
 
 #include "dssp.hpp"
+
+namespace ba = boost::algorithm;
 
 using ResInfo = mmcif::DSSP::ResidueInfo;
 
@@ -534,7 +537,7 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::Datablock &db, const 
 		assert(not (strand1.empty() or strand2.empty()));
 
 		int beg1SeqID = 0, beg2SeqID = 0, end1SeqID = 0, end2SeqID = 0;
-		std::string beg1AtomID = "O", beg2AtomID = "N", end1AtomID = "O", end2AtomID = "N";
+		std::string beg1AtomID, beg2AtomID, end1AtomID, end2AtomID;
 
 		if (parallel)
 		{
@@ -569,6 +572,9 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::Datablock &db, const 
 					{
 						beg1SeqID = a.residue().seqID();
 						beg2SeqID = e.residue().seqID();
+
+						beg1AtomID = "O";
+						beg2AtomID = "N";
 					}
 					else if (TestBond(b, d) and TestBond(f, b))				// case II.
 					{
@@ -615,16 +621,16 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::Datablock &db, const 
 						end1SeqID = a.residue().seqID();
 						end2SeqID = e.residue().seqID();
 
-						end1AtomID = "O";
-						end2AtomID = "N";
+						end1AtomID = "N";
+						end2AtomID = "O";
 					}
 					else if (TestBond(d, b) and TestBond(b, f))				// case II.
 					{
 						end1SeqID = b.residue().seqID();
 						end2SeqID = d.residue().seqID();
 
-						end1AtomID = "N";
-						end2AtomID = "O";
+						end1AtomID = "O";
+						end2AtomID = "N";
 					}
 
 					break;
@@ -677,6 +683,9 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::Datablock &db, const 
 					{
 						beg1SeqID = b.residue().seqID();
 						beg2SeqID = e.residue().seqID();
+
+						beg1AtomID = "N";
+						beg2AtomID = "O";
 					}
 
 					break;
@@ -722,6 +731,9 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::Datablock &db, const 
 					{
 						end1SeqID = b.residue().seqID();
 						end2SeqID = e.residue().seqID();
+
+						end1AtomID = "N";
+						end2AtomID = "O";
 					}
 
 					break;
@@ -980,6 +992,10 @@ void annotateDSSP(mmcif::Structure &structure, const mmcif::DSSP &dssp, bool wri
 						continue;
 
 					ladderID[i] = cif::cifIdForNumber(ladder);
+
+					if (parallel)
+						ba::to_lower(ladderID[i]);
+
 					bridge[i] = std::to_string(p.nr());
 				}
 			}
