@@ -86,8 +86,11 @@ endif()
 if(UNIX AND NOT APPLE)
 	# On Linux, install in the $HOME/.local folder by default
 	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-		message(WARNING "The library and auxiliary files will be installed in $ENV{HOME}/.local")
+		message(WARNING "The executable will be installed in $ENV{HOME}/.local/bin")
 		set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "..." FORCE)
+
+		# libcifpp will be there as well, likely
+		list(PREPEND CMAKE_MODULE_PATH "$ENV{HOME}/.local")
 	endif()
 endif()
 
