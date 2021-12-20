@@ -90,7 +90,7 @@ if(UNIX AND NOT APPLE)
 		set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "..." FORCE)
 
 		# libcifpp will be there as well, likely
-		list(PREPEND CMAKE_MODULE_PATH "$ENV{HOME}/.local")
+		list(PREPEND CMAKE_PREFIX_PATH "$ENV{HOME}/.local")
 	endif()
 endif()
 
