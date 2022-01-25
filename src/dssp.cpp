@@ -71,9 +71,7 @@ void load_version_info()
 
 		if (std::regex_match(line, m, rxVersionNr))
 		{
-			gVersionNr = m[1];
-			if (m[2].matched)
-				gVersionNr += '*';
+			gVersionNr += " (build " + m[1].str() + (m[2].matched ? "*)" : ")");
 			continue;
 		}
 

@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(mkdssp VERSION 4.0.2 LANGUAGES CXX)
+project(mkdssp VERSION 4.0.3 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -97,14 +97,11 @@ endif()
 # Create a revision file, containing the current git version info
 
 include(GetGitRevisionDescription)
-option(GENERATE_CUSTOM_VERSION "Generate a custom version string" OFF)
-if(GIT-NOTFOUND OR HEAD-HASH-NOTFOUND OR NOT GENERATE_CUSTOM_VERSION)
+if(NOT(GIT-NOTFOUND OR HEAD-HASH-NOTFOUND))
     get_git_head_revision(REFSPEC COMMITHASH)
 
 	# Generate our own version string
 	git_describe_working_tree(BUILD_VERSION_STRING --match=build --dirty)
-else()
-    SET(BUILD_VERSION_STRING ${PROJECT_VERSION})
 endif()
 
 # generate version.h
@@ -135,15 +132,15 @@ find_package(Threads)
 # Note: use -DBoost_USE_STATIC_LIBS=ON to use boost static libraries
 
 find_package(cifpp 2.0.0 REQUIRED)
-find_package(Boost COMPONENTS date_time)
+find_package(Boost COMPONENTS date_time program_options)
 
 add_executable(mkdssp
 	${PROJECT_SOURCE_DIR}/src/dssp.cpp
 	${PROJECT_SOURCE_DIR}/src/dssp.hpp
 	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
 
-target_include_directories(mkdssp PRIVATE cifpp::cifpp ${CMAKE_SOURCE_DIR}/include ${cifpp_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${CMAKE_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE cifpp::cifpp Boost::date_time Threads::Threads)
+target_include_directories(mkdssp PRIVATE cifpp::cifpp ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR})
+target_link_libraries(mkdssp PRIVATE cifpp::cifpp Boost::date_time Boost::program_options)
 	
 if(USE_RSRC)
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx_v50.dic)
@@ -178,7 +175,7 @@ target_include_directories(unit-test PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(unit-test Threads::Threads cifpp::cifpp Boost::date_time)
+target_link_libraries(unit-test cifpp::cifpp Boost::date_time)
 
 if(MSVC)
 	# Specify unwind semantics so that MSVC knowns how to handle exceptions
