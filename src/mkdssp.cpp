@@ -46,6 +46,7 @@
 #include <boost/iostreams/filtering_stream.hpp>
 
 #include "dssp.hpp"
+#include "revision.hpp"
 
 namespace fs = std::filesystem;
 namespace io = boost::iostreams;
@@ -115,7 +116,7 @@ int d_main(int argc, const char* argv[])
 
 	if (vm.count("version"))
 	{
-		std::cout << argv[0] << " version " << get_version_string() << std::endl;
+		write_version_string(std::cout, vm.count("verbose"));
 		exit(0);
 	}
 
@@ -242,8 +243,6 @@ int main(int argc, const char* argv[])
 #if defined(DATA_DIR)
 		cif::addDataDirectory(DATA_DIR);
 #endif
-		load_version_info();
-
 		result = d_main(argc, argv);
 	}
 	catch (const std::exception& ex)

@@ -95,19 +95,8 @@ if(UNIX AND NOT APPLE)
 endif()
 
 # Create a revision file, containing the current git version info
-
-include(GetGitRevisionDescription)
-if(NOT(GIT-NOTFOUND OR HEAD-HASH-NOTFOUND))
-    get_git_head_revision(REFSPEC COMMITHASH)
-
-	# Generate our own version string
-	git_describe_working_tree(BUILD_VERSION_STRING --match=build --dirty)
-endif()
-
-# generate version.h
-include_directories(${CMAKE_BINARY_DIR} PRIVATE)
-string(TIMESTAMP BUILD_DATE_TIME "%Y-%m-%dT%H:%M:%SZ" UTC)
-configure_file("${CMAKE_SOURCE_DIR}/src/revision.hpp.in" "${CMAKE_BINARY_DIR}/revision.hpp" @ONLY)
+include(VersionString)
+write_version_header()
 
 # Optionally use mrc to create resources
 find_package(Mrc)

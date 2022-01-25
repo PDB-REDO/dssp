@@ -29,11 +29,6 @@
 #include <cif++/Structure.hpp>
 #include <cif++/Secondary.hpp>
 
-void load_version_info();
-std::string get_version_nr();
-std::string get_version_date();
-std::string get_version_string();
-
 void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ostream& os);
 void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, bool writeOther, std::ostream& os);
 
