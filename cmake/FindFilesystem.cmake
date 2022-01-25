@@ -56,11 +56,11 @@ if(_found)
 	set_property(TARGET std::filesystem APPEND PROPERTY INTERFACE_COMPILE_FEATURES cxx_std_17)
 
 	if(CXX_FILESYSTEM_NO_LINK_NEEDED)
-	# Nothing to add...
+		# Nothing to add...
 	elseif(CXX_FILESYSTEM_STDCPPFS_NEEDED)
-		set_property(TARGET std::filesystem APPEND PROPERTY INTERFACE_LINK_LIBRARIES -lstdc++fs)
+		set_target_properties(std::filesystem PROPERTIES IMPORTED_LIBNAME stdc++fs)
 	elseif(CXX_FILESYSTEM_CPPFS_NEEDED)
-		set_property(TARGET std::filesystem APPEND PROPERTY INTERFACE_LINK_LIBRARIES -lc++fs)
+		set_target_properties(std::filesystem PROPERTIES IMPORTED_LIBNAME c++fs)
 	endif()
 endif()
 
@@ -71,3 +71,4 @@ set(Filesystem_FOUND ${_found} CACHE BOOL "TRUE if we can run a program using st
 if(Filesystem_FIND_REQUIRED AND NOT Filesystem_FOUND)
     message(FATAL_ERROR "Cannot run simple program using std::filesystem")
 endif()
+
