@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 
 	writeDSSP(structure, dssp, test);
 
-	std::ifstream reference("1cbs.dssp", std::ios::binary);
+	std::ifstream reference("1cbs.dssp");
 
 	BOOST_CHECK(reference.is_open());
 
