@@ -1,3 +1,7 @@
+Version 4.0.4
+- New version string logic
+- Improved makefile
+
 Version 4.0.3
 - Fixed makefile
 
