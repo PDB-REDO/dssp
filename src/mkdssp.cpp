@@ -83,6 +83,10 @@ int d_main(int argc, const char* argv[])
 		("min-pp-stretch",		po::value<short>(),			"Minimal number of residues having PSI/PHI in range for a PP helix, default is 3")
 		("write-other",										"If set, write the type OTHER for loops, default is to leave this out")
 
+		("components",			po::value<std::string>(),	"Location of the components.cif file from CCD")
+		("extra-compounds",		po::value<std::string>(),	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
+		("mmcif-dictionary",	po::value<std::string>(),	"Path to the mmcif_pdbx.dic file to use instead of default")
+
 		("help,h",											"Display help message")
 		("version",											"Print version")
 		("verbose,v",										"verbose output")
@@ -94,10 +98,7 @@ int d_main(int argc, const char* argv[])
 		("output,o",            po::value<std::string>(),	"Output to this file")
 		("debug,d",				po::value<int>(),			"Debug level (for even more verbose output)")
 
-		("compounds",			po::value<std::string>(),	"Location of the components.cif file from CCD")
-		("components",			po::value<std::string>(),	"Location of the components.cif file from CCD, alias")
-		("extra-compounds",		po::value<std::string>(),	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
-		("mmcif-dictionary",	po::value<std::string>(),	"Path to the mmcif_pdbx.dic file to use instead of default")
+		("compounds",			po::value<std::string>(),	"Location of the components.cif file from CCD, alias")
 		;
 
 	po::options_description cmdline_options;

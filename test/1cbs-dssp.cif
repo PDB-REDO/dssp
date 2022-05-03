@@ -1,6 +1,10 @@
 data_1CBS
 # 
-_entry.id   1CBS 
+_entry.id   1CBS
+#
+_audit_conform.dict_name       mmcif_pdbx.dic
+_audit_conform.dict_version    5.279
+_audit_conform.dict_location   http://mmcif.pdb.org/dictionaries/ascii/mmcif_pdbx.dic
 # 
 loop_
 _database_2.database_id 

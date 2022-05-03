@@ -154,6 +154,8 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo& info)
 
 void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::ostream& os)
 {
+	auto &db = structure.datablock();
+
 	const std::string kFirstLine("==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== ");
 	boost::format kHeaderLine("%1% %|127t|%2%");
 
@@ -163,14 +165,14 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 
 	date today = day_clock::local_day();
 
-	auto& cf = structure.getFile().file();
+	// auto& cf = structure.file();
 
 	os << kHeaderLine % (kFirstLine + "DATE=" + to_iso_extended_string(today)) % '.' << std::endl
 	   << kHeaderLine % "REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637" % '.' << std::endl
-	   << GetPDBHEADERLine(cf, 127) << '.' << std::endl
-	   << GetPDBCOMPNDLine(cf, 127) << '.' << std::endl
-	   << GetPDBSOURCELine(cf, 127) << '.' << std::endl
-	   << GetPDBAUTHORLine(cf, 127) << '.' << std::endl;
+	   << GetPDBHEADERLine(db, 127) << '.' << std::endl
+	   << GetPDBCOMPNDLine(db, 127) << '.' << std::endl
+	   << GetPDBSOURCELine(db, 127) << '.' << std::endl
+	   << GetPDBAUTHORLine(db, 127) << '.' << std::endl;
 
 	os << boost::format("%5.5d%3.3d%3.3d%3.3d%3.3d TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN) %|127t|%c") %
 			 stats.nrOfResidues % stats.nrOfChains % stats.nrOfSSBridges % stats.nrOfIntraChainSSBridges % (stats.nrOfSSBridges - stats.nrOfIntraChainSSBridges) % '.' << std::endl;
@@ -235,7 +237,7 @@ void writeDSSP(const mmcif::Structure& structure, const mmcif::DSSP& dssp, std::
 
 void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, bool writeOther, std::ostream& os)
 {
-	auto& db = structure.getFile().data();
+	auto& db = structure.datablock();
 
 	if (dssp.empty())
 	{

@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(ut_mmcif_2)
 	using namespace cif::literals;
 
 	mmcif::File f("1cbs.cif.gz");
-	f.file().loadDictionary("mmcif_pdbx_v50");
+	f.loadDictionary("mmcif_pdbx_v50");
 
 	mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 

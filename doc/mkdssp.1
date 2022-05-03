@@ -1,4 +1,4 @@
-.TH mkdssp 1 "2021-08-31" "version 4.0.2" "User Commands"
+.TH mkdssp 1 "2021-08-31" "version 4.0.5" "User Commands"
 .if n .ad l
 .nh
 .SH NAME
@@ -40,6 +40,20 @@ angles within the range required to assing a PP helix.
 \fB--write-other\fR
 By default the new format does not write the structure information for OTHER.
 Use this flag to change that.
+.TP
+\fB--components\fR
+The knowledge of compounds is loaded from the CCD file \fIcomponents.cif\fR
+that should have been installed by \fIlibcifpp\fR. You can override that file
+by using this option.
+.TP
+\fB--extra-compounds\fR
+As an addition to the standard \fIcomponents.cif\fR file, you can add more
+files using this option. Files should be either in CCD format or should be
+CCP4 restraints files.
+.TP
+\fB--mmcif-dictionary\fR
+The default mmCIF dictionary file is installed by the \fIlibcifpp\fR library
+but you can override it using this option.
 .SH DETAILS
 The DSSP algorithm assings secondary structure based on the energy calculated
 for H-bonds.

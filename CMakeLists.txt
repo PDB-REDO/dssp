@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(mkdssp VERSION 4.0.4 LANGUAGES CXX)
+project(mkdssp VERSION 4.0.5 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -120,7 +120,7 @@ find_package(Threads)
 
 # Note: use -DBoost_USE_STATIC_LIBS=ON to use boost static libraries
 
-find_package(cifpp 2.0.0 REQUIRED)
+find_package(cifpp 4.0.1 REQUIRED)
 find_package(Boost COMPONENTS date_time program_options)
 
 add_executable(mkdssp
