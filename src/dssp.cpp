@@ -343,14 +343,14 @@ void annotateDSSP(mmcif::Structure& structure, const mmcif::DSSP& dssp, bool wri
 				st = t;
 			}
 
+			if (stop)
+				break;
+
 			if (lastSS != t->ss())
 			{
 				st = t;
 				lastSS = t->ss();
 			}
-
-			if (stop)
-				break;
 		}
 	}
 
