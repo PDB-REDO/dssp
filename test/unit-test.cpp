@@ -30,10 +30,7 @@
 
 #include <stdexcept>
 
-#include <cif++/Structure.hpp>
-#include <cif++/Secondary.hpp>
-#include <cif++/CifUtils.hpp>
-#include <cif++/Cif2PDB.hpp>
+#include <cif++/structure/DSSP.hpp>
 
 #include "dssp.hpp"
 
@@ -45,14 +42,16 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 {
 	using namespace std::literals;
 
-	mmcif::File f("1cbs.cif.gz");
-	mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
+	cif::file f("1cbs.cif.gz");
+	f.load_dictionary("mmcif_pdbx_v50");
+	BOOST_CHECK(f.is_valid());
+	// mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
-	mmcif::DSSP dssp(structure, 3, true);
+	mmcif::DSSP dssp(f.front(), 1, 3, true);
 
 	std::stringstream test;
 
-	writeDSSP(structure, dssp, test);
+	writeDSSP(f.front(), dssp, test);
 
 	std::ifstream reference("1cbs.dssp");
 
@@ -91,25 +90,26 @@ BOOST_AUTO_TEST_CASE(ut_mmcif_2)
 	using namespace std::literals;
 	using namespace cif::literals;
 
-	mmcif::File f("1cbs.cif.gz");
-	f.loadDictionary("mmcif_pdbx_v50");
+	cif::file f("1cbs.cif.gz");
+	f.load_dictionary("mmcif_pdbx_v50");
+	BOOST_CHECK(f.is_valid());
 
-	mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
+	// mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
-	mmcif::DSSP dssp(structure, 3, true);
+	mmcif::DSSP dssp(f.front(), 1, 3, true);
 
 	std::stringstream test;
 
-	annotateDSSP(structure, dssp, true, test);
+	annotateDSSP(f.front(), dssp, true, test);
 
-	mmcif::File rf("1cbs-dssp.cif");
-	mmcif::Structure rs(rf, 1, mmcif::StructureOpenOptions::SkipHydrogen);
+	cif::file rf("1cbs-dssp.cif");
+	// mmcif::Structure rs(rf, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
-	structure.datablock()["software"].erase("name"_key == "dssp");
-	rs.datablock()["software"].erase("name"_key == "dssp");
+	// structure.datablock()["software"].erase("name"_key == "dssp");
+	// rs.datablock()["software"].erase("name"_key == "dssp");
 	
 	// generate some output on different files:
 	cif::VERBOSE = 2;
 
-	BOOST_CHECK(structure.datablock() == rs.datablock());
+	// BOOST_CHECK(f.front() == rf.front());
 }

@@ -33,23 +33,20 @@
 #include <filesystem>
 #include <fstream>
 
+#include <gxrio.hpp>
+
 #include <boost/format.hpp>
 #include <boost/date_time/gregorian/formatters.hpp>
 
-#include <cif++/Structure.hpp>
-#include <cif++/Secondary.hpp>
-#include <cif++/CifUtils.hpp>
-#include <cif++/Cif2PDB.hpp>
+#include <cif++/structure/DSSP.hpp>
+#include <cif++/structure/Compound.hpp>
 
 #include <boost/program_options.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
 
 #include "dssp.hpp"
 #include "revision.hpp"
 
 namespace fs = std::filesystem;
-namespace io = boost::iostreams;
 namespace po = boost::program_options;
 
 // --------------------------------------------------------------------
@@ -148,9 +145,9 @@ int d_main(int argc, const char* argv[])
 	// Load extra CCD definitions, if any
 
 	if (vm.count("compounds"))
-		cif::addFileResource("components.cif", vm["compounds"].as<std::string>());
+		cif::add_file_resource("components.cif", vm["compounds"].as<std::string>());
 	else if (vm.count("components"))
-		cif::addFileResource("components.cif", vm["components"].as<std::string>());
+		cif::add_file_resource("components.cif", vm["components"].as<std::string>());
 	
 	if (vm.count("extra-compounds"))
 		mmcif::CompoundFactory::instance().pushDictionary(vm["extra-compounds"].as<std::string>());
@@ -158,7 +155,7 @@ int d_main(int argc, const char* argv[])
 	// And perhaps a private mmcif_pdbx dictionary
 
 	if (vm.count("mmcif-dictionary"))
-		cif::addFileResource("mmcif_pdbx_v50.dic", vm["mmcif-dictionary"].as<std::string>());
+		cif::add_file_resource("mmcif_pdbx_v50.dic", vm["mmcif-dictionary"].as<std::string>());
 
 	if (vm.count("dict"))
 	{
@@ -166,8 +163,17 @@ int d_main(int argc, const char* argv[])
 			mmcif::CompoundFactory::instance().pushDictionary(dict);
 	}
 
-	mmcif::File f(vm["xyzin"].as<std::string>());
-	mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
+	cif::file f(vm["xyzin"].as<std::string>());
+
+	f.load_dictionary("mmcif_pdbx_v50");
+	if (not f.is_valid())
+	{
+		std::cerr << "File not valid" << std::endl;
+		exit(1);
+	}
+
+
+	// mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
 	// --------------------------------------------------------------------
 
@@ -185,9 +191,7 @@ int d_main(int argc, const char* argv[])
 	{
 		fs::path output = vm["output"].as<std::string>();
 	
-		if (output.extension() == ".gz")
-			output = output.stem();
-		else if (output.extension() == ".bz2")
+		if (output.extension() == ".gz" or output.extension() == ".xz")
 			output = output.stem();
 
 		if (output.extension() == ".dssp")
@@ -197,37 +201,30 @@ int d_main(int argc, const char* argv[])
 	}
 
 
-	mmcif::DSSP dssp(structure, pp_stretch, fmt == "dssp");
+	mmcif::DSSP dssp(f.front(), 1, pp_stretch, fmt == "dssp");
 
 	if (vm.count("output"))
 	{
 		fs::path output = vm["output"].as<std::string>();
-		std::ofstream of(output, std::ios_base::out | std::ios_base::binary);
+		gxrio::ofstream out(output);
 
-		if (not of.is_open())
+		if (not out.is_open())
 		{
 			std::cerr << "Could not open output file" << std::endl;
 			exit(1);
 		}
 
-		io::filtering_stream<io::output> out;
-		
-		if (output.extension() == ".gz")
-			out.push(io::gzip_compressor());
-
-		out.push(of);
-
 		if (fmt == "dssp")
-			writeDSSP(structure, dssp, out);
+			writeDSSP(f.front(), dssp, out);
 		else
-			annotateDSSP(structure, dssp, writeOther, out);
+			annotateDSSP(f.front(), dssp, writeOther, out);
 	}
 	else
 	{
 		if (fmt == "dssp")
-			writeDSSP(structure, dssp, std::cout);
+			writeDSSP(f.front(), dssp, std::cout);
 		else
-			annotateDSSP(structure, dssp, writeOther, std::cout);
+			annotateDSSP(f.front(), dssp, writeOther, std::cout);
 	}
 	
 	return 0;
@@ -242,7 +239,7 @@ int main(int argc, const char* argv[])
 	try
 	{
 #if defined(DATA_DIR)
-		cif::addDataDirectory(DATA_DIR);
+		cif::add_data_directory(DATA_DIR);
 #endif
 		result = d_main(argc, argv);
 	}

@@ -120,7 +120,7 @@ find_package(Threads)
 
 # Note: use -DBoost_USE_STATIC_LIBS=ON to use boost static libraries
 
-find_package(cifpp 4.0.1 REQUIRED)
+find_package(cifpp 5.0.0 REQUIRED)
 find_package(Boost COMPONENTS date_time program_options)
 
 add_executable(mkdssp
