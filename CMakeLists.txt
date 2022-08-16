@@ -123,13 +123,19 @@ find_package(Threads)
 find_package(cifpp 5.0.0 REQUIRED)
 find_package(Boost COMPONENTS date_time program_options)
 
-add_executable(mkdssp
-	${PROJECT_SOURCE_DIR}/src/dssp.cpp
-	${PROJECT_SOURCE_DIR}/src/dssp.hpp
-	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
+# The DSSP code is in a separate library, optionally to be used by others
 
-target_include_directories(mkdssp PRIVATE cifpp::cifpp ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE cifpp::cifpp Boost::date_time Boost::program_options)
+add_library(dssp_library OBJECT ${PROJECT_SOURCE_DIR}/src/DSSP.cpp)
+target_link_libraries(dssp_library cifpp::cifpp)
+
+add_executable(mkdssp
+	${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp
+	${PROJECT_SOURCE_DIR}/src/dssp_wrapper.hpp
+	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp
+	$<TARGET_OBJECTS:dssp_library>)
+
+target_include_directories(mkdssp PRIVATE ${CMAKE_BINARY_DIR})
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp Boost::date_time Boost::program_options)
 	
 if(USE_RSRC)
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
@@ -153,7 +159,7 @@ endif()
 
 # test
 
-add_executable(unit-test ${PROJECT_SOURCE_DIR}/test/unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp.cpp)
+add_executable(unit-test ${PROJECT_SOURCE_DIR}/test/unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp)
 
 if(USE_RSRC)
 	mrc_target_resources(unit-test ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
@@ -164,7 +170,7 @@ target_include_directories(unit-test PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(unit-test cifpp::cifpp Boost::date_time)
+target_link_libraries(unit-test dssp_library cifpp::cifpp Boost::date_time)
 
 if(MSVC)
 	# Specify unwind semantics so that MSVC knowns how to handle exceptions

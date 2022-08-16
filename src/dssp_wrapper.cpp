@@ -39,7 +39,7 @@
 #include <cif++/structure/Compound.hpp>
 #include <cif++/utilities.hpp>
 
-#include "dssp.hpp"
+#include "dssp_wrapper.hpp"
 #include "revision.hpp"
 
 // --------------------------------------------------------------------

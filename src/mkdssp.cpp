@@ -38,12 +38,11 @@
 #include <boost/format.hpp>
 #include <boost/date_time/gregorian/formatters.hpp>
 
-#include <cif++/dssp/DSSP.hpp>
-// #include <cif++/structure/Compound.hpp>
+#include "DSSP.hpp"
 
 #include <boost/program_options.hpp>
 
-#include "dssp.hpp"
+#include "dssp_wrapper.hpp"
 #include "revision.hpp"
 
 namespace fs = std::filesystem;

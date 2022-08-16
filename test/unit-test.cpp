@@ -30,9 +30,9 @@
 
 #include <stdexcept>
 
-#include <cif++/dssp/DSSP.hpp>
+#include "DSSP.hpp"
 
-#include "dssp.hpp"
+#include "dssp_wrapper.hpp"
 
 namespace ba = boost::algorithm;
 
