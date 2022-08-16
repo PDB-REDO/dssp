@@ -44,7 +44,7 @@
 
 // --------------------------------------------------------------------
 
-std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo &info)
+std::string ResidueToDSSPLine(const dssp::DSSP::residue_info &info)
 {
 	/*
 	    This is the header line for the residue lines in a DSSP file:
@@ -72,29 +72,29 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo &info)
 	}
 
 	char ss;
-	switch (info.ss())
+	switch (info.type())
 	{
-		case mmcif::ssAlphahelix: ss = 'H'; break;
-		case mmcif::ssBetabridge: ss = 'B'; break;
-		case mmcif::ssStrand: ss = 'E'; break;
-		case mmcif::ssHelix_3: ss = 'G'; break;
-		case mmcif::ssHelix_5: ss = 'I'; break;
-		case mmcif::ssHelix_PPII: ss = 'P'; break;
-		case mmcif::ssTurn: ss = 'T'; break;
-		case mmcif::ssBend: ss = 'S'; break;
-		case mmcif::ssLoop: ss = ' '; break;
+		case dssp::structure_type::Alphahelix: ss = 'H'; break;
+		case dssp::structure_type::Betabridge: ss = 'B'; break;
+		case dssp::structure_type::Strand: ss = 'E'; break;
+		case dssp::structure_type::Helix_3: ss = 'G'; break;
+		case dssp::structure_type::Helix_5: ss = 'I'; break;
+		case dssp::structure_type::Helix_PPII: ss = 'P'; break;
+		case dssp::structure_type::Turn: ss = 'T'; break;
+		case dssp::structure_type::Bend: ss = 'S'; break;
+		case dssp::structure_type::Loop: ss = ' '; break;
 	}
 
 	char helix[4] = {' ', ' ', ' ', ' '};
-	for (mmcif::HelixType helixType : {mmcif::HelixType::rh_3_10, mmcif::HelixType::rh_alpha, mmcif::HelixType::rh_pi, mmcif::HelixType::rh_pp})
+	for (dssp::helix_type helixType : {dssp::helix_type::_3_10, dssp::helix_type::alpha, dssp::helix_type::pi, dssp::helix_type::pp})
 	{
 		switch (info.helix(helixType))
 		{
-			case mmcif::Helix::None: helix[static_cast<int>(helixType)] = ' '; break;
-			case mmcif::Helix::Start: helix[static_cast<int>(helixType)] = '>'; break;
-			case mmcif::Helix::End: helix[static_cast<int>(helixType)] = '<'; break;
-			case mmcif::Helix::StartAndEnd: helix[static_cast<int>(helixType)] = 'X'; break;
-			case mmcif::Helix::Middle: helix[static_cast<int>(helixType)] = (helixType == mmcif::HelixType::rh_pp ? 'P' : static_cast<char>('3' + static_cast<int>(helixType))); break;
+			case dssp::helix_position_type::None: helix[static_cast<int>(helixType)] = ' '; break;
+			case dssp::helix_position_type::Start: helix[static_cast<int>(helixType)] = '>'; break;
+			case dssp::helix_position_type::End: helix[static_cast<int>(helixType)] = '<'; break;
+			case dssp::helix_position_type::StartAndEnd: helix[static_cast<int>(helixType)] = 'X'; break;
+			case dssp::helix_position_type::Middle: helix[static_cast<int>(helixType)] = (helixType == dssp::helix_type::pp ? 'P' : static_cast<char>('3' + static_cast<int>(helixType))); break;
 		}
 	}
 
@@ -109,7 +109,7 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo &info)
 	char bridgelabel[2] = {' ', ' '};
 	for (uint32_t i : {0, 1})
 	{
-		const auto &[p, ladder, parallel] = info.bridgePartner(i);
+		const auto &[p, ladder, parallel] = info.bridge_partner(i);
 		if (not p)
 			continue;
 
@@ -154,59 +154,57 @@ std::string ResidueToDSSPLine(const mmcif::DSSP::ResidueInfo &info)
 	    .str();
 }
 
-void writeDSSP(const cif::datablock &db, const mmcif::DSSP &dssp, std::ostream &os)
+void writeDSSP(const dssp::DSSP &dssp, std::ostream &os)
 {
 	const std::string kFirstLine("==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== ");
 	boost::format kHeaderLine("%1% %|127t|%2%");
 
 	using namespace boost::gregorian;
 
-	auto stats = dssp.GetStatistics();
+	auto stats = dssp.get_statistics();
 
 	date today = day_clock::local_day();
 
-	// auto& cf = structure.file();
-
 	os << kHeaderLine % (kFirstLine + "DATE=" + to_iso_extended_string(today)) % '.' << std::endl
 	   << kHeaderLine % "REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637" % '.' << std::endl
-	   << /*GetPDBHEADERLine(db, 127) << */ '.' << std::endl
-	   << /*GetPDBCOMPNDLine(db, 127) << */ '.' << std::endl
-	   << /*GetPDBSOURCELine(db, 127) << */ '.' << std::endl
-	   << /*GetPDBAUTHORLine(db, 127) << */ '.' << std::endl;
+	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::HEADER) << '.' << std::endl
+	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::COMPND) << '.' << std::endl
+	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::SOURCE) << '.' << std::endl
+	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::AUTHOR) << '.' << std::endl;
 
 	os << boost::format("%5.5d%3.3d%3.3d%3.3d%3.3d TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN) %|127t|%c") %
-			  stats.nrOfResidues % stats.nrOfChains % stats.nrOfSSBridges % stats.nrOfIntraChainSSBridges % (stats.nrOfSSBridges - stats.nrOfIntraChainSSBridges) % '.'
+			  stats.count.residues % stats.count.chains % stats.count.SS_bridges % stats.count.intra_chain_SS_bridges % (stats.count.SS_bridges - stats.count.intra_chain_SS_bridges) % '.'
 	   << std::endl;
-	os << kHeaderLine % (boost::format("%8.1f   ACCESSIBLE SURFACE OF PROTEIN (ANGSTROM**2)") % stats.accessibleSurface) % '.' << std::endl;
+	os << kHeaderLine % (boost::format("%8.1f   ACCESSIBLE SURFACE OF PROTEIN (ANGSTROM**2)") % stats.accessible_surface) % '.' << std::endl;
 
 	// hydrogenbond summary
 
-	os << kHeaderLine % (boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(J)  , SAME NUMBER PER 100 RESIDUES") % stats.nrOfHBonds % (stats.nrOfHBonds * 100.0 / stats.nrOfResidues)) % '.' << std::endl;
+	os << kHeaderLine % (boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(J)  , SAME NUMBER PER 100 RESIDUES") % stats.count.H_bonds % (stats.count.H_bonds * 100.0 / stats.count.residues)) % '.' << std::endl;
 
-	os << kHeaderLine % (boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN     PARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES") % stats.nrOfHBondsInParallelBridges % (stats.nrOfHBondsInParallelBridges * 100.0 / stats.nrOfResidues)) % '.' << std::endl;
+	os << kHeaderLine % (boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN     PARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES") % stats.count.H_bonds_in_parallel_bridges % (stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues)) % '.' << std::endl;
 
-	os << kHeaderLine % (boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN ANTIPARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES") % stats.nrOfHBondsInAntiparallelBridges % (stats.nrOfHBondsInAntiparallelBridges * 100.0 / stats.nrOfResidues)) % '.' << std::endl;
+	os << kHeaderLine % (boost::format("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN ANTIPARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES") % stats.count.H_bonds_in_antiparallel_bridges % (stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues)) % '.' << std::endl;
 
 	boost::format kHBondsLine("%5.5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(I%c%1.1d), SAME NUMBER PER 100 RESIDUES");
 	for (int k = 0; k < 11; ++k)
-		os << kHeaderLine % (kHBondsLine % stats.nrOfHBondsPerDistance[k] % (stats.nrOfHBondsPerDistance[k] * 100.0 / stats.nrOfResidues) % (k - 5 < 0 ? '-' : '+') % abs(k - 5)) % '.' << std::endl;
+		os << kHeaderLine % (kHBondsLine % stats.count.H_Bonds_per_distance[k] % (stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues) % (k - 5 < 0 ? '-' : '+') % abs(k - 5)) % '.' << std::endl;
 
 	// histograms...
 	os << "  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30     *** HISTOGRAMS OF ***           ." << std::endl;
 
-	for (auto hi : stats.residuesPerAlphaHelixHistogram)
+	for (auto hi : stats.histogram.residues_per_alpha_helix)
 		os << boost::format("%3.3d") % hi;
 	os << "    RESIDUES PER ALPHA HELIX         ." << std::endl;
 
-	for (auto hi : stats.parallelBridgesPerLadderHistogram)
+	for (auto hi : stats.histogram.parallel_bridges_per_ladder)
 		os << boost::format("%3.3d") % hi;
 	os << "    PARALLEL BRIDGES PER LADDER      ." << std::endl;
 
-	for (auto hi : stats.antiparallelBridgesPerLadderHistogram)
+	for (auto hi : stats.histogram.antiparallel_bridges_per_ladder)
 		os << boost::format("%3.3d") % hi;
 	os << "    ANTIPARALLEL BRIDGES PER LADDER  ." << std::endl;
 
-	for (auto hi : stats.laddersPerSheetHistogram)
+	for (auto hi : stats.histogram.ladders_per_sheet)
 		os << boost::format("%3.3d") % hi;
 	os << "    LADDERS PER SHEET                ." << std::endl;
 
@@ -223,14 +221,14 @@ void writeDSSP(const cif::datablock &db, const mmcif::DSSP &dssp, std::ostream &
 		// can be the transition to a different chain, or missing residues in the current chain
 
 		if (ri.nr() != last + 1)
-			os << (kDSSPResidueLine % (last + 1) % (ri.chainBreak() == mmcif::ChainBreak::NewChain ? '*' : ' ')) << std::endl;
+			os << (kDSSPResidueLine % (last + 1) % (ri.chain_break() == dssp::chain_break_type::NewChain ? '*' : ' ')) << std::endl;
 
 		os << ResidueToDSSPLine(ri) << std::endl;
 		last = ri.nr();
 	}
 }
 
-void annotateDSSP(cif::datablock &db, const mmcif::DSSP &dssp, bool writeOther, std::ostream &os)
+void annotateDSSP(cif::datablock &db, const dssp::DSSP &dssp, bool writeOther, std::ostream &os)
 {
 	if (dssp.empty())
 	{
@@ -249,15 +247,15 @@ void annotateDSSP(cif::datablock &db, const mmcif::DSSP &dssp, bool writeOther, 
 		std::map<std::string, int> foundTypes;
 
 		auto st = dssp.begin(), lt = st;
-		auto lastSS = st->ss();
+		auto lastSS = st->type();
 
 		for (auto t = dssp.begin();; lt = t, ++t)
 		{
 			bool stop = t == dssp.end();
 
-			bool flush = (stop or t->ss() != lastSS);
+			bool flush = (stop or t->type() != lastSS);
 
-			if (flush and (writeOther or lastSS != mmcif::SecondaryStructureType::ssLoop))
+			if (flush and (writeOther or lastSS != dssp::structure_type::Loop))
 			{
 				auto &rb = *st;
 				auto &re = *lt;
@@ -265,36 +263,36 @@ void annotateDSSP(cif::datablock &db, const mmcif::DSSP &dssp, bool writeOther, 
 				std::string id;
 				switch (lastSS)
 				{
-					case mmcif::SecondaryStructureType::ssHelix_3:
+					case dssp::structure_type::Helix_3:
 						id = "HELX_RH_3T_P";
 						break;
 
-					case mmcif::SecondaryStructureType::ssAlphahelix:
+					case dssp::structure_type::Alphahelix:
 						id = "HELX_RH_AL_P";
 						break;
 
-					case mmcif::SecondaryStructureType::ssHelix_5:
+					case dssp::structure_type::Helix_5:
 						id = "HELX_RH_PI_P";
 						break;
 
-					case mmcif::SecondaryStructureType::ssHelix_PPII:
+					case dssp::structure_type::Helix_PPII:
 						id = "HELX_LH_PP_P";
 						break;
 
-					case mmcif::SecondaryStructureType::ssTurn:
+					case dssp::structure_type::Turn:
 						id = "TURN_TY1_P";
 						break;
 
-					case mmcif::SecondaryStructureType::ssBend:
+					case dssp::structure_type::Bend:
 						id = "BEND";
 						break;
 
-					case mmcif::SecondaryStructureType::ssBetabridge:
-					case mmcif::SecondaryStructureType::ssStrand:
+					case dssp::structure_type::Betabridge:
+					case dssp::structure_type::Strand:
 						id = "STRN";
 						break;
 
-					case mmcif::SecondaryStructureType::ssLoop:
+					case dssp::structure_type::Loop:
 						id = "OTHER";
 						break;
 				}
@@ -337,10 +335,10 @@ void annotateDSSP(cif::datablock &db, const mmcif::DSSP &dssp, bool writeOther, 
 			if (stop)
 				break;
 
-			if (lastSS != t->ss())
+			if (lastSS != t->type())
 			{
 				st = t;
-				lastSS = t->ss();
+				lastSS = t->type();
 			}
 		}
 	}

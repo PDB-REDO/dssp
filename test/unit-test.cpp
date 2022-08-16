@@ -30,7 +30,7 @@
 
 #include <stdexcept>
 
-#include <cif++/structure/DSSP.hpp>
+#include <cif++/dssp/DSSP.hpp>
 
 #include "dssp.hpp"
 
@@ -43,15 +43,13 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 	using namespace std::literals;
 
 	cif::file f("1cbs.cif.gz");
-	f.load_dictionary("mmcif_pdbx_v50");
-	BOOST_CHECK(f.is_valid());
-	// mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
+	BOOST_ASSERT(f.is_valid());
 
-	mmcif::DSSP dssp(f.front(), 1, 3, true);
+	dssp::DSSP dssp(f.front(), 1, 3, true);
 
 	std::stringstream test;
 
-	writeDSSP(f.front(), dssp, test);
+	writeDSSP(dssp, test);
 
 	std::ifstream reference("1cbs.dssp");
 
@@ -91,19 +89,15 @@ BOOST_AUTO_TEST_CASE(ut_mmcif_2)
 	using namespace cif::literals;
 
 	cif::file f("1cbs.cif.gz");
-	f.load_dictionary("mmcif_pdbx_v50");
-	BOOST_CHECK(f.is_valid());
+	BOOST_ASSERT(f.is_valid());
 
-	// mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
-
-	mmcif::DSSP dssp(f.front(), 1, 3, true);
+	dssp::DSSP dssp(f.front(), 1, 3, true);
 
 	std::stringstream test;
 
 	annotateDSSP(f.front(), dssp, true, test);
 
 	cif::file rf("1cbs-dssp.cif");
-	// mmcif::Structure rs(rf, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
 	// structure.datablock()["software"].erase("name"_key == "dssp");
 	// rs.datablock()["software"].erase("name"_key == "dssp");

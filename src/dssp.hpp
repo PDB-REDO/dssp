@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include <cif++/structure/DSSP.hpp>
+#include <cif++/dssp/DSSP.hpp>
 
-void writeDSSP(const cif::datablock &db, const mmcif::DSSP& dssp, std::ostream& os);
-void annotateDSSP(cif::datablock &db, const mmcif::DSSP& dssp, bool writeOther, std::ostream& os);
+void writeDSSP(const dssp::DSSP& dssp, std::ostream& os);
+void annotateDSSP(cif::datablock &db, const dssp::DSSP& dssp, bool writeOther, std::ostream& os);
 

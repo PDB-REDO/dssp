@@ -38,8 +38,8 @@
 #include <boost/format.hpp>
 #include <boost/date_time/gregorian/formatters.hpp>
 
-#include <cif++/structure/DSSP.hpp>
-#include <cif++/structure/Compound.hpp>
+#include <cif++/dssp/DSSP.hpp>
+// #include <cif++/structure/Compound.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -80,8 +80,8 @@ int d_main(int argc, const char* argv[])
 		("min-pp-stretch",		po::value<short>(),			"Minimal number of residues having PSI/PHI in range for a PP helix, default is 3")
 		("write-other",										"If set, write the type OTHER for loops, default is to leave this out")
 
-		("components",			po::value<std::string>(),	"Location of the components.cif file from CCD")
-		("extra-compounds",		po::value<std::string>(),	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
+		// ("components",			po::value<std::string>(),	"Location of the components.cif file from CCD")
+		// ("extra-compounds",		po::value<std::string>(),	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
 		("mmcif-dictionary",	po::value<std::string>(),	"Path to the mmcif_pdbx.dic file to use instead of default")
 
 		("help,h",											"Display help message")
@@ -95,7 +95,7 @@ int d_main(int argc, const char* argv[])
 		("output,o",            po::value<std::string>(),	"Output to this file")
 		("debug,d",				po::value<int>(),			"Debug level (for even more verbose output)")
 
-		("compounds",			po::value<std::string>(),	"Location of the components.cif file from CCD, alias")
+		// ("compounds",			po::value<std::string>(),	"Location of the components.cif file from CCD, alias")
 		;
 
 	po::options_description cmdline_options;
@@ -144,36 +144,31 @@ int d_main(int argc, const char* argv[])
 
 	// Load extra CCD definitions, if any
 
-	if (vm.count("compounds"))
-		cif::add_file_resource("components.cif", vm["compounds"].as<std::string>());
-	else if (vm.count("components"))
-		cif::add_file_resource("components.cif", vm["components"].as<std::string>());
+	// if (vm.count("compounds"))
+	// 	cif::add_file_resource("components.cif", vm["compounds"].as<std::string>());
+	// else if (vm.count("components"))
+	// 	cif::add_file_resource("components.cif", vm["components"].as<std::string>());
 	
-	if (vm.count("extra-compounds"))
-		mmcif::CompoundFactory::instance().pushDictionary(vm["extra-compounds"].as<std::string>());
+	// if (vm.count("extra-compounds"))
+	// 	mmcif::CompoundFactory::instance().pushDictionary(vm["extra-compounds"].as<std::string>());
 	
 	// And perhaps a private mmcif_pdbx dictionary
 
 	if (vm.count("mmcif-dictionary"))
-		cif::add_file_resource("mmcif_pdbx_v50.dic", vm["mmcif-dictionary"].as<std::string>());
+		cif::add_file_resource("mmcif_pdbx.dic", vm["mmcif-dictionary"].as<std::string>());
 
-	if (vm.count("dict"))
-	{
-		for (auto dict: vm["dict"].as<std::vector<std::string>>())
-			mmcif::CompoundFactory::instance().pushDictionary(dict);
-	}
+	// if (vm.count("dict"))
+	// {
+	// 	for (auto dict: vm["dict"].as<std::vector<std::string>>())
+	// 		mmcif::CompoundFactory::instance().pushDictionary(dict);
+	// }
 
 	cif::file f(vm["xyzin"].as<std::string>());
-
-	f.load_dictionary("mmcif_pdbx_v50");
 	if (not f.is_valid())
 	{
-		std::cerr << "File not valid" << std::endl;
+		std::cerr << "Could not validate file" << std::endl;
 		exit(1);
 	}
-
-
-	// mmcif::Structure structure(f, 1, mmcif::StructureOpenOptions::SkipHydrogen);
 
 	// --------------------------------------------------------------------
 
@@ -200,8 +195,7 @@ int d_main(int argc, const char* argv[])
 			fmt = "cif";
 	}
 
-
-	mmcif::DSSP dssp(f.front(), 1, pp_stretch, fmt == "dssp");
+	dssp::DSSP dssp(f.front(), 1, pp_stretch, fmt == "dssp");
 
 	if (vm.count("output"))
 	{
@@ -215,14 +209,14 @@ int d_main(int argc, const char* argv[])
 		}
 
 		if (fmt == "dssp")
-			writeDSSP(f.front(), dssp, out);
+			writeDSSP(dssp, out);
 		else
 			annotateDSSP(f.front(), dssp, writeOther, out);
 	}
 	else
 	{
 		if (fmt == "dssp")
-			writeDSSP(f.front(), dssp, std::cout);
+			writeDSSP(dssp, std::cout);
 		else
 			annotateDSSP(f.front(), dssp, writeOther, std::cout);
 	}

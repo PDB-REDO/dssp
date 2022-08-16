@@ -132,7 +132,7 @@ target_include_directories(mkdssp PRIVATE cifpp::cifpp ${CMAKE_SOURCE_DIR}/inclu
 target_link_libraries(mkdssp PRIVATE cifpp::cifpp Boost::date_time Boost::program_options)
 	
 if(USE_RSRC)
-	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx_v50.dic)
+	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
 endif()
 
 install(TARGETS ${PROJECT_NAME}
@@ -156,7 +156,7 @@ endif()
 add_executable(unit-test ${PROJECT_SOURCE_DIR}/test/unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp.cpp)
 
 if(USE_RSRC)
-	mrc_target_resources(unit-test ${CIFPP_SHARE_DIR}/mmcif_pdbx_v50.dic)
+	mrc_target_resources(unit-test ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
 endif()
 
 target_include_directories(unit-test PRIVATE
