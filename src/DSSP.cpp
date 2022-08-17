@@ -467,7 +467,7 @@ struct residue
 	std::vector<point> mSideChain;
 	double mAccessibility = 0;
 
-	double mAlpha = 360, mKappa = 360, mPhi = 360, mPsi = 360, mTCO = 0;
+	double mAlpha = 360, mKappa = 360, mPhi = 360, mPsi = 360, mTCO = 0, mOmega = 360;
 
 	residue_type mType;
 	uint8_t mSSBridgeNr = 0;
@@ -1387,7 +1387,10 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 			auto &next = mResidues[i + 1];
 			next.assignHydrogen();
 			if (NoChainBreak(cur, next))
+			{
 				cur.mPsi = dihedral_angle(cur.mN, cur.mCAlpha, cur.mC, next.mN);
+				cur.mOmega = dihedral_angle(cur.mCAlpha, cur.mC, next.mN, next.mCAlpha);
+			}
 		}
 
 		if (i > 0)
@@ -1829,6 +1832,11 @@ float DSSP::residue_info::alpha() const
 float DSSP::residue_info::kappa() const
 {
 	return m_impl->mKappa;
+}
+
+float DSSP::residue_info::omega() const
+{
+	return m_impl->mOmega;
 }
 
 float DSSP::residue_info::phi() const

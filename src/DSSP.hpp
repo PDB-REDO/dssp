@@ -140,6 +140,10 @@ class DSSP
 		float phi() const;
 		float psi() const;
 		float tco() const;
+		float omega() const;
+
+		bool is_cis() const { return omega() < 30.0f; }
+
 		std::tuple<float, float, float> ca_location() const;
 
 		chain_break_type chain_break() const;
