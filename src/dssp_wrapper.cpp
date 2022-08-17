@@ -36,8 +36,8 @@
 #include <boost/date_time/gregorian/formatters.hpp>
 #include <boost/format.hpp>
 
-#include <cif++/structure/Compound.hpp>
-#include <cif++/utilities.hpp>
+// #include <cif++/structure/Compound.hpp>
+#include <cif++.hpp>
 
 #include "dssp_wrapper.hpp"
 #include "revision.hpp"
@@ -60,9 +60,7 @@ std::string ResidueToDSSPLine(const dssp::DSSP::residue_info &info)
 	if (residue.asym_id().length() > 1)
 		throw std::runtime_error("This file contains data that won't fit in the original DSSP format");
 
-	char code = 'X';
-	if (mmcif::kAAMap.find(residue.compound_id()) != mmcif::kAAMap.end())
-		code = mmcif::kAAMap.at(residue.compound_id());
+	char code = residue.compound_letter();
 
 	if (code == 'C') // a cysteine
 	{

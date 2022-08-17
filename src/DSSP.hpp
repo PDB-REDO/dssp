@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include <cif++/cif.hpp>
+#include <cif++.hpp>
 
 namespace dssp
 {
@@ -126,6 +126,7 @@ class DSSP
 		int seq_id() const;
 		std::string alt_id() const;
 		std::string compound_id() const;
+		char compound_letter() const;	// Single letter for residue compound type, or 'X' in case it is not known
 
 		std::string auth_asym_id() const;
 		int auth_seq_id() const;
@@ -241,7 +242,7 @@ class DSSP
 	enum class pdb_record_type { HEADER, COMPND, SOURCE, AUTHOR };
 
 	std::string get_pdb_header_line(pdb_record_type pdb_record) const;
-
+	
   private:
 	struct DSSP_impl *m_impl;
 };

@@ -121,62 +121,59 @@ float cosinus_angle(const point &p1, const point &p2, const point &p3, const poi
 	return result;
 }
 
-enum residue_type
+enum residue_type : char
 {
-	kUnknownResidue,
+	kUnknownResidue = 'X',
 
 	//
-	kAlanine,       // A	ala
-	kArginine,      // R	arg
-	kAsparagine,    // N	asn
-	kAsparticAcid,  // D	asp
-	kCysteine,      // C	cys
-	kGlutamicAcid,  // E	glu
-	kGlutamine,     // Q	gln
-	kGlycine,       // G	gly
-	kHistidine,     // H	his
-	kIsoleucine,    // I	ile
-	kLeucine,       // L	leu
-	kLysine,        // K	lys
-	kMethionine,    // M	met
-	kPhenylalanine, // F	phe
-	kProline,       // P	pro
-	kSerine,        // S	ser
-	kThreonine,     // T	thr
-	kTryptophan,    // W	trp
-	kTyrosine,      // Y	tyr
-	kValine,        // V	val
-
-	kResidueTypeCount
+	kAlanine = 'A',       //	ala
+	kArginine = 'R',      //	arg
+	kAsparagine = 'N',    //	asn
+	kAsparticAcid = 'D',  //	asp
+	kCysteine = 'C',      //	cys
+	kGlutamicAcid = 'E',  //	glu
+	kGlutamine = 'Q',     //	gln
+	kGlycine = 'G',       //	gly
+	kHistidine = 'H',     //	his
+	kIsoleucine = 'I',    //	ile
+	kLeucine = 'L',       //	leu
+	kLysine = 'K',        //	lys
+	kMethionine = 'M',    //	met
+	kPhenylalanine = 'F', //	phe
+	kProline = 'P',       //	pro
+	kSerine = 'S',        //	ser
+	kThreonine = 'T',     //	thr
+	kTryptophan = 'W',    //	trp
+	kTyrosine = 'Y',      //	tyr
+	kValine = 'V',        //	val
 };
 
 struct
 {
 	residue_type type;
-	char code;
 	char name[4];
 } const kResidueInfo[] = {
-	{ kUnknownResidue, 'X', "UNK" },
-	{ kAlanine, 'A', "ALA" },
-	{ kArginine, 'R', "ARG" },
-	{ kAsparagine, 'N', "ASN" },
-	{ kAsparticAcid, 'D', "ASP" },
-	{ kCysteine, 'C', "CYS" },
-	{ kGlutamicAcid, 'E', "GLU" },
-	{ kGlutamine, 'Q', "GLN" },
-	{ kGlycine, 'G', "GLY" },
-	{ kHistidine, 'H', "HIS" },
-	{ kIsoleucine, 'I', "ILE" },
-	{ kLeucine, 'L', "LEU" },
-	{ kLysine, 'K', "LYS" },
-	{ kMethionine, 'M', "MET" },
-	{ kPhenylalanine, 'F', "PHE" },
-	{ kProline, 'P', "PRO" },
-	{ kSerine, 'S', "SER" },
-	{ kThreonine, 'T', "THR" },
-	{ kTryptophan, 'W', "TRP" },
-	{ kTyrosine, 'Y', "TYR" },
-	{ kValine, 'V', "VAL" }
+	{ kUnknownResidue, "UNK" },
+	{ kAlanine, "ALA" },
+	{ kArginine, "ARG" },
+	{ kAsparagine, "ASN" },
+	{ kAsparticAcid, "ASP" },
+	{ kCysteine, "CYS" },
+	{ kGlutamicAcid, "GLU" },
+	{ kGlutamine, "GLN" },
+	{ kGlycine, "GLY" },
+	{ kHistidine, "HIS" },
+	{ kIsoleucine, "ILE" },
+	{ kLeucine, "LEU" },
+	{ kLysine, "LYS" },
+	{ kMethionine, "MET" },
+	{ kPhenylalanine, "PHE" },
+	{ kProline, "PRO" },
+	{ kSerine, "SER" },
+	{ kThreonine, "THR" },
+	{ kTryptophan, "TRP" },
+	{ kTyrosine, "TYR" },
+	{ kValine, "VAL" }
 };
 
 residue_type MapResidue(std::string_view inName)
@@ -320,7 +317,7 @@ struct residue
 			}
 			else if (type != "H")
 			{
-				mSideChain.emplace_back(point { x, y, z });
+				mSideChain.emplace_back(point{ x, y, z });
 				ExtendBox(mSideChain.back(), kRadiusSideAtom + 2 * kRadiusWater);
 			}
 		}
@@ -565,7 +562,7 @@ MSurfaceDots::MSurfaceDots(int32_t N)
 		float lat = std::asin((2.0f * i) / P);
 		float lon = static_cast<float>(std::fmod(i, kGoldenRatio) * 2 * kPI / kGoldenRatio);
 
-		mPoints.emplace_back(point { std::sin(lon) * std::cos(lat), std::cos(lon) * std::cos(lat), std::sin(lat) });
+		mPoints.emplace_back(point{ std::sin(lon) * std::cos(lat), std::cos(lon) * std::cos(lat), std::sin(lat) });
 	}
 }
 
@@ -1782,6 +1779,11 @@ std::string DSSP::residue_info::asym_id() const
 std::string DSSP::residue_info::compound_id() const
 {
 	return m_impl->mCompoundID;
+}
+
+char DSSP::residue_info::compound_letter() const
+{
+	return MapResidue(compound_id());
 }
 
 int DSSP::residue_info::seq_id() const
