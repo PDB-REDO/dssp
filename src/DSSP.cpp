@@ -176,7 +176,7 @@ struct
 	{ kValine, "VAL" }
 };
 
-residue_type MapResidue(std::string_view inName)
+constexpr residue_type MapResidue(std::string_view inName)
 {
 	residue_type result = kUnknownResidue;
 
@@ -260,6 +260,8 @@ struct residue
 
 		int seen = 0;
 
+		std::array<point, 4> chiralAtoms;
+
 		for (auto atom : atoms)
 		{
 			std::string asymID, compID, atomID, type, authAsymID;
@@ -296,6 +298,9 @@ struct residue
 				seen |= 1;
 				mCAlpha = { x, y, z };
 				ExtendBox(mCAlpha, kRadiusCA + 2 * kRadiusWater);
+
+				if (mType == kValine)
+					chiralAtoms[1] = mCAlpha;
 			}
 			else if (atomID == "C")
 			{
@@ -317,12 +322,39 @@ struct residue
 			}
 			else if (type != "H")
 			{
-				mSideChain.emplace_back(point{ x, y, z });
-				ExtendBox(mSideChain.back(), kRadiusSideAtom + 2 * kRadiusWater);
+				seen |= 16;
+				mSideChain.emplace_back(atomID, point{ x, y, z });
+				ExtendBox(point{ x, y, z }, kRadiusSideAtom + 2 * kRadiusWater);
+
+				if (mType == kLeucine)
+				{
+					if (type == "CG")
+						chiralAtoms[0] = { x, y, z };
+					else if (type == "CB")
+						chiralAtoms[1] = { x, y, z };
+					else if (type == "CD1")
+						chiralAtoms[2] = { x, y, z };
+					else if (type == "CD2")
+						chiralAtoms[3] = { x, y, z };
+				}
+				else if (mType == kValine)
+				{
+					if (type == "CB")
+						chiralAtoms[0] = { x, y, z };
+					else if (type == "CG1")
+						chiralAtoms[2] = { x, y, z };
+					else if (type == "CG2")
+						chiralAtoms[3] = { x, y, z };
+				}
 			}
 		}
 
-		mComplete = seen == (1 | 2 | 4 | 8);
+		const int kSeenAll = (1 bitor 2 bitor 4 bitor 8);
+		mComplete = (seen bitand kSeenAll) == kSeenAll;
+
+		if (mType == kValine or mType == kLeucine)
+			mChiralVolume = dot_product(chiralAtoms[1] - chiralAtoms[0],
+				cross_product(chiralAtoms[2] - chiralAtoms[0], chiralAtoms[3] - chiralAtoms[0]));
 
 		mRadius = mBox[1].mX - mBox[0].mX;
 		if (mRadius < mBox[1].mY - mBox[0].mY)
@@ -441,6 +473,30 @@ struct residue
 			mBox[1].mZ = atom.mZ + inRadius;
 	}
 
+	point get_atom(std::string_view name)
+	{
+		if (name == "CA")	
+			return mCAlpha;
+		else if (name == "C")	
+			return mC;
+		else if (name == "N")	
+			return mN;
+		else if (name == "O")	
+			return mO;
+		else if (name == "H")	
+			return mH;
+		else
+		{
+			for (const auto &[n, p] : mSideChain)
+			{
+				if (n == name)
+					return p;
+			}
+		}
+
+		return {};
+	}
+
 	residue *mNext = nullptr;
 	residue *mPrev = nullptr;
 
@@ -464,8 +520,9 @@ struct residue
 	point mBox[2] = {};
 	float mRadius;
 	point mCenter;
-	std::vector<point> mSideChain;
+	std::vector<std::tuple<std::string,point>> mSideChain;
 	double mAccessibility = 0;
+	double mChiralVolume = 0;
 
 	double mAlpha = 360, mKappa = 360, mPhi = 360, mPsi = 360, mTCO = 0, mOmega = 360;
 
@@ -579,7 +636,7 @@ double residue::CalculateSurface(const point &inAtom, float inRadius, const std:
 			accumulate(inAtom, r->mC, inRadius, kRadiusC);
 			accumulate(inAtom, r->mO, inRadius, kRadiusO);
 
-			for (auto &atom : r->mSideChain)
+			for (const auto &[name, atom] : r->mSideChain)
 				accumulate(inAtom, atom, inRadius, kRadiusSideAtom);
 		}
 	}
@@ -624,7 +681,7 @@ double residue::CalculateSurface(const std::vector<residue> &inResidues)
 	                 CalculateSurface(mC, kRadiusC, neighbours) +
 	                 CalculateSurface(mO, kRadiusO, neighbours);
 
-	for (auto &atom : mSideChain)
+	for (const auto &[name, atom] : mSideChain)
 		mAccessibility += CalculateSurface(atom, kRadiusSideAtom, neighbours);
 
 	return mAccessibility;
@@ -1857,6 +1914,65 @@ float DSSP::residue_info::tco() const
 bool DSSP::residue_info::is_pre_pro() const
 {
 	return m_impl->mType != kProline and m_impl->mNext != nullptr and m_impl->mNext->mType == kProline;
+}
+
+float DSSP::residue_info::chiral_volume() const
+{
+	return m_impl->mChiralVolume;
+}
+
+const std::map<residue_type, std::vector<std::string>> kChiAtomsMap = {
+	{ MapResidue("ASP"), { "CG", "OD1" } },
+	{ MapResidue("ASN"), { "CG", "OD1" } },
+	{ MapResidue("ARG"), { "CG", "CD", "NE", "CZ" } },
+	{ MapResidue("HIS"), { "CG", "ND1" } },
+	{ MapResidue("GLN"), { "CG", "CD", "OE1" } },
+	{ MapResidue("GLU"), { "CG", "CD", "OE1" } },
+	{ MapResidue("SER"), { "OG" } },
+	{ MapResidue("THR"), { "OG1" } },
+	{ MapResidue("LYS"), { "CG", "CD", "CE", "NZ" } },
+	{ MapResidue("TYR"), { "CG", "CD1" } },
+	{ MapResidue("PHE"), { "CG", "CD1" } },
+	{ MapResidue("LEU"), { "CG", "CD1" } },
+	{ MapResidue("TRP"), { "CG", "CD1" } },
+	{ MapResidue("CYS"), { "SG" } },
+	{ MapResidue("ILE"), { "CG1", "CD1" } },
+	{ MapResidue("MET"), { "CG", "SD", "CE" } },
+	{ MapResidue("MSE"), { "CG", "SE", "CE" } },
+	{ MapResidue("PRO"), { "CG", "CD" } },
+	{ MapResidue("VAL"), { "CG1" } }
+};
+
+float DSSP::residue_info::chi(std::size_t index) const
+{
+	float result = 0;
+
+	auto type = m_impl->mType;
+
+	auto i = kChiAtomsMap.find(type);
+	if (i != kChiAtomsMap.end() and index < i->second.size())
+	{
+		std::vector<std::string> atoms{"N", "CA", "CB"};
+
+		atoms.insert(atoms.end(), i->second.begin(), i->second.end());
+
+		// in case we have a positive chiral volume we need to swap atoms
+		if (m_impl->mChiralVolume > 0)
+		{
+			if (type == kLeucine)
+				atoms.back() = "CD2";
+			if (type == kValine)
+				atoms.back() = "CG2";
+		}
+
+		result = static_cast<float>(dihedral_angle(
+			m_impl->get_atom(atoms[index + 0]),
+			m_impl->get_atom(atoms[index + 1]),
+			m_impl->get_atom(atoms[index + 2]),
+			m_impl->get_atom(atoms[index + 3])));
+	}
+
+	return result;
 }
 
 std::tuple<float, float, float> DSSP::residue_info::ca_location() const

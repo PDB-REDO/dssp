@@ -145,6 +145,9 @@ class DSSP
 		bool is_pre_pro() const;
 		bool is_cis() const { return omega() < 30.0f; }
 
+		float chiral_volume() const;
+		float chi(std::size_t index) const;
+
 		std::tuple<float, float, float> ca_location() const;
 
 		chain_break_type chain_break() const;
