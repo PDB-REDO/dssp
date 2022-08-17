@@ -1854,6 +1854,11 @@ float DSSP::residue_info::tco() const
 	return m_impl->mTCO;
 }
 
+bool DSSP::residue_info::is_pre_pro() const
+{
+	return m_impl->mType != kProline and m_impl->mNext != nullptr and m_impl->mNext->mType == kProline;
+}
+
 std::tuple<float, float, float> DSSP::residue_info::ca_location() const
 {
 	return { m_impl->mCAlpha.mX, m_impl->mCAlpha.mY, m_impl->mCAlpha.mZ };

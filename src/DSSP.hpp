@@ -142,6 +142,7 @@ class DSSP
 		float tco() const;
 		float omega() const;
 
+		bool is_pre_pro() const;
 		bool is_cis() const { return omega() < 30.0f; }
 
 		std::tuple<float, float, float> ca_location() const;
