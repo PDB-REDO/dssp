@@ -261,6 +261,8 @@ struct residue
 		int seen = 0;
 
 		std::array<point, 4> chiralAtoms;
+		for (auto &p : chiralAtoms)
+			p = {};
 
 		for (auto atom : atoms)
 		{
@@ -328,22 +330,22 @@ struct residue
 
 				if (mType == kLeucine)
 				{
-					if (type == "CG")
+					if (atomID == "CG")
 						chiralAtoms[0] = { x, y, z };
-					else if (type == "CB")
+					else if (atomID == "CB")
 						chiralAtoms[1] = { x, y, z };
-					else if (type == "CD1")
+					else if (atomID == "CD1")
 						chiralAtoms[2] = { x, y, z };
-					else if (type == "CD2")
+					else if (atomID == "CD2")
 						chiralAtoms[3] = { x, y, z };
 				}
 				else if (mType == kValine)
 				{
-					if (type == "CB")
+					if (atomID == "CB")
 						chiralAtoms[0] = { x, y, z };
-					else if (type == "CG1")
+					else if (atomID == "CG1")
 						chiralAtoms[2] = { x, y, z };
-					else if (type == "CG2")
+					else if (atomID == "CG2")
 						chiralAtoms[3] = { x, y, z };
 				}
 			}
