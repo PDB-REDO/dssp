@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(ut_mmcif_2)
 
 BOOST_AUTO_TEST_CASE(dssp_1)
 {
-	cif::file f(gTestDir / "1cbs.cif");
+	cif::file f(gTestDir / "1cbs.cif.gz");
 
 	BOOST_ASSERT(f.is_valid());
 
