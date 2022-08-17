@@ -1,7 +1,7 @@
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
  *
- * Copyright (c) 2022 NKI/AVL, Netherlands Cancer Institute
+ * Copyright (c) 2020 NKI/AVL, Netherlands Cancer Institute
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,18 +24,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_ALTERNATIVE_INIT_API
-#include <boost/test/included/unit_test.hpp>
-
-#include <charconv>
 #include <stdexcept>
 
-#include <cif++/cif.hpp>
-#include <cif++/dssp/DSSP.hpp>
+#define BOOST_TEST_ALTERNATIVE_INIT_API
+#include <boost/algorithm/string.hpp>
+#include <boost/test/included/unit_test.hpp>
 
-namespace tt = boost::test_tools;
+#include "DSSP.hpp"
+#include "dssp_wrapper.hpp"
 
-std::filesystem::path gTestDir = std::filesystem::current_path(); // filled in first test
+namespace ba = boost::algorithm;
+namespace fs = std::filesystem;
 
 // --------------------------------------------------------------------
 
@@ -55,21 +54,99 @@ cif::file operator""_cf(const char *text, size_t length)
 
 // --------------------------------------------------------------------
 
+fs::path gTestDir = fs::current_path();
+
 bool init_unit_test()
 {
 	cif::VERBOSE = 1;
 
 	// not a test, just initialize test dir
 	if (boost::unit_test::framework::master_test_suite().argc == 2)
+	{
 		gTestDir = boost::unit_test::framework::master_test_suite().argv[1];
 
-	// do this now, avoids the need for installing
-	cif::add_file_resource("mmcif_pdbx.dic", gTestDir / ".." / "rsrc" / "mmcif_pdbx.dic");
+		cif::add_data_directory(gTestDir / ".." / "rsrc");
+	}
 
-	// initialize CCD location
-	cif::add_file_resource("components.cif", gTestDir / ".." / "data" / "ccd-subset.cif");
+	// // do this now, avoids the need for installing
+	// cif::add_file_resource("mmcif_pdbx.dic", gTestDir / ".." / "rsrc" / "mmcif_pdbx.dic");
+
+	// // initialize CCD location
+	// cif::add_file_resource("components.cif", gTestDir / ".." / "data" / "ccd-subset.cif");
 
 	return true;
+}
+
+// --------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(ut_dssp)
+{
+	using namespace std::literals;
+
+	cif::file f(gTestDir / "1cbs.cif.gz");
+	BOOST_ASSERT(f.is_valid());
+
+	dssp::DSSP dssp(f.front(), 1, 3, true);
+
+	std::stringstream test;
+
+	writeDSSP(dssp, test);
+
+	std::ifstream reference(gTestDir / "1cbs.dssp");
+
+	BOOST_CHECK(reference.is_open());
+
+	std::string line_t, line_r;
+	BOOST_CHECK(std::getline(test, line_t) and std::getline(reference, line_r));
+
+	const char *kHeaderLineStart = "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ====";
+	BOOST_CHECK(line_t.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
+	BOOST_CHECK(line_r.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
+
+	for (int line_nr = 2;; ++line_nr)
+	{
+		bool done_t = not std::getline(test, line_t);
+		bool done_r = not std::getline(reference, line_r);
+
+		BOOST_CHECK_EQUAL(done_r, done_t);
+		if (done_r)
+			break;
+
+		if (line_t != line_r)
+			std::cerr << line_nr << std::endl
+					  << line_t << std::endl
+					  << line_r << std::endl;
+
+		BOOST_CHECK(line_t == line_r);
+	}
+
+	BOOST_CHECK(test.eof());
+	BOOST_CHECK(reference.eof());
+}
+
+BOOST_AUTO_TEST_CASE(ut_mmcif_2)
+{
+	using namespace std::literals;
+	using namespace cif::literals;
+
+	cif::file f(gTestDir / "1cbs.cif.gz");
+	BOOST_ASSERT(f.is_valid());
+
+	dssp::DSSP dssp(f.front(), 1, 3, true);
+
+	std::stringstream test;
+
+	annotateDSSP(f.front(), dssp, true, test);
+
+	cif::file rf(gTestDir / "1cbs-dssp.cif");
+
+	// structure.datablock()["software"].erase("name"_key == "dssp");
+	// rs.datablock()["software"].erase("name"_key == "dssp");
+
+	// generate some output on different files:
+	cif::VERBOSE = 2;
+
+	// BOOST_CHECK(f.front() == rf.front());
 }
 
 // --------------------------------------------------------------------

@@ -159,29 +159,27 @@ endif()
 
 # test
 
-add_executable(unit-test ${PROJECT_SOURCE_DIR}/test/unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp)
+add_executable(dssp-unit-test ${PROJECT_SOURCE_DIR}/test/dssp-unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp)
 
 if(USE_RSRC)
-	mrc_target_resources(unit-test ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
+	mrc_target_resources(dssp-unit-test ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
 endif()
 
-target_include_directories(unit-test PRIVATE
+target_include_directories(dssp-unit-test PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(unit-test dssp_library cifpp::cifpp Boost::date_time)
+target_link_libraries(dssp-unit-test dssp_library cifpp::cifpp Boost::date_time)
 
 if(MSVC)
 	# Specify unwind semantics so that MSVC knowns how to handle exceptions
-	target_compile_options(unit-test PRIVATE /EHsc)
+	target_compile_options(dssp-unit-test PRIVATE /EHsc)
 endif()
 
 enable_testing()
 
-add_test(NAME unit-test
-	COMMAND $<TARGET_FILE:unit-test>
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)
+add_test(NAME dssp-unit-test COMMAND $<TARGET_FILE:dssp-unit-test> -- ${PROJECT_SOURCE_DIR}/test)
 
 option(DSSP_BUILD_INSTALLER "Build an installer" OFF)
 if(DSSP_BUILD_INSTALLER)
