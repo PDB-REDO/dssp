@@ -475,15 +475,15 @@ struct residue
 
 	point get_atom(std::string_view name)
 	{
-		if (name == "CA")	
+		if (name == "CA")
 			return mCAlpha;
-		else if (name == "C")	
+		else if (name == "C")
 			return mC;
-		else if (name == "N")	
+		else if (name == "N")
 			return mN;
-		else if (name == "O")	
+		else if (name == "O")
 			return mO;
-		else if (name == "H")	
+		else if (name == "H")
 			return mH;
 		else
 		{
@@ -520,7 +520,7 @@ struct residue
 	point mBox[2] = {};
 	float mRadius;
 	point mCenter;
-	std::vector<std::tuple<std::string,point>> mSideChain;
+	std::vector<std::tuple<std::string, point>> mSideChain;
 	double mAccessibility = 0;
 	double mChiralVolume = 0;
 
@@ -1943,6 +1943,13 @@ const std::map<residue_type, std::vector<std::string>> kChiAtomsMap = {
 	{ MapResidue("VAL"), { "CG1" } }
 };
 
+std::size_t DSSP::residue_info::nr_of_chis() const
+{
+	auto i = kChiAtomsMap.find(m_impl->mType);
+
+	return i != kChiAtomsMap.end() ? i->second.size() : 0;
+}
+
 float DSSP::residue_info::chi(std::size_t index) const
 {
 	float result = 0;
@@ -1952,7 +1959,7 @@ float DSSP::residue_info::chi(std::size_t index) const
 	auto i = kChiAtomsMap.find(type);
 	if (i != kChiAtomsMap.end() and index < i->second.size())
 	{
-		std::vector<std::string> atoms{"N", "CA", "CB"};
+		std::vector<std::string> atoms{ "N", "CA", "CB" };
 
 		atoms.insert(atoms.end(), i->second.begin(), i->second.end());
 

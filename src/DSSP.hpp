@@ -146,6 +146,7 @@ class DSSP
 		bool is_cis() const { return omega() < 30.0f; }
 
 		float chiral_volume() const;
+		std::size_t nr_of_chis() const;
 		float chi(std::size_t index) const;
 
 		std::tuple<float, float, float> ca_location() const;
