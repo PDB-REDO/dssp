@@ -34,6 +34,7 @@
 #include <fstream>
 
 #include <gxrio.hpp>
+#include <pdbx++.hpp>
 
 #include <boost/format.hpp>
 #include <boost/date_time/gregorian/formatters.hpp>
@@ -162,7 +163,14 @@ int d_main(int argc, const char* argv[])
 	// 		mmcif::CompoundFactory::instance().pushDictionary(dict);
 	// }
 
-	cif::file f(vm["xyzin"].as<std::string>());
+	gxrio::ifstream in(vm["xyzin"].as<std::string>());
+	if (not in.is_open())
+	{
+		std::cerr << "Could not open file" << std::endl;
+		exit(1);
+	}
+
+	cif::file f = pdbx::load_pdb_file(in);
 	if (not f.is_valid())
 	{
 		std::cerr << "Could not validate file" << std::endl;

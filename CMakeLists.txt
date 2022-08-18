@@ -121,12 +121,13 @@ find_package(Threads)
 # Note: use -DBoost_USE_STATIC_LIBS=ON to use boost static libraries
 
 find_package(cifpp 5.0.0 REQUIRED)
+find_package(pdbxpp 5.0.0)
 find_package(Boost COMPONENTS date_time program_options)
 
 # The DSSP code is in a separate library, optionally to be used by others
 
 add_library(dssp_library OBJECT ${PROJECT_SOURCE_DIR}/src/DSSP.cpp)
-target_link_libraries(dssp_library cifpp::cifpp)
+target_link_libraries(dssp_library cifpp::cifpp pdbxpp::pdbxpp)
 
 add_executable(mkdssp
 	${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp
@@ -135,7 +136,7 @@ add_executable(mkdssp
 	$<TARGET_OBJECTS:dssp_library>)
 
 target_include_directories(mkdssp PRIVATE ${CMAKE_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp Boost::date_time Boost::program_options)
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp pdbxpp::pdbxpp Boost::date_time Boost::program_options)
 	
 if(USE_RSRC)
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
@@ -170,7 +171,7 @@ target_include_directories(dssp-unit-test PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(dssp-unit-test dssp_library cifpp::cifpp Boost::date_time)
+target_link_libraries(dssp-unit-test dssp_library cifpp::cifpp pdbxpp::pdbxpp Boost::date_time)
 
 if(MSVC)
 	# Specify unwind semantics so that MSVC knowns how to handle exceptions
