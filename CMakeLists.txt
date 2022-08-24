@@ -174,6 +174,9 @@ endif()
 
 # test
 if(ENABLE_TESTING)
+	# We still depend on boost for the testing headers-only library
+	find_package(Boost REQUIRED)
+
 	add_executable(dssp-unit-test ${PROJECT_SOURCE_DIR}/test/dssp-unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp)
 
 	if(USE_RSRC)
