@@ -16,5 +16,7 @@ function(add_git_submodule dir)
 			COMMAND_ERROR_IS_FATAL ANY)
 	endif()
 
+	set(ENABLE_TESTING OFF)
+
 	add_subdirectory(${dir} ${ARGV})
 endfunction(add_git_submodule)
