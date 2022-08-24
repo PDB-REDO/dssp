@@ -130,15 +130,8 @@ if(NOT pdbxpp_FOUND)
 	add_git_submodule(libpdbxpp EXCLUDE_FROM_ALL)
 endif()
 
-find_package(date)
-if(NOT date_FOUND)
-	add_git_submodule(date EXCLUDE_FROM_ALL)
-endif()
-
-find_package(libconfig)
-if(NOT libconfig_FOUND)
-	add_git_submodule(libconfig EXCLUDE_FROM_ALL)
-endif()
+add_git_submodule(date EXCLUDE_FROM_ALL)
+add_git_submodule(libconfig EXCLUDE_FROM_ALL)
 
 # The DSSP code is in a separate library, optionally to be used by others
 add_library(dssp_library OBJECT ${PROJECT_SOURCE_DIR}/src/DSSP.cpp)
@@ -188,7 +181,7 @@ if(ENABLE_TESTING)
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 	)
 
-	target_link_libraries(dssp-unit-test dssp_library cifpp::cifpp pdbxpp::pdbxpp date::date)
+	target_link_libraries(dssp-unit-test dssp_library cifpp::cifpp pdbxpp::pdbxpp date::date Boost::boost)
 
 	if(MSVC)
 		# Specify unwind semantics so that MSVC knowns how to handle exceptions
