@@ -6,10 +6,10 @@
 # modification, are permitted provided that the following conditions are met:
 
 # 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer
+# list of conditions and the following disclaimer
 # 2. Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution.
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -37,6 +37,7 @@ include(CMakePackageConfigHelpers)
 include(Dart)
 include(FindFilesystem)
 include(GenerateExportHeader)
+include(AddGitSubmodule)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
@@ -47,24 +48,25 @@ find_package(Filesystem REQUIRED)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
 elseif(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 endif()
 
 if(NOT "$ENV{CCP4}" STREQUAL "")
 	set(CCP4 $ENV{CCP4})
 	list(PREPEND CMAKE_MODULE_PATH "${CCP4}/Lib")
 	list(APPEND CMAKE_PREFIX_PATH ${CCP4})
+
 	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 		set(CMAKE_INSTALL_PREFIX ${CCP4})
 	endif()
 endif()
 
 if(MSVC)
-    # make msvc standards compliant...
-    add_compile_options(/permissive-)
+	# make msvc standards compliant...
+	add_compile_options(/permissive-)
 
 	macro(get_WIN32_WINNT version)
-		if (WIN32 AND CMAKE_SYSTEM_VERSION)
+		if(WIN32 AND CMAKE_SYSTEM_VERSION)
 			set(ver ${CMAKE_SYSTEM_VERSION})
 			string(REPLACE "." "" ver ${ver})
 			string(REGEX REPLACE "([0-9])" "0\\1" ver ${ver})
@@ -118,14 +120,22 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-# Note: use -DBoost_USE_STATIC_LIBS=ON to use boost static libraries
-
 find_package(cifpp 5.0.0 REQUIRED)
 find_package(pdbxpp 5.0.0)
-find_package(Boost COMPONENTS date_time program_options)
+
+find_package(date)
+
+if(NOT date_FOUND)
+	add_git_submodule(date EXCLUDE_FROM_ALL)
+endif()
+
+find_package(libconfig)
+
+if(NOT libconfig_FOUND)
+	add_git_submodule(libconfig EXCLUDE_FROM_ALL)
+endif()
 
 # The DSSP code is in a separate library, optionally to be used by others
-
 add_library(dssp_library OBJECT ${PROJECT_SOURCE_DIR}/src/DSSP.cpp)
 target_link_libraries(dssp_library cifpp::cifpp pdbxpp::pdbxpp)
 
@@ -136,18 +146,17 @@ add_executable(mkdssp
 	$<TARGET_OBJECTS:dssp_library>)
 
 target_include_directories(mkdssp PRIVATE ${CMAKE_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp pdbxpp::pdbxpp Boost::date_time Boost::program_options)
-	
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp pdbxpp::pdbxpp date::date libconfig::libconfig)
+
 if(USE_RSRC)
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
 endif()
 
 install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
 # manual
-
 if(UNIX)
 	install(FILES doc/mkdssp.1
 		DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
@@ -159,38 +168,39 @@ if(EXISTS "${CCP4}/html")
 endif()
 
 # test
+if(ENABLE_TESTING)
+	add_executable(dssp-unit-test ${PROJECT_SOURCE_DIR}/test/dssp-unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp)
 
-add_executable(dssp-unit-test ${PROJECT_SOURCE_DIR}/test/dssp-unit-test.cpp ${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp)
+	if(USE_RSRC)
+		mrc_target_resources(dssp-unit-test ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
+	endif()
 
-if(USE_RSRC)
-	mrc_target_resources(dssp-unit-test ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
+	target_include_directories(dssp-unit-test PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/src
+		${CMAKE_CURRENT_SOURCE_DIR}/include
+	)
+
+	target_link_libraries(dssp-unit-test dssp_library cifpp::cifpp pdbxpp::pdbxpp date::date)
+
+	if(MSVC)
+		# Specify unwind semantics so that MSVC knowns how to handle exceptions
+		target_compile_options(dssp-unit-test PRIVATE /EHsc)
+	endif()
+
+	enable_testing()
+
+	add_test(NAME dssp-unit-test COMMAND $<TARGET_FILE:dssp-unit-test> -- ${PROJECT_SOURCE_DIR}/test)
 endif()
-
-target_include_directories(dssp-unit-test PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/src
-	${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_link_libraries(dssp-unit-test dssp_library cifpp::cifpp pdbxpp::pdbxpp Boost::date_time)
-
-if(MSVC)
-	# Specify unwind semantics so that MSVC knowns how to handle exceptions
-	target_compile_options(dssp-unit-test PRIVATE /EHsc)
-endif()
-
-enable_testing()
-
-add_test(NAME dssp-unit-test COMMAND $<TARGET_FILE:dssp-unit-test> -- ${PROJECT_SOURCE_DIR}/test)
 
 option(DSSP_BUILD_INSTALLER "Build an installer" OFF)
+
 if(DSSP_BUILD_INSTALLER)
 	include(InstallRequiredSystemLibraries)
 	set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-	
+
 	# NSIS options
 	set(CPACK_NSIS_MODIFY_PATH ON)
 
 	# configuration done, include CPack
-
 	include(CPack)
 endif()

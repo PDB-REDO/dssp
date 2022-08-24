@@ -1,0 +1,6 @@
+[submodule "libconfig"]
+	path = libconfig
+	url = https://github.com/mhekkel/libconfig.git
+[submodule "date"]
+	path = date
+	url = https://github.com/HowardHinnant/date.git
