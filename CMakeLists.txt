@@ -120,17 +120,22 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-find_package(cifpp 5.0.0 REQUIRED)
-find_package(pdbxpp 5.0.0)
+find_package(cifpp 5.0.0 QUIET)
+if(NOT cifpp_FOUND)
+	add_git_submodule(libcifpp EXCLUDE_FROM_ALL)
+endif()
+
+find_package(pdbxpp 5.0.0 QUIET)
+if(NOT pdbxpp_FOUND)
+	add_git_submodule(libpdbxpp EXCLUDE_FROM_ALL)
+endif()
 
 find_package(date)
-
 if(NOT date_FOUND)
 	add_git_submodule(date EXCLUDE_FROM_ALL)
 endif()
 
 find_package(libconfig)
-
 if(NOT libconfig_FOUND)
 	add_git_submodule(libconfig EXCLUDE_FROM_ALL)
 endif()
