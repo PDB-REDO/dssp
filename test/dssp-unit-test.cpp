@@ -27,13 +27,11 @@
 #include <stdexcept>
 
 #define BOOST_TEST_ALTERNATIVE_INIT_API
-#include <boost/algorithm/string.hpp>
 #include <boost/test/included/unit_test.hpp>
 
 #include "DSSP.hpp"
 #include "dssp_wrapper.hpp"
 
-namespace ba = boost::algorithm;
 namespace fs = std::filesystem;
 
 // --------------------------------------------------------------------

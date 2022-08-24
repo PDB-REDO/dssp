@@ -165,7 +165,7 @@ void writeDSSP(const dssp::DSSP &dssp, std::ostream &os)
 	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::SOURCE) << '.' << std::endl
 	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::AUTHOR) << '.' << std::endl;
 
-	os << pdbx::format("%5d%3d%3d%3d%3d TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN) .",
+	os << pdbx::format("%5d%3d%3d%3d%3d TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN)                .",
 			  stats.count.residues, stats.count.chains, stats.count.SS_bridges, stats.count.intra_chain_SS_bridges, (stats.count.SS_bridges - stats.count.intra_chain_SS_bridges))
 	   << std::endl;
 
