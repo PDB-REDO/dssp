@@ -33,9 +33,8 @@
 #include <fstream>
 #include <iostream>
 
-#include <cif++.hpp>
+#include <cif++/pdb/io.hpp>
 #include <date/date.h>
-#include <pdbx++.hpp>
 
 #include "dssp_wrapper.hpp"
 #include "revision.hpp"
@@ -126,20 +125,20 @@ std::string ResidueToDSSPLine(const dssp::DSSP::residue_info &info)
 		if (acceptor)
 		{
 			auto d = acceptor.nr() - info.nr();
-			NHO[i] = pdbx::format("%d,%3.1f", d, acceptorE).str();
+			NHO[i] = cif::format("%d,%3.1f", d, acceptorE).str();
 		}
 
 		if (donor)
 		{
 			auto d = donor.nr() - info.nr();
-			ONH[i] = pdbx::format("%d,%3.1f", d, donorE).str();
+			ONH[i] = cif::format("%d,%3.1f", d, donorE).str();
 		}
 	}
 
 	// auto ca = residue.atomByID("CA");
 	auto const &[cax, cay, caz] = residue.ca_location();
 
-	return pdbx::format("%5d%5d%1.1s%1.1s %c  %c%c%c%c%c%c%c%c%c%4d%4d%c%4.0f %11s%11s%11s%11s  %6.3f%6.1f%6.1f%6.1f%6.1f %6.1f %6.1f %6.1f",
+	return cif::format("%5d%5d%1.1s%1.1s %c  %c%c%c%c%c%c%c%c%c%4d%4d%c%4.0f %11s%11s%11s%11s  %6.3f%6.1f%6.1f%6.1f%6.1f %6.1f %6.1f %6.1f",
 		info.nr(), residue.pdb_seq_num(), residue.pdb_ins_code(), residue.pdb_strand_id(), code,
 			ss, helix[3], helix[0], helix[1], helix[2], bend, chirality, bridgelabel[0], bridgelabel[1],
 			bp[0], bp[1], sheet, floor(info.accessibility() + 0.5),
@@ -165,40 +164,40 @@ void writeDSSP(const dssp::DSSP &dssp, std::ostream &os)
 	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::SOURCE) << '.' << std::endl
 	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::AUTHOR) << '.' << std::endl;
 
-	os << pdbx::format("%5d%3d%3d%3d%3d TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN)                .",
+	os << cif::format("%5d%3d%3d%3d%3d TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN)                .",
 			  stats.count.residues, stats.count.chains, stats.count.SS_bridges, stats.count.intra_chain_SS_bridges, (stats.count.SS_bridges - stats.count.intra_chain_SS_bridges))
 	   << std::endl;
 
-	os << pdbx::format("%8.1f   ACCESSIBLE SURFACE OF PROTEIN (ANGSTROM**2)                                                                         .", stats.accessible_surface) << std::endl;
+	os << cif::format("%8.1f   ACCESSIBLE SURFACE OF PROTEIN (ANGSTROM**2)                                                                         .", stats.accessible_surface) << std::endl;
 
 	// hydrogenbond summary
 
-	os << pdbx::format("%5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(J)  , SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds, (stats.count.H_bonds * 100.0 / stats.count.residues)) << std::endl;
+	os << cif::format("%5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(J)  , SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds, (stats.count.H_bonds * 100.0 / stats.count.residues)) << std::endl;
 
-	os << pdbx::format("%5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN     PARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds_in_parallel_bridges, (stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues)) << std::endl;
+	os << cif::format("%5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN     PARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds_in_parallel_bridges, (stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues)) << std::endl;
 
-	os << pdbx::format("%5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN ANTIPARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds_in_antiparallel_bridges, (stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues)) << std::endl;
+	os << cif::format("%5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS IN ANTIPARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds_in_antiparallel_bridges, (stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues)) << std::endl;
 
 	for (int k = 0; k < 11; ++k)
-		os << pdbx::format("%5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(I%c%1d), SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_Bonds_per_distance[k], (stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues), (k - 5 < 0 ? '-' : '+'), abs(k - 5)) << std::endl;
+		os << cif::format("%5d%5.1f   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(I%c%1d), SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_Bonds_per_distance[k], (stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues), (k - 5 < 0 ? '-' : '+'), abs(k - 5)) << std::endl;
 
 	// histograms...
 	os << "  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30     *** HISTOGRAMS OF ***           ." << std::endl;
 
 	for (auto hi : stats.histogram.residues_per_alpha_helix)
-		os << pdbx::format("%3d", hi);
+		os << cif::format("%3d", hi);
 	os << "    RESIDUES PER ALPHA HELIX         ." << std::endl;
 
 	for (auto hi : stats.histogram.parallel_bridges_per_ladder)
-		os << pdbx::format("%3d", hi);
+		os << cif::format("%3d", hi);
 	os << "    PARALLEL BRIDGES PER LADDER      ." << std::endl;
 
 	for (auto hi : stats.histogram.antiparallel_bridges_per_ladder)
-		os << pdbx::format("%3d", hi);
+		os << cif::format("%3d", hi);
 	os << "    ANTIPARALLEL BRIDGES PER LADDER  ." << std::endl;
 
 	for (auto hi : stats.histogram.ladders_per_sheet)
-		os << pdbx::format("%3d", hi);
+		os << cif::format("%3d", hi);
 	os << "    LADDERS PER SHEET                ." << std::endl;
 
 	// per residue information
@@ -212,7 +211,7 @@ void writeDSSP(const dssp::DSSP &dssp, std::ostream &os)
 		// can be the transition to a different chain, or missing residues in the current chain
 
 		if (ri.nr() != last + 1)
-			os << pdbx::format("%5d        !%c             0   0    0      0, 0.0     0, 0.0     0, 0.0     0, 0.0   0.000 360.0 360.0 360.0 360.0    0.0    0.0    0.0",
+			os << cif::format("%5d        !%c             0   0    0      0, 0.0     0, 0.0     0, 0.0     0, 0.0   0.000 360.0 360.0 360.0 360.0    0.0    0.0    0.0",
 				(last + 1), (ri.chain_break() == dssp::chain_break_type::NewChain ? '*' : ' ')) << std::endl;
 
 		os << ResidueToDSSPLine(ri) << std::endl;

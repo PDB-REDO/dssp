@@ -125,17 +125,12 @@ if(NOT cifpp_FOUND)
 	add_git_submodule(libcifpp EXCLUDE_FROM_ALL)
 endif()
 
-find_package(pdbxpp 5.0.0 QUIET)
-if(NOT pdbxpp_FOUND)
-	add_git_submodule(libpdbxpp EXCLUDE_FROM_ALL)
-endif()
-
 add_git_submodule(date EXCLUDE_FROM_ALL)
 add_git_submodule(libconfig EXCLUDE_FROM_ALL)
 
 # The DSSP code is in a separate library, optionally to be used by others
 add_library(dssp_library OBJECT ${PROJECT_SOURCE_DIR}/src/DSSP.cpp)
-target_link_libraries(dssp_library cifpp::cifpp pdbxpp::pdbxpp)
+target_link_libraries(dssp_library cifpp::cifpp)
 
 add_executable(mkdssp
 	${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp
@@ -144,7 +139,7 @@ add_executable(mkdssp
 	$<TARGET_OBJECTS:dssp_library>)
 
 target_include_directories(mkdssp PRIVATE ${CMAKE_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp pdbxpp::pdbxpp date::date libconfig::libconfig)
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp date::date libconfig::libconfig)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
@@ -181,7 +176,7 @@ if(ENABLE_TESTING)
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 	)
 
-	target_link_libraries(dssp-unit-test dssp_library cifpp::cifpp pdbxpp::pdbxpp date::date Boost::boost)
+	target_link_libraries(dssp-unit-test dssp_library cifpp::cifpp date::date Boost::boost)
 
 	if(MSVC)
 		# Specify unwind semantics so that MSVC knowns how to handle exceptions

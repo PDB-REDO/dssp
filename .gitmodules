@@ -4,9 +4,6 @@
 [submodule "date"]
 	path = date
 	url = https://github.com/HowardHinnant/date.git
-[submodule "libpdbxpp"]
-	path = libpdbxpp
-	url = https://github.com/PDB-REDO/libpdbxpp.git
 [submodule "libcifpp"]
 	path = libcifpp
 	url = https://github.com/PDB-REDO/libcifpp.git

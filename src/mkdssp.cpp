@@ -35,7 +35,8 @@
 
 #include <cfg.hpp>
 #include <gxrio.hpp>
-#include <pdbx++.hpp>
+
+#include <cif++/pdb/io.hpp>
 
 #include "DSSP.hpp"
 
@@ -141,7 +142,7 @@ int d_main(int argc, const char *argv[])
 		exit(1);
 	}
 
-	cif::file f = pdbx::load_pdb_file(in);
+	cif::file f = cif::pdb::read(in);
 	if (not f.is_valid())
 	{
 		std::cerr << "Could not validate file" << std::endl;
