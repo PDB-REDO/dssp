@@ -1,3 +1,6 @@
+Version 4.1.0
+- Based on new libcifpp version 5
+
 Version 4.0.6
 - Prevent heap buffer overflow writing annotated mmCIF file.
 
