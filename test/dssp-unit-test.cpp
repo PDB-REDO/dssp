@@ -184,3 +184,40 @@ BOOST_AUTO_TEST_CASE(dssp_1)
 		BOOST_CHECK_EQUAL((char)residue.type(), secstr.front());
 	}
 }
+
+// --------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(dssp_2)
+{
+	cif::file f(gTestDir / "1cbs.cif.gz");
+
+	BOOST_ASSERT(f.is_valid());
+
+	dssp::DSSP dssp(f.front(), 1, 3, true);
+
+	std::ifstream t(gTestDir / "1cbs-dssp-test.tsv");
+	std::string line;
+
+	while (getline(t, line))
+	{
+		auto f = cif::split(line, "\t");
+
+		BOOST_CHECK_EQUAL(f.size(), 3);
+		if (f.size() != 3)
+			continue;
+
+		int seqID;
+		std::from_chars(f[0].begin(), f[0].end(), seqID);
+		std::string asymID{ f[1] };
+		std::string secstr{ f[2] };
+		if (secstr == "_")
+			secstr = " ";
+
+		dssp::DSSP::key_type key{ asymID, seqID };
+		auto ri = dssp[key];
+		
+		BOOST_CHECK_EQUAL(ri.asym_id(), asymID);
+		BOOST_CHECK_EQUAL(ri.seq_id(), seqID);
+		BOOST_CHECK_EQUAL((char)ri.type(), secstr.front());
+	}
+}

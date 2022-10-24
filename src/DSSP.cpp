@@ -2117,6 +2117,17 @@ DSSP::iterator DSSP::end() const
 	return iterator(res);
 }
 
+DSSP::residue_info DSSP::operator[](const key_type &key) const
+{
+	auto i = std::find_if(begin(), end(),
+		[key](const residue_info &res) { return res.asym_id() == std::get<0>(key) and res.seq_id() == std::get<1>(key); });
+	
+	if (i == end())
+		throw std::out_of_range("Could not find residue with supplied key");
+	
+	return *i;
+}
+
 statistics DSSP::get_statistics() const
 {
 	return m_impl->mStats;
