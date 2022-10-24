@@ -130,6 +130,8 @@ add_git_submodule(libconfig EXCLUDE_FROM_ALL)
 
 # The DSSP code is in a separate library, optionally to be used by others
 add_library(dssp_library OBJECT ${PROJECT_SOURCE_DIR}/src/DSSP.cpp)
+add_library(dssp::dssp ALIAS dssp_library)
+
 target_link_libraries(dssp_library cifpp::cifpp)
 
 add_executable(mkdssp
