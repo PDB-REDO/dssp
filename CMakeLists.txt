@@ -108,10 +108,7 @@ if(NOT gxrio_FOUND)
 	add_git_submodule(gxrio EXCLUDE_FROM_ALL)
 endif()
 
-find_package(cifpp 5.0.0 QUIET)
-if(NOT cifpp_FOUND)
-	add_git_submodule(libcifpp EXCLUDE_FROM_ALL)
-endif()
+find_package(cifpp 5.0.0 REQUIRED)
 
 add_git_submodule(date EXCLUDE_FROM_ALL)
 
@@ -133,7 +130,7 @@ add_executable(mkdssp
 	$<TARGET_OBJECTS:dssp_library>)
 
 target_include_directories(mkdssp PRIVATE ${CMAKE_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp date::date libconfig::libconfig)
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp date::date libconfig::libconfig gxrio::gxrio)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
