@@ -64,7 +64,7 @@ std::string ResidueToDSSPLine(const dssp::DSSP::residue_info &info)
 			code = 'a' + ((ssbridgenr - 1) % 26);
 	}
 
-	char ss;
+	char ss = ' ';
 	switch (info.type())
 	{
 		case dssp::structure_type::Alphahelix: ss = 'H'; break;

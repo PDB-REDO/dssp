@@ -7,3 +7,6 @@
 [submodule "libcifpp"]
 	path = libcifpp
 	url = https://github.com/PDB-REDO/libcifpp.git
+[submodule "gxrio"]
+	path = gxrio
+	url = https://github.com/mhekkel/gxrio.git
