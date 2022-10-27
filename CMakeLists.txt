@@ -103,7 +103,9 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
+find_package(libconfig REQUIRED)
 find_package(gxrio QUIET)
+
 if(NOT gxrio_FOUND)
 	add_git_submodule(gxrio EXCLUDE_FROM_ALL)
 endif()
@@ -111,11 +113,6 @@ endif()
 find_package(cifpp 5.0.0 REQUIRED)
 
 add_git_submodule(date EXCLUDE_FROM_ALL)
-
-find_package(libconfig QUIET)
-if(NOT libconfig_FOUND)
-	add_git_submodule(libconfig EXCLUDE_FROM_ALL)
-endif()
 
 # The DSSP code is in a separate library, optionally to be used by others
 add_library(dssp_library OBJECT ${PROJECT_SOURCE_DIR}/src/DSSP.cpp)

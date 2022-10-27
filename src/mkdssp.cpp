@@ -70,7 +70,7 @@ int d_main(int argc, const char *argv[])
 
 	auto &config = cfg::config::instance();
 
-	config.init(
+	config.init("Usage: mkdssp [options] input-file [output-file]",
 		cfg::make_option<std::string>("output-format", "Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any."),
 		cfg::make_option<short>("min-pp-stretch", 3, "Minimal number of residues having PSI/PHI in range for a PP helix, default is 3"),
 		cfg::make_option("write-other", "If set, write the type OTHER for loops, default is to leave this out"),
@@ -97,9 +97,7 @@ int d_main(int argc, const char *argv[])
 
 	if (config.has("help"))
 	{
-		std::cerr << "Usage: mkdssp [options] input-file [output-file]" << std::endl
-				  << std::endl
-				  << config << std::endl;
+		std::cerr << config << std::endl;
 		exit(0);
 	}
 
