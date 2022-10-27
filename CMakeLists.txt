@@ -103,14 +103,11 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
+find_package(libconfig REQUIRED)
 find_package(gxrio QUIET)
+
 if(NOT gxrio_FOUND)
 	add_git_submodule(gxrio EXCLUDE_FROM_ALL)
-endif()
-
-find_package(libconfig QUIET)
-if(NOT libconfig_FOUND)
-	add_git_submodule(libconfig EXCLUDE_FROM_ALL)
 endif()
 
 find_package(cifpp 5.0.0 REQUIRED)
