@@ -42,14 +42,14 @@ function(write_version_header)
 		set(BUILD_VERSION_STRING "no git info available")
 	endif()
 
-	include_directories(${CMAKE_BINARY_DIR} PRIVATE)
+	include_directories(${PROJECT_BINARY_DIR} PRIVATE)
 	string(TIMESTAMP BUILD_DATE_TIME "%Y-%m-%dT%H:%M:%SZ" UTC)
 
 	if(ARGC GREATER 0)
 		set(VAR_PREFIX "${ARGV0}")
 	endif()
 
-	file(WRITE "${CMAKE_BINARY_DIR}/revision.hpp.in" [[// Generated revision file
+	file(WRITE "${PROJECT_BINARY_DIR}/revision.hpp.in" [[// Generated revision file
 
 #pragma once
 
@@ -72,6 +72,6 @@ inline void write_version_string(std::ostream &os, bool verbose)
 	}
 }
 ]])
-	configure_file("${CMAKE_BINARY_DIR}/revision.hpp.in" "${CMAKE_BINARY_DIR}/revision.hpp" @ONLY)
+	configure_file("${PROJECT_BINARY_DIR}/revision.hpp.in" "${PROJECT_BINARY_DIR}/revision.hpp" @ONLY)
 endfunction()
 

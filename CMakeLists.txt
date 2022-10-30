@@ -117,7 +117,7 @@ add_executable(mkdssp
 	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp
 	$<TARGET_OBJECTS:dssp_library>)
 
-target_include_directories(mkdssp PRIVATE ${CMAKE_BINARY_DIR})
+target_include_directories(mkdssp PRIVATE ${PROJECT_BINARY_DIR})
 target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp date::date libconfig::libconfig gxrio::gxrio)
 
 if(USE_RSRC)
