@@ -121,7 +121,7 @@ target_include_directories(mkdssp PRIVATE ${CMAKE_BINARY_DIR})
 target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp date::date libconfig::libconfig gxrio::gxrio)
 
 if(USE_RSRC)
-	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
+	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
 endif()
 
 install(TARGETS ${PROJECT_NAME}
@@ -147,7 +147,7 @@ if(ENABLE_TESTING)
 	add_executable(unit-test-dssp ${PROJECT_SOURCE_DIR}/test/unit-test-dssp.cpp ${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp)
 
 	if(USE_RSRC)
-		mrc_target_resources(unit-test-dssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
+		mrc_target_resources(unit-test-dssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
 	endif()
 
 	target_include_directories(unit-test-dssp PRIVATE
