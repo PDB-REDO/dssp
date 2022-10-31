@@ -115,7 +115,7 @@ endif()
 add_library(dssp_library OBJECT ${PROJECT_SOURCE_DIR}/src/DSSP.cpp)
 add_library(dssp::dssp ALIAS dssp_library)
 
-target_link_libraries(dssp_library cifpp::cifpp)
+target_link_libraries(dssp_library PRIVATE cifpp::cifpp)
 
 add_executable(mkdssp
 	${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp
@@ -123,8 +123,8 @@ add_executable(mkdssp
 	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp
 	$<TARGET_OBJECTS:dssp_library>)
 
-target_include_directories(mkdssp PRIVATE ${PROJECT_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp date::date libconfig::libconfig gxrio::gxrio)
+target_include_directories(mkdssp PRIVATE ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/date/include)
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp libconfig::libconfig gxrio::gxrio)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
@@ -161,7 +161,7 @@ if(ENABLE_TESTING)
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 	)
 
-	target_link_libraries(unit-test-dssp dssp_library cifpp::cifpp date::date Boost::boost)
+	target_link_libraries(unit-test-dssp PRIVATE dssp_library cifpp::cifpp date::date Boost::boost)
 
 	if(MSVC)
 		# Specify unwind semantics so that MSVC knowns how to handle exceptions
