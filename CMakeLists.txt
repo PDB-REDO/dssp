@@ -104,6 +104,10 @@ set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
 if(NOT PDB_REDO_META)
+	add_git_submodule(date EXCLUDE_FROM_ALL)
+
+	find_package(gxrio REQUIRED)
+	find_package(libconfig REQUIRED)
 	find_package(cifpp 5.0.0 REQUIRED)
 endif()
 
