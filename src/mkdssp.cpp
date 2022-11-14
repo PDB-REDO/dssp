@@ -80,9 +80,7 @@ int d_main(int argc, const char *argv[])
 
 		cfg::make_option("help,h", "Display help message"),
 		cfg::make_option("version", "Print version"),
-		cfg::make_option("verbose,v", "verbose output"),
-
-		cfg::make_hidden_option<int>("debug,d", "Debug level (for even more verbose output)"));
+		cfg::make_option("verbose,v", "verbose output"));
 
 	config.parse(argc, argv);
 
@@ -113,8 +111,6 @@ int d_main(int argc, const char *argv[])
 	}
 
 	cif::VERBOSE = config.count("verbose");
-	if (config.has("debug"))
-		cif::VERBOSE = config.get<int>("debug");
 
 	// --------------------------------------------------------------------
 
