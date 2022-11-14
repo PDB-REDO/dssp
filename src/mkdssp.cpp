@@ -34,7 +34,6 @@
 #include <iostream>
 
 #include <cfg.hpp>
-#include <gxrio.hpp>
 
 #include <cif++/pdb/io.hpp>
 
@@ -133,7 +132,7 @@ int d_main(int argc, const char *argv[])
 	if (config.has("mmcif-dictionary"))
 		cif::add_file_resource("mmcif_pdbx.dic", config.get<std::string>("mmcif-dictionary"));
 
-	gxrio::ifstream in(config.operands().front());
+	cif::gzio::ifstream in(config.operands().front());
 	if (not in.is_open())
 	{
 		std::cerr << "Could not open file" << std::endl;
@@ -178,7 +177,7 @@ int d_main(int argc, const char *argv[])
 
 	if (not output.empty())
 	{
-		gxrio::ofstream out(output);
+		cif::gzio::ofstream out(output);
 
 		if (not out.is_open())
 		{

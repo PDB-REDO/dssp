@@ -102,12 +102,14 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-find_package(libconfig QUIET)
-if(NOT libconfig_FOUND)
-	add_subdirectory(libconfig EXCLUDE_FROM_ALL)
-endif()
+if(NOT PDB_REDO_META)
+	find_package(libconfig QUIET)
+	if(NOT libconfig_FOUND)
+		add_subdirectory(libconfig EXCLUDE_FROM_ALL)
+	endif()
 
-find_package(cifpp 5.0.0 REQUIRED)
+	find_package(cifpp 5.0.4 CONFIG REQUIRED)
+endif()
 
 add_subdirectory(date EXCLUDE_FROM_ALL)
 
@@ -124,7 +126,7 @@ add_executable(mkdssp
 	$<TARGET_OBJECTS:dssp_library>)
 
 target_include_directories(mkdssp PRIVATE ${CMAKE_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp date::date libconfig::libconfig gxrio::gxrio)
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp date::date libconfig::libconfig)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic)
