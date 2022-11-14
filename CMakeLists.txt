@@ -37,7 +37,6 @@ include(CMakePackageConfigHelpers)
 include(Dart)
 include(FindFilesystem)
 include(GenerateExportHeader)
-include(AddGitSubmodule)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
@@ -105,18 +104,12 @@ find_package(Threads)
 
 find_package(libconfig QUIET)
 if(NOT libconfig_FOUND)
-	add_git_submodule(libconfig EXCLUDE_FROM_ALL)
-endif()
-
-find_package(gxrio QUIET)
-
-if(NOT gxrio_FOUND)
-	add_git_submodule(gxrio EXCLUDE_FROM_ALL)
+	add_subdirectory(libconfig EXCLUDE_FROM_ALL)
 endif()
 
 find_package(cifpp 5.0.0 REQUIRED)
 
-add_git_submodule(date EXCLUDE_FROM_ALL)
+add_subdirectory(date EXCLUDE_FROM_ALL)
 
 # The DSSP code is in a separate library, optionally to be used by others
 add_library(dssp_library OBJECT ${PROJECT_SOURCE_DIR}/src/DSSP.cpp)
