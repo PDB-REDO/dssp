@@ -25,7 +25,12 @@
 cmake_minimum_required(VERSION 3.15)
 
 # Create a revision file, containing the current git version info, if any
-function(write_version_header)
+function(write_version_header dir)
+	# parameter check
+	if(NOT IS_DIRECTORY ${dir})
+		message(FATAL_ERROR "First parameter to write_version_header should be a directory where the final revision.hpp file will be placed")
+	endif()
+
 	include(GetGitRevisionDescription)
 	if(NOT(GIT-NOTFOUND OR HEAD-HASH-NOTFOUND))
 		git_describe_working_tree(BUILD_VERSION_STRING --match=build --dirty)
@@ -39,14 +44,13 @@ function(write_version_header)
 			endif()
 		endif()
 	else()
-		set(BUILD_VERSION_STRING "no git info available")
+		message(WARNING "no git info available, cannot update version string")
 	endif()
 
-	include_directories(${PROJECT_BINARY_DIR} PRIVATE)
 	string(TIMESTAMP BUILD_DATE_TIME "%Y-%m-%dT%H:%M:%SZ" UTC)
 
-	if(ARGC GREATER 0)
-		set(VAR_PREFIX "${ARGV0}")
+	if(ARGC GREATER 1)
+		set(VAR_PREFIX "${ARGV1}")
 	endif()
 
 	file(WRITE "${PROJECT_BINARY_DIR}/revision.hpp.in" [[// Generated revision file
@@ -72,6 +76,6 @@ inline void write_version_string(std::ostream &os, bool verbose)
 	}
 }
 ]])
-	configure_file("${PROJECT_BINARY_DIR}/revision.hpp.in" "${PROJECT_BINARY_DIR}/revision.hpp" @ONLY)
+	configure_file("${PROJECT_BINARY_DIR}/revision.hpp.in" "${dir}/revision.hpp" @ONLY)
 endfunction()
 

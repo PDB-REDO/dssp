@@ -34,7 +34,6 @@
 #include <iostream>
 
 #include <cif++/pdb/io.hpp>
-#include <date/date.h>
 
 #include "dssp_wrapper.hpp"
 #include "revision.hpp"
@@ -150,14 +149,26 @@ std::string ResidueToDSSPLine(const dssp::DSSP::residue_info &info)
 
 void writeDSSP(const dssp::DSSP &dssp, std::ostream &os)
 {
-	using namespace date;
 	using namespace std::chrono;
 
 	auto stats = dssp.get_statistics();
 
 	auto today = system_clock::now();
 
-	os << "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== DATE=" << format("%F", today) << "        ." << std::endl
+#if __cpp_lib_chrono >= 201907L
+	std::string date = format("%F", today);
+#else
+	std::time_t nowt = std::chrono::system_clock::to_time_t(today);
+	std::tm nowtm;
+	localtime_r(&nowt, &nowtm);
+	
+	char date_buffer[32];
+	auto n = strftime(date_buffer, sizeof(date_buffer), "%F", &nowtm);
+
+	std::string_view date{ date_buffer, n };
+#endif
+
+	os << "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== DATE=" << date << "        ." << std::endl
 	   << "REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637                                                              ." << std::endl
 	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::HEADER) << '.' << std::endl
 	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::COMPND) << '.' << std::endl

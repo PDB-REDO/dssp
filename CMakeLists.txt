@@ -6,10 +6,10 @@
 # modification, are permitted provided that the following conditions are met:
 
 # 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer
+# list of conditions and the following disclaimer
 # 2. Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution.
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(mkdssp VERSION 4.1.0 LANGUAGES CXX)
+project(mkdssp VERSION 4.1.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -37,7 +37,6 @@ include(CMakePackageConfigHelpers)
 include(Dart)
 include(FindFilesystem)
 include(GenerateExportHeader)
-include(AddGitSubmodule)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
@@ -81,7 +80,7 @@ endif()
 
 # Create a revision file, containing the current git version info
 include(VersionString)
-write_version_header()
+write_version_header("${PROJECT_SOURCE_DIR}/src")
 
 # Optionally use mrc to create resources
 find_package(Mrc)
@@ -92,23 +91,18 @@ else()
 	message(WARNING "Not using resources since mrc was not found")
 endif()
 
-if(USE_RSRC)
-	set(USE_RSRC 1)
-
-	message("Using resources compiled with ${MRC}")
-	add_compile_definitions(USE_RSRC)
-endif()
-
 set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
 if(NOT PDB_REDO_META)
-	add_git_submodule(date EXCLUDE_FROM_ALL)
+	find_package(libconfig QUIET)
 
-	find_package(gxrio REQUIRED)
-	find_package(libconfig REQUIRED)
-	find_package(cifpp 5.0.0 REQUIRED)
+	if(NOT libconfig_FOUND)
+		add_subdirectory(libconfig EXCLUDE_FROM_ALL)
+	endif()
+
+	find_package(cifpp 5.0.4 REQUIRED)
 endif()
 
 # The DSSP code is in a separate library, optionally to be used by others
@@ -124,9 +118,10 @@ add_executable(mkdssp
 	$<TARGET_OBJECTS:dssp_library>)
 
 target_include_directories(mkdssp PRIVATE ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/date/include)
-target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp libconfig::libconfig gxrio::gxrio)
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp libconfig::libconfig)
 
 if(USE_RSRC)
+	message("Using resources compiled with ${MRC}")
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
 endif()
 
@@ -161,7 +156,7 @@ if(ENABLE_TESTING)
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 	)
 
-	target_link_libraries(unit-test-dssp PRIVATE dssp_library cifpp::cifpp date::date Boost::boost)
+	target_link_libraries(unit-test-dssp PRIVATE dssp_library cifpp::cifpp Boost::boost)
 
 	if(MSVC)
 		# Specify unwind semantics so that MSVC knowns how to handle exceptions
