@@ -96,12 +96,7 @@ set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
 if(NOT PDB_REDO_META)
-	find_package(libconfig QUIET)
-
-	if(NOT libconfig_FOUND)
-		add_subdirectory(libconfig EXCLUDE_FROM_ALL)
-	endif()
-
+	find_package(libcfp REQUIRED)
 	find_package(cifpp 5.0.4 REQUIRED)
 endif()
 
@@ -118,7 +113,7 @@ add_executable(mkdssp
 	$<TARGET_OBJECTS:dssp_library>)
 
 target_include_directories(mkdssp PRIVATE ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/date/include)
-target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp libconfig::libconfig)
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp libcfp::libcfp)
 
 if(USE_RSRC)
 	message("Using resources compiled with ${MRC}")
