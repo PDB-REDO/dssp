@@ -107,7 +107,7 @@ if(NOT PDB_REDO_META)
 	add_git_submodule(date EXCLUDE_FROM_ALL)
 
 	find_package(gxrio REQUIRED)
-	find_package(libconfig REQUIRED)
+	find_package(libcfp REQUIRED)
 	find_package(cifpp 5.0.0 REQUIRED)
 endif()
 
@@ -124,7 +124,7 @@ add_executable(mkdssp
 	$<TARGET_OBJECTS:dssp_library>)
 
 target_include_directories(mkdssp PRIVATE ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/date/include)
-target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp libconfig::libconfig gxrio::gxrio)
+target_link_libraries(mkdssp PRIVATE dssp_library cifpp::cifpp libcfp::libcfp gxrio::gxrio)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)

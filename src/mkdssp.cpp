@@ -33,7 +33,7 @@
 #include <fstream>
 #include <iostream>
 
-#include <cfg.hpp>
+#include <cfp/cfp.hpp>
 #include <gxrio.hpp>
 
 #include <cif++/pdb/io.hpp>
@@ -68,22 +68,22 @@ int d_main(int argc, const char *argv[])
 {
 	using namespace std::literals;
 
-	auto &config = cfg::config::instance();
+	auto &config = cfp::config::instance();
 
 	config.init("Usage: mkdssp [options] input-file [output-file]",
-		cfg::make_option<std::string>("output-format", "Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any."),
-		cfg::make_option<short>("min-pp-stretch", 3, "Minimal number of residues having PSI/PHI in range for a PP helix, default is 3"),
-		cfg::make_option("write-other", "If set, write the type OTHER for loops, default is to leave this out"),
+		cfp::make_option<std::string>("output-format", "Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any."),
+		cfp::make_option<short>("min-pp-stretch", 3, "Minimal number of residues having PSI/PHI in range for a PP helix, default is 3"),
+		cfp::make_option("write-other", "If set, write the type OTHER for loops, default is to leave this out"),
 
-		// cfg::make_option("components",			po::value<std::string,	"Location of the components.cif file from CCD")
-	    // cfg::make_option("extra-compounds",		po::value<std::string,	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
-		cfg::make_option<std::string>("mmcif-dictionary", "Path to the mmcif_pdbx.dic file to use instead of default"),
+		// cfp::make_option("components",			po::value<std::string,	"Location of the components.cif file from CCD")
+	    // cfp::make_option("extra-compounds",		po::value<std::string,	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
+		cfp::make_option<std::string>("mmcif-dictionary", "Path to the mmcif_pdbx.dic file to use instead of default"),
 
-		cfg::make_option("help,h", "Display help message"),
-		cfg::make_option("version", "Print version"),
-		cfg::make_option("verbose,v", "verbose output"),
+		cfp::make_option("help,h", "Display help message"),
+		cfp::make_option("version", "Print version"),
+		cfp::make_option("verbose,v", "verbose output"),
 
-		cfg::make_hidden_option<int>("debug,d", "Debug level (for even more verbose output)"));
+		cfp::make_hidden_option<int>("debug,d", "Debug level (for even more verbose output)"));
 
 	config.parse(argc, argv);
 
