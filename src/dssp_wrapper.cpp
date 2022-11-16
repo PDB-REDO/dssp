@@ -234,7 +234,7 @@ void annotateDSSP(cif::datablock &db, const dssp::DSSP &dssp, bool writeOther, s
 {
 	if (dssp.empty())
 	{
-		if (cif::VERBOSE)
+		if (cif::VERBOSE > 0)
 			std::cout << "No secondary structure information found" << std::endl;
 	}
 	else
