@@ -29,7 +29,7 @@
 #define BOOST_TEST_ALTERNATIVE_INIT_API
 #include <boost/test/included/unit_test.hpp>
 
-#include "DSSP.hpp"
+#include "dssp.hpp"
 #include "dssp_wrapper.hpp"
 
 namespace fs = std::filesystem;
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 	cif::file f(gTestDir / "1cbs.cif.gz");
 	BOOST_ASSERT(f.is_valid());
 
-	dssp::DSSP dssp(f.front(), 1, 3, true);
+	dssp dssp(f.front(), 1, 3, true);
 
 	std::stringstream test;
 
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(ut_mmcif_2)
 	cif::file f(gTestDir / "1cbs.cif.gz");
 	BOOST_ASSERT(f.is_valid());
 
-	dssp::DSSP dssp(f.front(), 1, 3, true);
+	dssp dssp(f.front(), 1, 3, true);
 
 	std::stringstream test;
 
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(dssp_1)
 
 	std::ifstream t(gTestDir / "1cbs-dssp-test.tsv");
 
-	dssp::DSSP dssp(f.front(), 1, 3, true);
+	dssp dssp(f.front(), 1, 3, true);
 
 	for (auto residue : dssp)
 	{
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(dssp_2)
 
 	BOOST_ASSERT(f.is_valid());
 
-	dssp::DSSP dssp(f.front(), 1, 3, true);
+	dssp dssp(f.front(), 1, 3, true);
 
 	std::ifstream t(gTestDir / "1cbs-dssp-test.tsv");
 	std::string line;
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(dssp_2)
 		if (secstr == "_")
 			secstr = " ";
 
-		dssp::DSSP::key_type key{ asymID, seqID };
+		dssp::key_type key{ asymID, seqID };
 		auto ri = dssp[key];
 		
 		BOOST_CHECK_EQUAL(ri.asym_id(), asymID);

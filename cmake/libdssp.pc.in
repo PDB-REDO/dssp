@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+datalibdir=@datarootdir@/libdssp
+
+Name: libdssp
+Description: C++ library for the assignment of secondary structure in proteins
+Version: @PACKAGE_VERSION@
+
+Requires.private: libcifpp
+Libs: -L${libdir} -ldssp
+Cflags: -I${includedir} -pthread

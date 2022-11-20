@@ -36,7 +36,7 @@
 #include <cfp/cfp.hpp>
 #include <cif++.hpp>
 
-#include "DSSP.hpp"
+#include "dssp.hpp"
 
 #include "dssp_wrapper.hpp"
 #include "revision.hpp"
@@ -172,7 +172,7 @@ int d_main(int argc, const char *argv[])
 			fmt = "cif";
 	}
 
-	dssp::DSSP dssp(f.front(), 1, pp_stretch, fmt == "dssp");
+	dssp dssp(f.front(), 1, pp_stretch, fmt == "dssp");
 
 	if (not output.empty())
 	{

@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(cifpp REQUIRED)
+
+INCLUDE("${CMAKE_CURRENT_LIST_DIR}/dsspTargets.cmake")
+
+check_required_components(dssp)

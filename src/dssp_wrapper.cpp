@@ -40,7 +40,7 @@
 
 // --------------------------------------------------------------------
 
-std::string ResidueToDSSPLine(const dssp::DSSP::residue_info &info)
+std::string ResidueToDSSPLine(const dssp::residue_info &info)
 {
 	/*
 	    This is the header line for the residue lines in a DSSP file:
@@ -147,7 +147,7 @@ std::string ResidueToDSSPLine(const dssp::DSSP::residue_info &info)
 	    .str();
 }
 
-void writeDSSP(const dssp::DSSP &dssp, std::ostream &os)
+void writeDSSP(const dssp &dssp, std::ostream &os)
 {
 	using namespace std::chrono;
 
@@ -170,10 +170,10 @@ void writeDSSP(const dssp::DSSP &dssp, std::ostream &os)
 
 	os << "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== DATE=" << date << "        ." << std::endl
 	   << "REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637                                                              ." << std::endl
-	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::HEADER) << '.' << std::endl
-	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::COMPND) << '.' << std::endl
-	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::SOURCE) << '.' << std::endl
-	   << dssp.get_pdb_header_line(dssp::DSSP::pdb_record_type::AUTHOR) << '.' << std::endl;
+	   << dssp.get_pdb_header_line(dssp::pdb_record_type::HEADER) << '.' << std::endl
+	   << dssp.get_pdb_header_line(dssp::pdb_record_type::COMPND) << '.' << std::endl
+	   << dssp.get_pdb_header_line(dssp::pdb_record_type::SOURCE) << '.' << std::endl
+	   << dssp.get_pdb_header_line(dssp::pdb_record_type::AUTHOR) << '.' << std::endl;
 
 	os << cif::format("%5d%3d%3d%3d%3d TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN)                .",
 			  stats.count.residues, stats.count.chains, stats.count.SS_bridges, stats.count.intra_chain_SS_bridges, (stats.count.SS_bridges - stats.count.intra_chain_SS_bridges))
@@ -230,7 +230,7 @@ void writeDSSP(const dssp::DSSP &dssp, std::ostream &os)
 	}
 }
 
-void annotateDSSP(cif::datablock &db, const dssp::DSSP &dssp, bool writeOther, std::ostream &os)
+void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::ostream &os)
 {
 	if (dssp.empty())
 	{

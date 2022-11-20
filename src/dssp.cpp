@@ -30,7 +30,14 @@
 #include <numeric>
 #include <thread>
 
-#include "DSSP.hpp"
+#include "dssp.hpp"
+
+using residue = dssp::residue;
+using statistics = dssp::statistics;
+using structure_type = dssp::structure_type;
+using helix_type = dssp::helix_type;
+using helix_position_type = dssp::helix_position_type;
+using chain_break_type = dssp::chain_break_type;
 
 // --------------------------------------------------------------------
 
@@ -239,7 +246,7 @@ const float
 	kRadiusSideAtom = 1.8f,
 	kRadiusWater = 1.4f;
 
-struct residue
+struct dssp::residue
 {
 	residue(int model_nr,
 		std::string_view pdb_strand_id, int pdb_seq_num, std::string_view pdb_ins_code,
@@ -949,8 +956,8 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats)
 		ladderset.insert(&bridge);
 
 		size_t n = bridge.i.size();
-		if (n > kHistogramSize)
-			n = kHistogramSize;
+		if (n > dssp::kHistogramSize)
+			n = dssp::kHistogramSize;
 
 		if (bridge.type == bridge_type::Parallel)
 			stats.histogram.parallel_bridges_per_ladder[n - 1] += 1;
@@ -996,8 +1003,8 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats)
 		}
 
 		size_t nrOfLaddersPerSheet = sheetset.size();
-		if (nrOfLaddersPerSheet > kHistogramSize)
-			nrOfLaddersPerSheet = kHistogramSize;
+		if (nrOfLaddersPerSheet > dssp::kHistogramSize)
+			nrOfLaddersPerSheet = dssp::kHistogramSize;
 		if (nrOfLaddersPerSheet == 1 and (*sheetset.begin())->i.size() > 1)
 			stats.histogram.ladders_per_sheet[0] += 1;
 		else if (nrOfLaddersPerSheet > 1)
@@ -1183,8 +1190,8 @@ void CalculateAlphaHelices(std::vector<residue> &inResidues, statistics &stats, 
 			++helixLength;
 		else if (helixLength > 0)
 		{
-			if (helixLength > kHistogramSize)
-				helixLength = kHistogramSize;
+			if (helixLength > dssp::kHistogramSize)
+				helixLength = dssp::kHistogramSize;
 
 			stats.histogram.residues_per_alpha_helix[helixLength - 1] += 1;
 			helixLength = 0;
