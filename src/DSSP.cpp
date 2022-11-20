@@ -34,9 +34,6 @@
 
 // --------------------------------------------------------------------
 
-namespace dssp
-{
-
 const double
 	kPI = 3.141592653589793238462643383279502884;
 
@@ -803,7 +800,7 @@ bool TestBond(const residue *a, const residue *b)
 	       (a->mHBondAcceptor[1].res == b and a->mHBondAcceptor[1].energy < kMaxHBondEnergy);
 }
 
-bool test_bond(DSSP::residue_info const &a, DSSP::residue_info const &b)
+bool test_bond(dssp::residue_info const &a, dssp::residue_info const &b)
 {
 	return a and b and TestBond(a.m_impl, b.m_impl);
 }
@@ -1833,92 +1830,92 @@ std::string DSSP_impl::GetPDBAUTHORLine()
 
 // --------------------------------------------------------------------
 
-std::string DSSP::residue_info::asym_id() const
+std::string dssp::residue_info::asym_id() const
 {
 	return m_impl->mAsymID;
 }
 
-std::string DSSP::residue_info::compound_id() const
+std::string dssp::residue_info::compound_id() const
 {
 	return m_impl->mCompoundID;
 }
 
-char DSSP::residue_info::compound_letter() const
+char dssp::residue_info::compound_letter() const
 {
 	return MapResidue(compound_id());
 }
 
-int DSSP::residue_info::seq_id() const
+int dssp::residue_info::seq_id() const
 {
 	return m_impl->mSeqID;
 }
 
-std::string DSSP::residue_info::alt_id() const
+std::string dssp::residue_info::alt_id() const
 {
 	return m_impl->mAltID;
 }
 
-std::string DSSP::residue_info::auth_asym_id() const
+std::string dssp::residue_info::auth_asym_id() const
 {
 	return m_impl->mAuthAsymID;
 }
 
-int DSSP::residue_info::auth_seq_id() const
+int dssp::residue_info::auth_seq_id() const
 {
 	return m_impl->mAuthSeqID;
 }
 
-std::string DSSP::residue_info::pdb_strand_id() const
+std::string dssp::residue_info::pdb_strand_id() const
 {
 	return m_impl->mPDBStrandID;
 }
 
-int DSSP::residue_info::pdb_seq_num() const
+int dssp::residue_info::pdb_seq_num() const
 {
 	return m_impl->mPDBSeqNum;
 }
 
-std::string DSSP::residue_info::pdb_ins_code() const
+std::string dssp::residue_info::pdb_ins_code() const
 {
 	return m_impl->mPDBInsCode;
 }
 
-float DSSP::residue_info::alpha() const
+float dssp::residue_info::alpha() const
 {
 	return m_impl->mAlpha;
 }
 
-float DSSP::residue_info::kappa() const
+float dssp::residue_info::kappa() const
 {
 	return m_impl->mKappa;
 }
 
-float DSSP::residue_info::omega() const
+float dssp::residue_info::omega() const
 {
 	return m_impl->mOmega;
 }
 
-float DSSP::residue_info::phi() const
+float dssp::residue_info::phi() const
 {
 	return m_impl->mPhi;
 }
 
-float DSSP::residue_info::psi() const
+float dssp::residue_info::psi() const
 {
 	return m_impl->mPsi;
 }
 
-float DSSP::residue_info::tco() const
+float dssp::residue_info::tco() const
 {
 	return m_impl->mTCO;
 }
 
-bool DSSP::residue_info::is_pre_pro() const
+bool dssp::residue_info::is_pre_pro() const
 {
 	return m_impl->mType != kProline and m_impl->mNext != nullptr and m_impl->mNext->mType == kProline;
 }
 
-float DSSP::residue_info::chiral_volume() const
+float dssp::residue_info::chiral_volume() const
 {
 	return m_impl->mChiralVolume;
 }
@@ -1945,14 +1942,14 @@ const std::map<residue_type, std::vector<std::string>> kChiAtomsMap = {
 	{ MapResidue("VAL"), { "CG1" } }
 };
 
-std::size_t DSSP::residue_info::nr_of_chis() const
+std::size_t dssp::residue_info::nr_of_chis() const
 {
 	auto i = kChiAtomsMap.find(m_impl->mType);
 
 	return i != kChiAtomsMap.end() ? i->second.size() : 0;
 }
 
-float DSSP::residue_info::chi(std::size_t index) const
+float dssp::residue_info::chi(std::size_t index) const
 {
 	float result = 0;
 
@@ -1984,37 +1981,37 @@ float DSSP::residue_info::chi(std::size_t index) const
 	return result;
 }
 
-std::tuple<float, float, float> DSSP::residue_info::ca_location() const
+std::tuple<float, float, float> dssp::residue_info::ca_location() const
 {
 	return { m_impl->mCAlpha.mX, m_impl->mCAlpha.mY, m_impl->mCAlpha.mZ };
 }
 
-chain_break_type DSSP::residue_info::chain_break() const
+chain_break_type dssp::residue_info::chain_break() const
 {
 	return m_impl->mChainBreak;
 }
 
-int DSSP::residue_info::nr() const
+int dssp::residue_info::nr() const
 {
 	return m_impl->mNumber;
 }
 
-structure_type DSSP::residue_info::type() const
+structure_type dssp::residue_info::type() const
 {
 	return m_impl->mSecondaryStructure;
 }
 
-int DSSP::residue_info::ssBridgeNr() const
+int dssp::residue_info::ssBridgeNr() const
 {
 	return m_impl->mSSBridgeNr;
 }
 
-helix_position_type DSSP::residue_info::helix(helix_type helixType) const
+helix_position_type dssp::residue_info::helix(helix_type helixType) const
 {
 	return m_impl->GetHelixFlag(helixType);
 }
 
-bool DSSP::residue_info::is_alpha_helix_end_before_start() const
+bool dssp::residue_info::is_alpha_helix_end_before_start() const
 {
 	bool result = false;
 
@@ -2024,17 +2021,17 @@ bool DSSP::residue_info::is_alpha_helix_end_before_start() const
 	return result;
 }
 
-bool DSSP::residue_info::bend() const
+bool dssp::residue_info::bend() const
 {
 	return m_impl->IsBend();
 }
 
-double DSSP::residue_info::accessibility() const
+double dssp::residue_info::accessibility() const
 {
 	return m_impl->mAccessibility;
 }
 
-std::tuple<DSSP::residue_info, int, bool> DSSP::residue_info::bridge_partner(int i) const
+std::tuple<dssp::residue_info, int, bool> dssp::residue_info::bridge_partner(int i) const
 {
 	auto bp = m_impl->GetBetaPartner(i);
 
@@ -2043,18 +2040,18 @@ std::tuple<DSSP::residue_info, int, bool> DSSP::residue_info::bridge_partner(int
 	return std::make_tuple(std::move(ri), bp.ladder, bp.parallel);
 }
 
-int DSSP::residue_info::sheet() const
+int dssp::residue_info::sheet() const
 {
 	return m_impl->GetSheet();
 }
 
-std::tuple<DSSP::residue_info, double> DSSP::residue_info::acceptor(int i) const
+std::tuple<dssp::residue_info, double> dssp::residue_info::acceptor(int i) const
 {
 	auto &a = m_impl->mHBondAcceptor[i];
 	return { residue_info(a.res), a.energy };
 }
 
-std::tuple<DSSP::residue_info, double> DSSP::residue_info::donor(int i) const
+std::tuple<dssp::residue_info, double> dssp::residue_info::donor(int i) const
 {
 	auto &d = m_impl->mHBondDonor[i];
 	return { residue_info(d.res), d.energy };
@@ -2062,18 +2059,18 @@ std::tuple<DSSP::residue_info, double> DSSP::residue_info::donor(int i) const
 
 // --------------------------------------------------------------------
 
-DSSP::iterator::iterator(residue *res)
+dssp::iterator::iterator(residue *res)
 	: m_current(res)
 {
 }
 
-DSSP::iterator &DSSP::iterator::operator++()
+dssp::iterator &dssp::iterator::operator++()
 {
 	++m_current.m_impl;
 	return *this;
 }
 
-DSSP::iterator &DSSP::iterator::operator--()
+dssp::iterator &dssp::iterator::operator--()
 {
 	--m_current.m_impl;
 	return *this;
@@ -2081,7 +2078,7 @@ DSSP::iterator &DSSP::iterator::operator--()
 
 // --------------------------------------------------------------------
 
-DSSP::DSSP(const cif::datablock &db, int model_nr, int min_poly_proline_stretch, bool calculateSurfaceAccessibility)
+dssp::dssp(const cif::datablock &db, int model_nr, int min_poly_proline_stretch, bool calculateSurfaceAccessibility)
 	: m_impl(new DSSP_impl(db, model_nr, min_poly_proline_stretch))
 {
 	if (calculateSurfaceAccessibility)
@@ -2094,17 +2091,17 @@ DSSP::DSSP(const cif::datablock &db, int model_nr, int min_poly_proline_stretch,
 		m_impl->calculateSecondaryStructure();
 }
 
-DSSP::~DSSP()
+dssp::~dssp()
 {
 	delete m_impl;
 }
 
-DSSP::iterator DSSP::begin() const
+dssp::iterator dssp::begin() const
 {
 	return iterator(m_impl->mResidues.empty() ? nullptr : m_impl->mResidues.data());
 }
 
-DSSP::iterator DSSP::end() const
+dssp::iterator dssp::end() const
 {
 	// careful now, MSVC is picky when it comes to dereferencing iterators that are at the end.
 	residue *res = nullptr;
@@ -2117,7 +2114,7 @@ DSSP::iterator DSSP::end() const
 	return iterator(res);
 }
 
-DSSP::residue_info DSSP::operator[](const key_type &key) const
+dssp::residue_info dssp::operator[](const key_type &key) const
 {
 	auto i = std::find_if(begin(), end(),
 		[key](const residue_info &res) { return res.asym_id() == std::get<0>(key) and res.seq_id() == std::get<1>(key); });
@@ -2128,12 +2125,12 @@ DSSP::residue_info DSSP::operator[](const key_type &key) const
 	return *i;
 }
 
-statistics DSSP::get_statistics() const
+dssp::statistics dssp::get_statistics() const
 {
 	return m_impl->mStats;
 }
 
-std::string DSSP::get_pdb_header_line(pdb_record_type pdb_record) const
+std::string dssp::get_pdb_header_line(pdb_record_type pdb_record) const
 {
 	switch (pdb_record)
 	{
@@ -2149,5 +2146,3 @@ std::string DSSP::get_pdb_header_line(pdb_record_type pdb_record) const
 			return {};
 	}
 }
-
-} // namespace dssp

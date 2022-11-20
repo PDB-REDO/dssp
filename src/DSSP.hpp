@@ -24,86 +24,87 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#pragma once
+
 /// \file DSSP.hpp
 /// Calculate DSSP-like secondary structure information.
 
-#pragma once
+#include <filesystem>
 
 #include <cif++.hpp>
 
-namespace dssp
-{
-
-struct residue;
-
-enum class structure_type : char
-{
-	Loop = ' ',
-	Alphahelix = 'H',
-	Betabridge = 'B',
-	Strand = 'E',
-	Helix_3 = 'G',
-	Helix_5 = 'I',
-	Helix_PPII = 'P',
-	Turn = 'T',
-	Bend = 'S'
-};
-
-enum class helix_type
-{
-	_3_10,
-	alpha,
-	pi,
-	pp
-};
-
-enum class helix_position_type
-{
-	None,
-	Start,
-	End,
-	StartAndEnd,
-	Middle
-};
-
-const size_t
-	kHistogramSize = 30;
-
-struct statistics
-{
-	struct
-	{
-		uint32_t residues, chains, SS_bridges, intra_chain_SS_bridges, H_bonds;
-		uint32_t H_bonds_in_antiparallel_bridges, H_bonds_in_parallel_bridges;
-		uint32_t H_Bonds_per_distance[11];
-	} count;
-
-	double accessible_surface;
-
-	struct
-	{
-		uint32_t residues_per_alpha_helix[kHistogramSize];
-		uint32_t parallel_bridges_per_ladder[kHistogramSize];
-		uint32_t antiparallel_bridges_per_ladder[kHistogramSize];
-		uint32_t ladders_per_sheet[kHistogramSize];
-	} histogram;
-};
-
-enum class chain_break_type
-{
-	None,
-	NewChain,
-	Gap
-};
-
-class DSSP
+class dssp
 {
   public:
-	DSSP(const cif::datablock &db, int model_nr, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility);
-	~DSSP();
+	struct residue;
 
-	DSSP(const DSSP &) = delete;
-	DSSP &operator=(const DSSP &) = delete;
+	enum class structure_type : char
+	{
+		Loop = ' ',
+		Alphahelix = 'H',
+		Betabridge = 'B',
+		Strand = 'E',
+		Helix_3 = 'G',
+		Helix_5 = 'I',
+		Helix_PPII = 'P',
+		Turn = 'T',
+		Bend = 'S'
+	};
+
+	enum class helix_type
+	{
+		_3_10,
+		alpha,
+		pi,
+		pp
+	};
+
+	enum class helix_position_type
+	{
+		None,
+		Start,
+		End,
+		StartAndEnd,
+		Middle
+	};
+
+	static constexpr size_t kHistogramSize = 30;
+
+	struct statistics
+	{
+		struct
+		{
+			uint32_t residues, chains, SS_bridges, intra_chain_SS_bridges, H_bonds;
+			uint32_t H_bonds_in_antiparallel_bridges, H_bonds_in_parallel_bridges;
+			uint32_t H_Bonds_per_distance[11];
+		} count;
+
+		double accessible_surface;
+
+		struct
+		{
+			uint32_t residues_per_alpha_helix[kHistogramSize];
+			uint32_t parallel_bridges_per_ladder[kHistogramSize];
+			uint32_t antiparallel_bridges_per_ladder[kHistogramSize];
+			uint32_t ladders_per_sheet[kHistogramSize];
+		} histogram;
+	};
+
+	enum class chain_break_type
+	{
+		None,
+		NewChain,
+		Gap
+	};
+
+	dssp(const std::filesystem::path &file, int model_nr, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility);
+	dssp(const cif::datablock &db, int model_nr, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility);
+	dssp(const cif::mm::structure &s, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility);
+
+	~dssp();
+
+	dssp(const dssp &) = delete;
+	dssp &operator=(const dssp &) = delete;
 
 	statistics get_statistics() const;
 
@@ -126,7 +127,7 @@ class DSSP
 		int seq_id() const;
 		std::string alt_id() const;
 		std::string compound_id() const;
-		char compound_letter() const;	// Single letter for residue compound type, or 'X' in case it is not known
+		char compound_letter() const; // Single letter for residue compound type, or 'X' in case it is not known
 
 		std::string auth_asym_id() const;
 		int auth_seq_id() const;
@@ -237,7 +238,7 @@ class DSSP
 	using value_type = residue_info;
 
 	// To access residue info by key, i.e. LabelAsymID and LabelSeqID
-	using key_type = std::tuple<std::string,int>;
+	using key_type = std::tuple<std::string, int>;
 
 	iterator begin() const;
 	iterator end() const;
@@ -248,12 +249,17 @@ class DSSP
 
 	// convenience method, when creating old style DSSP files
 
-	enum class pdb_record_type { HEADER, COMPND, SOURCE, AUTHOR };
+	enum class pdb_record_type
+	{
+		HEADER,
+		COMPND,
+		SOURCE,
+		AUTHOR
+	};
 
 	std::string get_pdb_header_line(pdb_record_type pdb_record) const;
-	
+
   private:
 	struct DSSP_impl *m_impl;
 };
 
-} // namespace dssp
