@@ -33,12 +33,12 @@
 #include <fstream>
 #include <iostream>
 
-#include <cfp/cfp.hpp>
+#include <mcfp/mcfp.hpp>
 #include <cif++.hpp>
 
 #include "dssp.hpp"
 
-#include "dssp_wrapper.hpp"
+#include "dssp-io.hpp"
 #include "revision.hpp"
 
 namespace fs = std::filesystem;
@@ -66,22 +66,22 @@ int d_main(int argc, const char *argv[])
 {
 	using namespace std::literals;
 
-	auto &config = cfp::config::instance();
+	auto &config = mcfp::config::instance();
 
 	config.init("Usage: mkdssp [options] input-file [output-file]",
-		cfp::make_option<std::string>("output-format", "Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any."),
-		cfp::make_option<short>("min-pp-stretch", 3, "Minimal number of residues having PSI/PHI in range for a PP helix, default is 3"),
-		cfp::make_option("write-other", "If set, write the type OTHER for loops, default is to leave this out"),
+		mcfp::make_option<std::string>("output-format", "Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any."),
+		mcfp::make_option<short>("min-pp-stretch", 3, "Minimal number of residues having PSI/PHI in range for a PP helix, default is 3"),
+		mcfp::make_option("write-other", "If set, write the type OTHER for loops, default is to leave this out"),
 
-		// cfp::make_option("components",			po::value<std::string,	"Location of the components.cif file from CCD")
-	    // cfp::make_option("extra-compounds",		po::value<std::string,	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
-		cfp::make_option<std::string>("mmcif-dictionary", "Path to the mmcif_pdbx.dic file to use instead of default"),
+		// mcfp::make_option("components",			po::value<std::string,	"Location of the components.cif file from CCD")
+	    // mcfp::make_option("extra-compounds",		po::value<std::string,	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
+		mcfp::make_option<std::string>("mmcif-dictionary", "Path to the mmcif_pdbx.dic file to use instead of default"),
 
-		cfp::make_option("help,h", "Display help message"),
-		cfp::make_option("version", "Print version"),
-		cfp::make_option("verbose,v", "verbose output"),
+		mcfp::make_option("help,h", "Display help message"),
+		mcfp::make_option("version", "Print version"),
+		mcfp::make_option("verbose,v", "verbose output"),
 
-		cfp::make_hidden_option<int>("debug,d", "Debug level (for even more verbose output)"));
+		mcfp::make_hidden_option<int>("debug,d", "Debug level (for even more verbose output)"));
 
 	config.parse(argc, argv);
 
@@ -172,7 +172,7 @@ int d_main(int argc, const char *argv[])
 			fmt = "cif";
 	}
 
-	dssp dssp(f.front(), 1, pp_stretch, fmt == "dssp");
+	dssp dssp(f.front(), 1, pp_stretch, true);
 
 	if (not output.empty())
 	{

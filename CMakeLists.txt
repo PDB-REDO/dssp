@@ -96,7 +96,7 @@ set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
 if(NOT PDB_REDO_META)
-	find_package(libcfp REQUIRED)
+	find_package(libmcfp REQUIRED)
 	find_package(cifpp 5.0.4 REQUIRED)
 endif()
 
@@ -113,12 +113,12 @@ target_include_directories(dssp
 )
 
 add_executable(mkdssp
-	${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp
-	${PROJECT_SOURCE_DIR}/src/dssp_wrapper.hpp
+	${PROJECT_SOURCE_DIR}/src/dssp-io.cpp
+	${PROJECT_SOURCE_DIR}/src/dssp-io.hpp
 	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
 
 target_include_directories(mkdssp PRIVATE ${PROJECT_BINARY_DIR})
-target_link_libraries(mkdssp PRIVATE dssp cifpp::cifpp libcfp::libcfp dssp::dssp)
+target_link_libraries(mkdssp PRIVATE dssp cifpp::cifpp libmcfp::libmcfp dssp::dssp)
 
 if(USE_RSRC)
 	message("Using resources compiled with ${MRC}")
@@ -216,7 +216,7 @@ if(ENABLE_TESTING)
 	# We still depend on boost for the testing headers-only library
 	find_package(Boost REQUIRED)
 
-	add_executable(unit-test-dssp ${PROJECT_SOURCE_DIR}/test/unit-test-dssp.cpp ${PROJECT_SOURCE_DIR}/src/dssp_wrapper.cpp)
+	add_executable(unit-test-dssp ${PROJECT_SOURCE_DIR}/test/unit-test-dssp.cpp ${PROJECT_SOURCE_DIR}/src/dssp-io.cpp)
 
 	if(USE_RSRC)
 		mrc_target_resources(unit-test-dssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)

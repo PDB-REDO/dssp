@@ -30,7 +30,7 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "dssp.hpp"
-#include "dssp_wrapper.hpp"
+#include "dssp-io.hpp"
 
 namespace fs = std::filesystem;
 

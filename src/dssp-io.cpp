@@ -35,7 +35,7 @@
 
 #include <cif++/pdb/io.hpp>
 
-#include "dssp_wrapper.hpp"
+#include "dssp-io.hpp"
 #include "revision.hpp"
 
 // --------------------------------------------------------------------
@@ -153,22 +153,10 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 
 	auto stats = dssp.get_statistics();
 
-	auto today = system_clock::now();
+	std::time_t today = system_clock::to_time_t(system_clock::now());
+	std::tm *tm = std::gmtime(&today);
 
-#if __cpp_lib_chrono >= 201907L
-	std::string date = format("%F", today);
-#else
-	std::time_t nowt = std::chrono::system_clock::to_time_t(today);
-	std::tm nowtm;
-	localtime_r(&nowt, &nowtm);
-	
-	char date_buffer[32];
-	auto n = strftime(date_buffer, sizeof(date_buffer), "%F", &nowtm);
-
-	std::string_view date{ date_buffer, n };
-#endif
-
-	os << "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== DATE=" << date << "        ." << std::endl
+	os << "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== DATE=" << std::put_time(tm, "%F") << "        ." << std::endl
 	   << "REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637                                                              ." << std::endl
 	   << dssp.get_pdb_header_line(dssp::pdb_record_type::HEADER) << '.' << std::endl
 	   << dssp.get_pdb_header_line(dssp::pdb_record_type::COMPND) << '.' << std::endl
@@ -232,6 +220,8 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 
 void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::ostream &os)
 {
+	using namespace std::literals;
+
 	if (dssp.empty())
 	{
 		if (cif::VERBOSE > 0)
@@ -239,6 +229,250 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 	}
 	else
 	{
+		auto stats = dssp.get_statistics();
+
+		auto &dssp_statistics = db["dssp_statistics"];
+
+		dssp_statistics.emplace({
+			{ "entry_id", db.name() },
+			{ "nr_of_residues", stats.count.residues },
+			{ "nr_of_chains", stats.count.chains },
+			{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
+			{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
+			{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges },
+
+			{ "accessible_surface_of_protein", stats.accessible_surface }
+		});
+
+		auto &dssp_hbonds = db["dssp_hbond_statistics"];
+
+		dssp_hbonds.emplace({
+			{ "entry_id", db.name() },
+			{ "type", "O(I)-->H-N(J)" },
+			{ "count", stats.count.H_bonds },
+			{ "count_per_100", stats.count.H_bonds * 100.0 / stats.count.residues, 1 }
+		});
+
+		dssp_hbonds.emplace({
+			{ "entry_id", db.name() },
+			{ "type", "PARALLEL BRIDGES" },
+			{ "count", stats.count.H_bonds_in_parallel_bridges },
+			{ "count_per_100", stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues, 1 }
+		});
+
+		dssp_hbonds.emplace({
+			{ "entry_id", db.name() },
+			{ "type", "ANTIPARALLEL BRIDGES" },
+			{ "count", stats.count.H_bonds_in_antiparallel_bridges },
+			{ "count_per_100", stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues, 1 }
+		});
+
+		for (int k = 0; k < 11; ++k)
+			dssp_hbonds.emplace({
+				{ "entry_id", db.name() },
+				{ "type", "O(I)-->H-N(I"s + char(k - 5 < 0 ? '-' : '+') + std::to_string(abs(k - 5)) + ")" },
+				{ "count", stats.count.H_Bonds_per_distance[k] },
+				{ "count_per_100", stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues, 1 }
+			});
+
+		auto &dssp_histograms = db["dssp_histograms"];
+		
+		using histogram_data_type = std::tuple<const char *, const uint32_t *>;
+		for (const auto &[type, values] : std::vector<histogram_data_type>{
+				{ "parallel_bridges_per_ladder", stats.histogram.residues_per_alpha_helix },
+				{ "parallel_bridges_per_ladder", stats.histogram.parallel_bridges_per_ladder },
+				{ "antiparallel_bridges_per_ladder", stats.histogram.antiparallel_bridges_per_ladder },
+				{ "ladders_per_sheet", stats.histogram.ladders_per_sheet }
+			})
+		{
+			auto hi = dssp_histograms.emplace({
+				{ "entry_id", db.name() },
+				{ "type", type },
+				{ "1", values[0] },
+				{ "2", values[1] },
+				{ "3", values[2] },
+				{ "4", values[3] },
+				{ "5", values[4] },
+				{ "6", values[5] },
+				{ "7", values[6] },
+				{ "8", values[7] },
+				{ "9", values[8] },
+				{ "10", values[9] },
+				{ "11", values[10] },
+				{ "12", values[11] },
+				{ "13", values[12] },
+				{ "14", values[13] },
+				{ "15", values[14] },
+				{ "16", values[15] },
+				{ "17", values[16] },
+				{ "18", values[17] },
+				{ "19", values[18] },
+				{ "20", values[19] },
+				{ "21", values[20] },
+				{ "22", values[21] },
+				{ "23", values[22] },
+				{ "24", values[23] },
+				{ "25", values[24] },
+				{ "26", values[25] },
+				{ "27", values[26] },
+				{ "28", values[27] },
+				{ "29", values[28] },
+				{ "30", values[29] },
+			});
+		}
+
+		// A approximation of the old format
+
+		auto &dssp_residue = db["dssp_residue"];
+
+		for (auto res : dssp)
+		{
+
+			/*
+				This is the header line for the residue lines in a DSSP file:
+
+				#  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA
+			*/
+
+			std::string ss_bridge = ".";
+			if (res.ssBridgeNr() != 0)
+				ss_bridge = std::to_string(res.ssBridgeNr());
+
+			std::string ss = { res.type() == dssp::structure_type::Loop ? '.' : static_cast<char>(res.type()) };
+
+			std::string helix[4] = { ".", ".", ".", "."};
+			for (dssp::helix_type helixType : {dssp::helix_type::_3_10, dssp::helix_type::alpha, dssp::helix_type::pi, dssp::helix_type::pp})
+			{
+				switch (res.helix(helixType))
+				{
+					// case dssp::helix_position_type::None: helix[static_cast<int>(helixType)] = ' '; break;
+					case dssp::helix_position_type::Start:
+						helix[static_cast<int>(helixType)] = { '>' };
+						break;
+
+					case dssp::helix_position_type::End:
+						helix[static_cast<int>(helixType)] = { '<' };
+						break;
+
+					case dssp::helix_position_type::StartAndEnd:
+						helix[static_cast<int>(helixType)] = { 'X' };
+						break;
+
+					case dssp::helix_position_type::Middle:
+						if (helixType == dssp::helix_type::pp)
+							helix[static_cast<int>(helixType)] = { 'P' };
+						else
+							helix[static_cast<int>(helixType)] = { static_cast<char>('3' + static_cast<int>(helixType)) };
+						break;
+					
+					default:
+						break;
+				}
+			}
+
+			std::string bend = ".";
+			if (res.bend())
+				bend = "S";
+
+			double alpha = res.alpha();
+			std::string chirality = ".";
+			if (alpha != 360)
+				chirality = alpha < 0 ? "-" : "+";
+
+			std::string bridgepair[2] = { ".", "." };
+			std::string bridgelabel[2] = { ".", "." };
+
+			for (uint32_t i : {0, 1})
+			{
+				const auto &[p, ladder, parallel] = res.bridge_partner(i);
+				if (not p)
+					continue;
+
+				bridgepair[i] = std::to_string(p.nr());
+				bridgelabel[i] = (parallel ? "p-" : "a-") + std::to_string(ladder);
+			}
+
+			std::string sheet = ".";
+			if (res.sheet() != 0)
+				sheet = std::to_string(res.sheet());
+
+			// std::string NHO[2], ONH[2];
+			// for (int i : {0, 1})
+			// {
+			// 	const auto &[donor, donorE] = res.donor(i);
+			// 	const auto &[acceptor, acceptorE] = res.acceptor(i);
+
+			// 	NHO[i] = ONH[i] = "0, 0.0";
+
+			// 	if (acceptor)
+			// 	{
+			// 		auto d = acceptor.nr() - res.nr();
+			// 		NHO[i] = cif::format("%d,%3.1f", d, acceptorE).str();
+			// 	}
+
+			// 	if (donor)
+			// 	{
+			// 		auto d = donor.nr() - res.nr();
+			// 		ONH[i] = cif::format("%d,%3.1f", d, donorE).str();
+			// 	}
+			// }
+
+			auto const &[cax, cay, caz] = res.ca_location();
+
+			dssp_residue.emplace({
+				{ "entry_id", db.name() },
+				{ "label_asym_id", res.asym_id() },
+				{ "label_seq_id", res.seq_id() },
+				{ "label_comp_id", res.compound_id() },
+
+				{ "secondary_structure", ss },
+
+				{ "ss_bridge", ss_bridge },
+
+				{ "helix_3_10", helix[0] },
+				{ "helix_alpha", helix[1] },
+				{ "helix_pi", helix[2] },
+				{ "helix_pp", helix[3] },
+
+				{ "bend", bend },
+				{ "chirality", chirality },
+
+				{ "bridge_pair_1", bridgepair[0] },
+				{ "bridge_label_1", bridgelabel[0] },
+
+				{ "bridge_pair_2", bridgepair[1] },
+				{ "bridge_label_2", bridgelabel[1] },
+
+				{ "sheet", sheet },
+
+				{ "accesssibility", res.accessibility(), 1 },
+
+				{ "TCO", res.tco(), 3 },
+				{ "kappa", res.kappa(), 1 },
+				{ "alpha", res.alpha(), 1 },
+				{ "phi", res.phi(), 1 },
+				{ "psi", res.psi(), 1 },
+
+				{ "x_ca", cax, 1 },
+				{ "y_ca", cay, 1 },
+				{ "z_ca", caz, 1 },
+
+
+				
+				
+			});
+
+		}
+
+
+
+
+
+
+
+
+
+
 		// replace all struct_conf and struct_conf_type records
 		auto &structConfType = db["struct_conf_type"];
 		structConfType.clear();
@@ -345,10 +579,13 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 		}
 	}
 
-	// db.add_software("dssp", "other", kVersionNumber, kBuildDate);
-	// db["software"].emplace({
-
-	// });
+	auto &software = db["software"];
+	software.emplace({
+		{ "pdbx_ordinal", software.get_unique_id("") },
+		{ "name", "dssp" },
+		{ "version", kVersionNumber },
+		{ "date", kBuildDate },
+		{ "classification", "model annotation" } });
 
 	db.write(os);
 }
