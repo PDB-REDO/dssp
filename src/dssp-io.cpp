@@ -218,6 +218,510 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 	}
 }
 
+// --------------------------------------------------------------------
+
+void writeHBonds(cif::datablock &db, const dssp &dssp)
+{
+	using ResidueInfo = dssp::residue_info;
+
+	auto &hb = db["dssp_hbond"];
+
+	for (auto &res : dssp)
+	{
+		auto write_res = [&](const std::string &prefix, ResidueInfo const &info, double energy)
+		{
+			hb.back().assign({
+				{ prefix + "label_comp_id", res.compound_id() },
+				{ prefix + "label_seq_id", res.seq_id() },
+				{ prefix + "label_asym_id", res.asym_id() },
+				// { prefix + "auth_comp_id", res.compound_id() },
+				{ prefix + "auth_seq_id", res.auth_seq_id() },
+				{ prefix + "auth_asym_id", res.auth_asym_id() },
+				{ prefix + "pdbx_PDB_ins_code", res.pdb_ins_code() }
+			});
+
+			if (not prefix.empty())
+				hb.back().assign({
+					{ prefix + "energy", energy, 1 }
+				});
+		};
+
+		hb.emplace({
+			{ "id", hb.get_unique_id("") }
+		});
+
+		write_res("", res, 0);
+
+		for (int i : {0, 1})
+		{
+			const auto &&[ donor, donorEnergy ] = res.donor(i);
+
+			if (donor)
+				write_res(i ? "donor_2_" : "donor_1_", donor, donorEnergy);
+
+			const auto &&[ acceptor, acceptorEnergy ] = res.acceptor(i);
+
+			if (acceptor)
+				write_res(i ? "acceptor_2_" : "acceptor_1_", acceptor, acceptorEnergy);
+		}
+	}
+}
+
+std::map<std::tuple<std::string,int>,int> writeSheets(cif::datablock &db, const dssp &dssp)
+{
+	using res_list = std::vector<dssp::residue_info>;
+	using ss_type = dssp::structure_type;
+
+	// clean up old info first
+
+	for (auto sheet_cat : { "struct_sheet", "struct_sheet_order", "struct_sheet_range", "struct_sheet_hbond", "pdbx_struct_sheet_hbond" })
+	{
+		auto &cat = db[sheet_cat];
+		cat.clear();
+	}
+
+	// create a list of strands, based on the SS info in DSSP. Store sheet number along with the strand.
+
+	std::vector<std::tuple<int,res_list>> strands;
+	std::map<std::tuple<std::string,int>,int> sheetMap;		// mapping from bridge number (=info.sheet()) in DSSP to sheet ID
+
+	ss_type ss = ss_type::Loop;
+
+	for (auto &res : dssp)
+	{
+		std::tuple<std::string,int> sheetID{ res.asym_id(), res.sheet() };
+		ss_type iss = res.type();
+
+		if (iss == ss and ss == ss_type::Strand and sheetMap[sheetID] == std::get<0>(strands.back()))
+		{
+			std::get<1>(strands.back()).emplace_back(res);
+			continue;
+		}
+
+		ss = iss;
+
+		if (ss != ss_type::Strand)
+			continue;
+
+		if (not sheetMap.count(sheetID))
+			sheetMap[sheetID] = sheetMap.size();
+
+		strands.emplace_back(std::make_tuple(sheetMap[sheetID], res_list{ res }));
+	}
+
+	// sort the strands vector
+	std::sort(strands.begin(), strands.end(), [](auto &a, auto &b)
+	{
+		const auto &[sheetA, strandsA] = a;
+		const auto &[sheetB, strandsB] = b;
+
+		int d = sheetA - sheetB;
+		if (d == 0)
+			d = strandsA.front().nr() - strandsB.front().nr();
+		return d < 0;
+	});
+
+	// write out the struct_sheet, since all info is available now
+	auto &struct_sheet = db["struct_sheet"];
+
+	int lastSheet = -1;
+	for (const auto &[ sheetNr, strand ] : strands)
+	{
+		if (sheetNr != lastSheet)
+		{
+			struct_sheet.emplace({
+				{ "id", cif::cif_id_for_number(sheetNr) },
+				{ "number_strands", std::count_if(strands.begin(), strands.end(), [nr=sheetNr](std::tuple<int,res_list> const &s) { return std::get<0>(s) == nr; }) }
+			});
+
+			lastSheet = sheetNr;
+		}
+	}
+
+	// Each residue resides in a single strand which is part of a single sheet
+	// this function returns the sequence number inside the sheet for the strand
+	// containing res
+	auto strandNrForResidue = [&strands,&sheetMap](dssp::residue_info const &res)
+	{
+		for (const auto &[k, iSheet] : sheetMap)
+		{
+			int result = 0;
+			for (auto &&[sheet, strand] : strands)
+			{
+				if (sheet != iSheet)
+					continue;
+
+				if (std::find(strand.begin(), strand.end(), res) != strand.end())
+					return result;
+
+				++result;
+			}
+		}
+
+		assert(false);
+		return -1;
+	};
+
+	// This map is used to record the sense of a ladder, and can be used
+	// to detect ladders already seen.
+	std::map<std::tuple<int,int,int>, std::tuple<int,bool>> ladderSense;
+
+	for (auto &res : dssp)
+	{
+		if (res.type() != ss_type::Strand)
+			continue;
+
+		int s1 = strandNrForResidue(res);
+
+		for (int i : { 0, 1 })
+		{
+			const auto &[p, ladder, parallel] = res.bridge_partner(i);
+			if (not p or p.asym_id() != res.asym_id() or p.sheet() != res.sheet() or p.type() != ss_type::Strand)
+				continue;
+
+			int s2 = strandNrForResidue(p);
+			// assert(s1 != s2);
+			if (s2 == s1)
+				continue;
+
+			std::tuple<std::string,int> sheetID{res.asym_id(), res.sheet() };
+			int sheet = sheetMap[sheetID];
+
+			auto k = s1 > s2 ? std::make_tuple(sheet, s2, s1) : std::make_tuple(sheet, s1, s2);
+			if (ladderSense.count(k))
+			{
+				// assert(ladderSense[k] == std::make_tuple(ladder, parallel));
+				assert(std::get<1>(ladderSense[k]) == parallel);
+				continue;
+			}
+
+			ladderSense.emplace(k, std::make_tuple(ladder, parallel));
+		}
+	}
+
+	auto &struct_sheet_order = db["struct_sheet_order"];
+	auto &struct_sheet_hbond = db["struct_sheet_hbond"];
+
+	for (const auto&[key, value] : ladderSense)
+	{
+		const auto &[sheet, s1, s2] = key;
+		const auto &[ladder, parallel] = value;
+
+		struct_sheet_order.emplace({
+			{ "sheet_id", cif::cif_id_for_number(sheet) },
+			// { "dssp_ladder_id", cif::cifIdForNumber(ladder) },
+			{ "range_id_1", s1 + 1 },
+			{ "range_id_2", s2 + 1 },
+			{ "sense", parallel ? "parallel" : "anti-parallel" }
+		});
+
+		res_list strand1, strand2;
+
+		int strandIx = 0;
+		for (auto const &s : strands)
+		{
+			const auto &[sSheet, strand] = s;
+			if (sSheet != sheet)
+				continue;
+			
+			if (strandIx == s1)
+				strand1 = strand;
+			else if (strandIx == s2)
+			{
+				strand2 = strand;
+				break;
+			}
+
+			++strandIx;
+		}
+
+		assert(not (strand1.empty() or strand2.empty()));
+
+		int beg1SeqID = 0, beg2SeqID = 0, end1SeqID = 0, end2SeqID = 0;
+		std::string beg1AtomID, beg2AtomID, end1AtomID, end2AtomID;
+
+		if (parallel)
+		{
+			// I.	a	d	II.	a	d		parallel
+			//		  \			  /
+			//		b	e		b	e								<= the residues forming the bridge
+			// 		  /			  \                      ..
+			//		c	f		c	f
+
+			for (auto b : strand1)
+			{
+				for (int i : { 0, 1 })
+				{
+					const auto &[e, ladder1, parallel1] = b.bridge_partner(i);
+					auto esi = std::find(strand2.begin(), strand2.end(), e);
+
+					if (esi == strand2.end())
+						continue;
+					
+					auto bi = std::find(dssp.begin(), dssp.end(), b);
+					assert(bi != dssp.end() and bi != dssp.begin());
+
+					auto a = *std::prev(bi);
+					auto c = *std::next(bi);
+
+					auto ei = std::find(dssp.begin(), dssp.end(), e);
+					assert(ei != dssp.end() and ei != dssp.begin());
+					auto d = *std::prev(ei);
+					auto f = *std::next(ei);
+
+					if (test_bond(e, a) and test_bond(c, e))					// case I.
+					{
+						beg1SeqID = a.seq_id();
+						beg2SeqID = e.seq_id();
+
+						beg1AtomID = "O";
+						beg2AtomID = "N";
+					}
+					else if (test_bond(b, d) and test_bond(f, b))				// case II.
+					{
+						beg1SeqID = b.seq_id();
+						beg2SeqID = d.seq_id();
+
+						beg1AtomID = "N";
+						beg2AtomID = "O";
+					}
+
+					break;
+				}
+
+				if (beg1SeqID)
+					break;
+			}
+
+			std::reverse(strand1.begin(), strand1.end());
+			std::reverse(strand2.begin(), strand2.end());
+
+			for (auto b : strand1)
+			{
+				for (int i : { 0, 1 })
+				{
+					const auto &[e, ladder1, parallel1] = b.bridge_partner(i);
+					auto esi = std::find(strand2.begin(), strand2.end(), e);
+
+					if (esi == strand2.end())
+						continue;
+					
+					auto bi = std::find(dssp.begin(), dssp.end(), b);
+					assert(bi != dssp.end() and bi != dssp.begin());
+
+					auto a = *std::next(bi);
+					auto c = *std::prev(bi);
+
+					auto ei = std::find(dssp.begin(), dssp.end(), e);
+					assert(ei != dssp.end() and ei != dssp.begin());
+					auto d = *std::next(ei);
+					auto f = *std::prev(ei);
+
+					if (test_bond(a, e) and test_bond(e, c))					// case I.
+					{
+						end1SeqID = a.seq_id();
+						end2SeqID = e.seq_id();
+
+						end1AtomID = "N";
+						end2AtomID = "O";
+					}
+					else if (test_bond(d, b) and test_bond(b, f))				// case II.
+					{
+						end1SeqID = b.seq_id();
+						end2SeqID = d.seq_id();
+
+						end1AtomID = "O";
+						end2AtomID = "N";
+					}
+
+					break;
+				}
+
+				if (end1SeqID)
+					break;
+			}
+		}
+		else
+		{
+			// III.	a <- f	IV. a	  f		antiparallel
+			//
+			//		b	 e      b <-> e							<= the residues forming the bridge
+			//
+			//		c -> d		c     d
+
+			std::reverse(strand2.begin(), strand2.end());
+
+			for (auto b : strand1)
+			{
+				for (int i : { 0, 1 })
+				{
+					const auto &[e, ladder1, parallel1] = b.bridge_partner(i);
+					auto esi = std::find(strand2.begin(), strand2.end(), e);
+
+					if (esi == strand2.end())
+						continue;
+					
+					auto bi = std::find(dssp.begin(), dssp.end(), b);
+					assert(bi != dssp.end() and bi != dssp.begin());
+
+					auto a = *std::prev(bi);
+					auto c = *std::next(bi);
+
+					auto ei = std::find(dssp.begin(), dssp.end(), e);
+					assert(ei != dssp.end() and ei != dssp.begin());
+					auto d = *std::prev(ei);
+					auto f = *std::next(ei);
+
+					if (test_bond(f, a) and test_bond(c, d))				// case III.
+					{
+						beg1SeqID = a.seq_id();
+						beg2SeqID = f.seq_id();
+
+						beg1AtomID = "O";
+						beg2AtomID = "N";
+					}
+					else if (test_bond(b, e) and test_bond(e, b))			// case IV.
+					{
+						beg1SeqID = b.seq_id();
+						beg2SeqID = e.seq_id();
+
+						beg1AtomID = "N";
+						beg2AtomID = "O";
+					}
+
+					break;
+				}
+
+				if (beg1SeqID)
+					break;
+			}
+
+			std::reverse(strand1.begin(), strand1.end());
+			std::reverse(strand2.begin(), strand2.end());
+
+			for (auto b : strand1)
+			{
+				for (int i : { 0, 1 })
+				{
+					const auto &[e, ladder1, parallel1] = b.bridge_partner(i);
+					auto esi = std::find(strand2.begin(), strand2.end(), e);
+
+					if (esi == strand2.end())
+						continue;
+					
+					auto bi = std::find(dssp.begin(), dssp.end(), b);
+					assert(bi != dssp.end() and bi != dssp.begin());
+
+					auto a = *std::next(bi);
+					auto c = *std::prev(bi);
+
+					auto ei = std::find(dssp.begin(), dssp.end(), e);
+					assert(ei != dssp.end() and ei != dssp.begin());
+					auto d = *std::next(ei);
+					auto f = *std::prev(ei);
+
+					if (test_bond(a, f) and test_bond(d, c))				// case III.
+					{
+						end1SeqID = a.seq_id();
+						end2SeqID = f.seq_id();
+
+						end1AtomID = "N";
+						end2AtomID = "O";
+					}
+					else if (test_bond(b, e) and test_bond(e, b))			// case IV.
+					{
+						end1SeqID = b.seq_id();
+						end2SeqID = e.seq_id();
+
+						end1AtomID = "N";
+						end2AtomID = "O";
+					}
+
+					break;
+				}
+
+				if (end1SeqID)
+					break;
+			}
+		}
+
+		struct_sheet_hbond.emplace({
+			{ "sheet_id", cif::cif_id_for_number(sheet) },
+			{ "range_id_1", s1 + 1 },
+			{ "range_id_2", s2 + 1 },
+			{ "range_1_beg_label_seq_id", beg1SeqID },	
+			{ "range_1_beg_label_atom_id", beg1AtomID },	
+			{ "range_2_beg_label_seq_id", beg2SeqID },	
+			{ "range_2_beg_label_atom_id", beg2AtomID },	
+			{ "range_1_end_label_seq_id", end1SeqID },	
+			{ "range_1_end_label_atom_id", end1AtomID },	
+			{ "range_2_end_label_seq_id", end2SeqID },	
+			{ "range_2_end_label_atom_id", end2AtomID }	
+		});
+
+
+		// if (parallel)
+		// {
+		// 	if (test_bond(c, e) and test_bond(e, a))
+		// 		row.emplace({
+		// 			{ "sheet_id", cif::cifIdForNumber(sheetMap[info.sheet()]) },
+		// 			{ "range_id_1", s1 + 1 },
+		// 			{ "range_id_2", s2 + 1 }
+		// 			{ "range_1_beg_label_seq_id", "" },
+		// 			{ "range_1_beg_label_atom_id", "" },
+		// 			{ "range_2_beg_label_seq_id", "" },
+		// 			{ "range_2_beg_label_atom_id", "" },
+		// 			{ "range_1_end_label_seq_id", "" },
+		// 			{ "range_1_end_label_atom_id", "" },
+		// 			{ "range_2_end_label_seq_id", "" },
+		// 			{ "range_2_end_label_atom_id", "" }
+		// 		});
+		// }
+
+
+
+	}
+
+	auto &struct_sheet_range = db["struct_sheet_range"];
+
+	for (const auto &[key, iSheet] : sheetMap)
+	{
+		for (auto &&[sheet, strand] : strands)
+		{
+			if (sheet != iSheet)
+				continue;
+
+			std::sort(strand.begin(), strand.end());
+
+			auto &beg = strand.front();
+			auto &end = strand.back();
+
+			struct_sheet_range.emplace({
+				{ "sheet_id", cif::cif_id_for_number(sheet) },
+				{ "id", strandNrForResidue(strand.front()) + 1 },
+				{ "beg_label_comp_id", beg.compound_id() },
+				{ "beg_label_asym_id", beg.asym_id() },
+				{ "beg_label_seq_id", beg.seq_id() },
+				{ "pdbx_beg_PDB_ins_code", beg.pdb_ins_code() },
+				{ "end_label_comp_id", end.compound_id() },
+				{ "end_label_asym_id", end.asym_id() },
+				{ "end_label_seq_id", end.seq_id() },
+				{ "pdbx_end_PDB_ins_code", end.pdb_ins_code() },
+				{ "beg_auth_comp_id", beg.compound_id() },
+				{ "beg_auth_asym_id", beg.auth_asym_id() },
+				{ "beg_auth_seq_id", beg.auth_seq_id() },
+				{ "end_auth_comp_id", end.compound_id() },
+				{ "end_auth_asym_id", end.auth_asym_id() },
+				{ "end_auth_seq_id", end.auth_seq_id() }
+			});
+		}
+	}
+
+
+	return sheetMap;
+}
+
+
 void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::ostream &os)
 {
 	using namespace std::literals;
