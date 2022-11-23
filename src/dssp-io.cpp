@@ -224,20 +224,20 @@ void writeHBonds(cif::datablock &db, const dssp &dssp)
 {
 	using ResidueInfo = dssp::residue_info;
 
-	auto &hb = db["dssp_hbond"];
+	auto &hb = db["dssp_struct_hbond"];
 
 	for (auto &res : dssp)
 	{
-		auto write_res = [&](const std::string &prefix, ResidueInfo const &info, double energy)
+		auto write_res = [&](const std::string &prefix, ResidueInfo const &r, double energy)
 		{
 			hb.back().assign({
-				{ prefix + "label_comp_id", res.compound_id() },
-				{ prefix + "label_seq_id", res.seq_id() },
-				{ prefix + "label_asym_id", res.asym_id() },
-				// { prefix + "auth_comp_id", res.compound_id() },
-				{ prefix + "auth_seq_id", res.auth_seq_id() },
-				{ prefix + "auth_asym_id", res.auth_asym_id() },
-				{ prefix + "pdbx_PDB_ins_code", res.pdb_ins_code() }
+				{ prefix + "label_comp_id", r.compound_id() },
+				{ prefix + "label_seq_id", r.seq_id() },
+				{ prefix + "label_asym_id", r.asym_id() },
+				// { prefix + "auth_comp_id", r.compound_id() },
+				{ prefix + "auth_seq_id", r.auth_seq_id() },
+				{ prefix + "auth_asym_id", r.auth_asym_id() },
+				{ prefix + "pdbx_PDB_ins_code", r.pdb_ins_code() }
 			});
 
 			if (not prefix.empty())
@@ -267,7 +267,7 @@ void writeHBonds(cif::datablock &db, const dssp &dssp)
 	}
 }
 
-std::map<std::tuple<std::string,int>,int> writeSheets(cif::datablock &db, const dssp &dssp)
+void writeSheets(cif::datablock &db, const dssp &dssp)
 {
 	using res_list = std::vector<dssp::residue_info>;
 	using ss_type = dssp::structure_type;
@@ -275,10 +275,7 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::datablock &db, const 
 	// clean up old info first
 
 	for (auto sheet_cat : { "struct_sheet", "struct_sheet_order", "struct_sheet_range", "struct_sheet_hbond", "pdbx_struct_sheet_hbond" })
-	{
-		auto &cat = db[sheet_cat];
-		cat.clear();
-	}
+		db.erase(remove_if(db.begin(), db.end(), [sheet_cat](const cif::category &cat) { return cat.name() == sheet_cat; }), db.end());
 
 	// create a list of strands, based on the SS info in DSSP. Store sheet number along with the strand.
 
@@ -401,6 +398,8 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::datablock &db, const 
 
 	auto &struct_sheet_order = db["struct_sheet_order"];
 	auto &struct_sheet_hbond = db["struct_sheet_hbond"];
+	auto &pdbx_struct_sheet_hbond = db["pdbx_struct_sheet_hbond"];
+	auto &pdbx_poly_seq_scheme = db["pdbx_poly_seq_scheme"];
 
 	for (const auto&[key, value] : ladderSense)
 	{
@@ -409,7 +408,7 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::datablock &db, const 
 
 		struct_sheet_order.emplace({
 			{ "sheet_id", cif::cif_id_for_number(sheet) },
-			// { "dssp_ladder_id", cif::cifIdForNumber(ladder) },
+			// { "dssp_struct_ladder_id", cif::cifIdForNumber(ladder) },
 			{ "range_id_1", s1 + 1 },
 			{ "range_id_2", s2 + 1 },
 			{ "sense", parallel ? "parallel" : "anti-parallel" }
@@ -659,27 +658,44 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::datablock &db, const 
 			{ "range_2_end_label_atom_id", end2AtomID }	
 		});
 
+		using namespace cif::literals;
 
-		// if (parallel)
-		// {
-		// 	if (test_bond(c, e) and test_bond(e, a))
-		// 		row.emplace({
-		// 			{ "sheet_id", cif::cifIdForNumber(sheetMap[info.sheet()]) },
-		// 			{ "range_id_1", s1 + 1 },
-		// 			{ "range_id_2", s2 + 1 }
-		// 			{ "range_1_beg_label_seq_id", "" },
-		// 			{ "range_1_beg_label_atom_id", "" },
-		// 			{ "range_2_beg_label_seq_id", "" },
-		// 			{ "range_2_beg_label_atom_id", "" },
-		// 			{ "range_1_end_label_seq_id", "" },
-		// 			{ "range_1_end_label_atom_id", "" },
-		// 			{ "range_2_end_label_seq_id", "" },
-		// 			{ "range_2_end_label_atom_id", "" }
-		// 		});
-		// }
+		auto b1 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand1.front().asym_id() and "seq_id"_key == beg1SeqID);
+		auto e1 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand1.front().asym_id() and "seq_id"_key == end1SeqID);
+		auto b2 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand2.front().asym_id() and "seq_id"_key == beg2SeqID);
+		auto e2 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand2.front().asym_id() and "seq_id"_key == end2SeqID);
 
+		if (not (b1 and e1 and b2 and e2))
+		{
+			if (cif::VERBOSE > 0)
+				std::cerr << "error looking up strand ends" << std::endl;
+			continue;
+		}
 
+		pdbx_struct_sheet_hbond.emplace({
+			{ "sheet_id", cif::cif_id_for_number(sheet) },
+			{ "range_id_1", s1 + 1 },
+			{ "range_id_2", s2 + 1 },
 
+			{ "range_1_label_atom_id", beg1AtomID },
+			{ "range_1_label_comp_id", b1["mon_id"].as<std::string>() },
+			{ "range_1_label_asym_id", b1["asym_id"].as<std::string>() },
+			{ "range_1_label_seq_id", b1["seq_id"].as<std::string>() },
+			{ "range_1_PDB_ins_code", b1["pdb_ins_code"].as<std::string>() },
+			{ "range_1_auth_atom_id", beg1AtomID },
+			{ "range_1_auth_comp_id", b1["auth_mon_id"].as<std::string>() },
+			{ "range_1_auth_asym_id", b1["pdb_strand_id"].as<std::string>() },
+			{ "range_1_auth_seq_id", b1["auth_seq_num"].as<std::string>() },
+			{ "range_2_label_atom_id", beg2AtomID },
+			{ "range_2_label_comp_id", b2["mon_id"].as<std::string>() },
+			{ "range_2_label_asym_id", b2["asym_id"].as<std::string>() },
+			{ "range_2_label_seq_id", b2["seq_id"].as<std::string>() },
+			{ "range_2_PDB_ins_code", b2["pdb_ins_code"].as<std::string>() },
+			{ "range_2_auth_atom_id", beg2AtomID },
+			{ "range_2_auth_comp_id", b2["auth_mon_id"].as<std::string>() },
+			{ "range_2_auth_asym_id", b2["pdb_strand_id"].as<std::string>() },
+			{ "range_2_auth_seq_id", b2["auth_seq_num"].as<std::string>() },
+		});
 	}
 
 	auto &struct_sheet_range = db["struct_sheet_range"];
@@ -691,7 +707,10 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::datablock &db, const 
 			if (sheet != iSheet)
 				continue;
 
-			std::sort(strand.begin(), strand.end());
+			std::sort(strand.begin(), strand.end(), [](dssp::residue_info const &a, dssp::residue_info const &b)
+			{
+				return a.nr() < b.nr();
+			});
 
 			auto &beg = strand.front();
 			auto &end = strand.back();
@@ -716,11 +735,107 @@ std::map<std::tuple<std::string,int>,int> writeSheets(cif::datablock &db, const 
 			});
 		}
 	}
-
-
-	return sheetMap;
 }
 
+void writeLadders(cif::datablock &db, const dssp &dssp)
+{
+	// Write out the DSSP ladders
+	struct ladder_info
+	{
+		ladder_info(const std::string &label, bool parallel, const dssp::residue_info &a, const dssp::residue_info &b)
+			: label(label)
+			, parallel(parallel)
+			, pairs({{a, b}})
+		{
+		}
+
+		std::string label;
+		bool parallel;
+		std::vector<std::pair<dssp::residue_info,dssp::residue_info>> pairs;
+	};
+
+	std::vector<ladder_info> ladders;
+
+	for (auto res : dssp)
+	{
+		for (int i : { 0, 1})
+		{
+			const auto &[p, ladder, parallel] = res.bridge_partner(i);
+
+			if (not p)
+				continue;
+
+			auto label = cif::cif_id_for_number(ladder);
+
+			bool is_new = true;
+			for (auto &l : ladders)
+			{
+				if (l.label != label)
+					continue;
+				
+				assert(l.parallel == parallel);
+
+				if (find_if(l.pairs.begin(), l.pairs.end(), [na=p.nr(), nb=res.nr()] (const auto &p) { return p.first.nr() == na and p.second.nr() == nb; }) != l.pairs.end())
+				{
+					is_new = false;
+					break;
+				}
+
+				l.pairs.emplace_back(res, p);
+				is_new = false;
+				break;
+			}
+
+			if (not is_new)
+				continue;
+
+			ladders.emplace_back(label, parallel, res, p);
+		}
+	}
+
+	auto &dssp_struct_ladder = db["dssp_struct_ladder"];
+
+	for (const auto &l : ladders)
+	{
+		const auto &[beg1, beg2] = l.pairs.front();
+		const auto &[end1, end2] = l.pairs.back();
+
+		dssp_struct_ladder.emplace({
+			{ "id", l.label },
+			{ "type", l.parallel ? "parallel" : "anti-parallel" },
+
+			{ "beg_1_label_comp_id", beg1.compound_id() },
+			{ "beg_1_label_asym_id", beg1.asym_id() },
+			{ "beg_1_label_seq_id", beg1.seq_id() },
+			{ "pdbx_beg_1_PDB_ins_code", beg1.pdb_ins_code() },
+			{ "end_1_label_comp_id", end1.compound_id() },
+			{ "end_1_label_asym_id", end1.asym_id() },
+			{ "end_1_label_seq_id", end1.seq_id() },
+			{ "pdbx_end_1_PDB_ins_code", end1.pdb_ins_code() },
+			{ "beg_1_auth_comp_id", beg1.compound_id() },
+			{ "beg_1_auth_asym_id", beg1.auth_asym_id() },
+			{ "beg_1_auth_seq_id", beg1.auth_seq_id() },
+			{ "end_1_auth_comp_id", end1.compound_id() },
+			{ "end_1_auth_asym_id", end1.auth_asym_id() },
+			{ "end_1_auth_seq_id", end1.auth_seq_id() },
+
+			{ "beg_2_label_comp_id", beg2.compound_id() },
+			{ "beg_2_label_asym_id", beg2.asym_id() },
+			{ "beg_2_label_seq_id", beg2.seq_id() },
+			{ "pdbx_beg_2_PDB_ins_code", beg2.pdb_ins_code() },
+			{ "end_2_label_comp_id", end2.compound_id() },
+			{ "end_2_label_asym_id", end2.asym_id() },
+			{ "end_2_label_seq_id", end2.seq_id() },
+			{ "pdbx_end_2_PDB_ins_code", end2.pdb_ins_code() },
+			{ "beg_2_auth_comp_id", beg2.compound_id() },
+			{ "beg_2_auth_asym_id", beg2.auth_asym_id() },
+			{ "beg_2_auth_seq_id", beg2.auth_seq_id() },
+			{ "end_2_auth_comp_id", end2.compound_id() },
+			{ "end_2_auth_asym_id", end2.auth_asym_id() },
+			{ "end_2_auth_seq_id", end2.auth_seq_id() }
+		});
+	}
+}
 
 void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::ostream &os)
 {
@@ -733,6 +848,10 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 	}
 	else
 	{
+		writeHBonds(db, dssp);
+		writeSheets(db, dssp);
+		writeLadders(db, dssp);
+
 		auto stats = dssp.get_statistics();
 
 		auto &dssp_statistics = db["dssp_statistics"];
@@ -748,23 +867,23 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 			{ "accessible_surface_of_protein", stats.accessible_surface }
 		});
 
-		auto &dssp_hbonds = db["dssp_hbond_statistics"];
+		auto &dssp_struct_hbonds = db["dssp_statistics_hbond"];
 
-		dssp_hbonds.emplace({
+		dssp_struct_hbonds.emplace({
 			{ "entry_id", db.name() },
 			{ "type", "O(I)-->H-N(J)" },
 			{ "count", stats.count.H_bonds },
 			{ "count_per_100", stats.count.H_bonds * 100.0 / stats.count.residues, 1 }
 		});
 
-		dssp_hbonds.emplace({
+		dssp_struct_hbonds.emplace({
 			{ "entry_id", db.name() },
 			{ "type", "PARALLEL BRIDGES" },
 			{ "count", stats.count.H_bonds_in_parallel_bridges },
 			{ "count_per_100", stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues, 1 }
 		});
 
-		dssp_hbonds.emplace({
+		dssp_struct_hbonds.emplace({
 			{ "entry_id", db.name() },
 			{ "type", "ANTIPARALLEL BRIDGES" },
 			{ "count", stats.count.H_bonds_in_antiparallel_bridges },
@@ -772,14 +891,14 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 		});
 
 		for (int k = 0; k < 11; ++k)
-			dssp_hbonds.emplace({
+			dssp_struct_hbonds.emplace({
 				{ "entry_id", db.name() },
 				{ "type", "O(I)-->H-N(I"s + char(k - 5 < 0 ? '-' : '+') + std::to_string(abs(k - 5)) + ")" },
 				{ "count", stats.count.H_Bonds_per_distance[k] },
 				{ "count_per_100", stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues, 1 }
 			});
 
-		auto &dssp_histograms = db["dssp_histograms"];
+		auto &dssp_statistics_histogram = db["dssp_statistics_histogram"];
 		
 		using histogram_data_type = std::tuple<const char *, const uint32_t *>;
 		for (const auto &[type, values] : std::vector<histogram_data_type>{
@@ -789,7 +908,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 				{ "ladders_per_sheet", stats.histogram.ladders_per_sheet }
 			})
 		{
-			auto hi = dssp_histograms.emplace({
+			auto hi = dssp_statistics_histogram.emplace({
 				{ "entry_id", db.name() },
 				{ "type", type },
 				{ "1", values[0] },
@@ -827,7 +946,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 
 		// A approximation of the old format
 
-		auto &dssp_residue = db["dssp_residue"];
+		auto &dssp_struct_legacy = db["dssp_struct_legacy"];
 
 		for (auto res : dssp)
 		{
@@ -883,8 +1002,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 			if (alpha != 360)
 				chirality = alpha < 0 ? "-" : "+";
 
-			std::string bridgepair[2] = { ".", "." };
-			std::string bridgelabel[2] = { ".", "." };
+			std::string ladders[2] = { ".", "." };
 
 			for (uint32_t i : {0, 1})
 			{
@@ -892,42 +1010,16 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 				if (not p)
 					continue;
 
-				bridgepair[i] = std::to_string(p.nr());
-				bridgelabel[i] = (parallel ? "p-" : "a-") + std::to_string(ladder);
+				ladders[i] = cif::cif_id_for_number(ladder);
 			}
-
-			std::string sheet = ".";
-			if (res.sheet() != 0)
-				sheet = std::to_string(res.sheet());
-
-			// std::string NHO[2], ONH[2];
-			// for (int i : {0, 1})
-			// {
-			// 	const auto &[donor, donorE] = res.donor(i);
-			// 	const auto &[acceptor, acceptorE] = res.acceptor(i);
-
-			// 	NHO[i] = ONH[i] = "0, 0.0";
-
-			// 	if (acceptor)
-			// 	{
-			// 		auto d = acceptor.nr() - res.nr();
-			// 		NHO[i] = cif::format("%d,%3.1f", d, acceptorE).str();
-			// 	}
-
-			// 	if (donor)
-			// 	{
-			// 		auto d = donor.nr() - res.nr();
-			// 		ONH[i] = cif::format("%d,%3.1f", d, donorE).str();
-			// 	}
-			// }
 
 			auto const &[cax, cay, caz] = res.ca_location();
 
-			dssp_residue.emplace({
+			dssp_struct_legacy.emplace({
 				{ "entry_id", db.name() },
+				{ "label_comp_id", res.compound_id() },
 				{ "label_asym_id", res.asym_id() },
 				{ "label_seq_id", res.seq_id() },
-				{ "label_comp_id", res.compound_id() },
 
 				{ "secondary_structure", ss },
 
@@ -941,13 +1033,10 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 				{ "bend", bend },
 				{ "chirality", chirality },
 
-				{ "bridge_pair_1", bridgepair[0] },
-				{ "bridge_label_1", bridgelabel[0] },
+				{ "ladder_1", ladders[0] },
+				{ "ladder_2", ladders[1] },
 
-				{ "bridge_pair_2", bridgepair[1] },
-				{ "bridge_label_2", bridgelabel[1] },
-
-				{ "sheet", sheet },
+				{ "sheet", res.sheet() ? cif::cif_id_for_number(res.sheet() - 1) : "." },
 
 				{ "accesssibility", res.accessibility(), 1 },
 
@@ -960,22 +1049,8 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 				{ "x_ca", cax, 1 },
 				{ "y_ca", cay, 1 },
 				{ "z_ca", caz, 1 },
-
-
-				
-				
 			});
-
 		}
-
-
-
-
-
-
-
-
-
 
 		// replace all struct_conf and struct_conf_type records
 		auto &structConfType = db["struct_conf_type"];
