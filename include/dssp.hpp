@@ -97,7 +97,6 @@ class dssp
 		Gap
 	};
 
-	dssp(const std::filesystem::path &file, int model_nr, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility);
 	dssp(const cif::datablock &db, int model_nr, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility);
 	dssp(const cif::mm::structure &s, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility);
 

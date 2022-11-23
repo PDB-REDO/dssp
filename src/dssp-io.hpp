@@ -29,5 +29,5 @@
 #include "dssp.hpp"
 
 void writeDSSP(const dssp& dssp, std::ostream& os);
-void annotateDSSP(cif::datablock &db, const dssp& dssp, bool writeOther, std::ostream& os);
+void annotateDSSP(cif::datablock &db, const dssp& dssp, bool writeOther, bool writeExperimental, std::ostream& os);
 

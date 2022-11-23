@@ -2085,6 +2085,11 @@ dssp::iterator &dssp::iterator::operator--()
 
 // --------------------------------------------------------------------
 
+dssp::dssp(const cif::mm::structure &s, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility)
+	: dssp(s.get_datablock(), s.get_model_nr(), min_poly_proline_stretch_length, calculateSurfaceAccessibility)
+{
+}
+
 dssp::dssp(const cif::datablock &db, int model_nr, int min_poly_proline_stretch, bool calculateSurfaceAccessibility)
 	: m_impl(new DSSP_impl(db, model_nr, min_poly_proline_stretch))
 {

@@ -77,8 +77,8 @@ std::string ResidueToDSSPLine(const dssp::residue_info &info)
 		case dssp::structure_type::Loop: ss = ' '; break;
 	}
 
-	char helix[4] = {' ', ' ', ' ', ' '};
-	for (dssp::helix_type helixType : {dssp::helix_type::_3_10, dssp::helix_type::alpha, dssp::helix_type::pi, dssp::helix_type::pp})
+	char helix[4] = { ' ', ' ', ' ', ' ' };
+	for (dssp::helix_type helixType : { dssp::helix_type::_3_10, dssp::helix_type::alpha, dssp::helix_type::pi, dssp::helix_type::pp })
 	{
 		switch (info.helix(helixType))
 		{
@@ -98,8 +98,8 @@ std::string ResidueToDSSPLine(const dssp::residue_info &info)
 	char chirality = alpha == 360 ? ' ' : (alpha < 0 ? '-' : '+');
 
 	uint32_t bp[2] = {};
-	char bridgelabel[2] = {' ', ' '};
-	for (uint32_t i : {0, 1})
+	char bridgelabel[2] = { ' ', ' ' };
+	for (uint32_t i : { 0, 1 })
 	{
 		const auto &[p, ladder, parallel] = info.bridge_partner(i);
 		if (not p)
@@ -114,7 +114,7 @@ std::string ResidueToDSSPLine(const dssp::residue_info &info)
 		sheet = 'A' + (info.sheet() - 1) % 26;
 
 	std::string NHO[2], ONH[2];
-	for (int i : {0, 1})
+	for (int i : { 0, 1 })
 	{
 		const auto &[donor, donorE] = info.donor(i);
 		const auto &[acceptor, acceptorE] = info.acceptor(i);
@@ -139,11 +139,11 @@ std::string ResidueToDSSPLine(const dssp::residue_info &info)
 
 	return cif::format("%5d%5d%1.1s%1.1s %c  %c%c%c%c%c%c%c%c%c%4d%4d%c%4.0f %11s%11s%11s%11s  %6.3f%6.1f%6.1f%6.1f%6.1f %6.1f %6.1f %6.1f",
 		info.nr(), residue.pdb_seq_num(), residue.pdb_ins_code(), residue.pdb_strand_id(), code,
-			ss, helix[3], helix[0], helix[1], helix[2], bend, chirality, bridgelabel[0], bridgelabel[1],
-			bp[0], bp[1], sheet, floor(info.accessibility() + 0.5),
-			NHO[0], ONH[0], NHO[1], ONH[1],
-			residue.tco(), residue.kappa(), alpha, residue.phi(), residue.psi(),
-			cax, cay, caz)
+		ss, helix[3], helix[0], helix[1], helix[2], bend, chirality, bridgelabel[0], bridgelabel[1],
+		bp[0], bp[1], sheet, floor(info.accessibility() + 0.5),
+		NHO[0], ONH[0], NHO[1], ONH[1],
+		residue.tco(), residue.kappa(), alpha, residue.phi(), residue.psi(),
+		cax, cay, caz)
 	    .str();
 }
 
@@ -211,7 +211,8 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 
 		if (ri.nr() != last + 1)
 			os << cif::format("%5d        !%c             0   0    0      0, 0.0     0, 0.0     0, 0.0     0, 0.0   0.000 360.0 360.0 360.0 360.0    0.0    0.0    0.0",
-				(last + 1), (ri.chain_break() == dssp::chain_break_type::NewChain ? '*' : ' ')) << std::endl;
+					  (last + 1), (ri.chain_break() == dssp::chain_break_type::NewChain ? '*' : ' '))
+			   << std::endl;
 
 		os << ResidueToDSSPLine(ri) << std::endl;
 		last = ri.nr();
@@ -234,47 +235,40 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 	hb.add_column("auth_asym_id");
 	hb.add_column("pdbx_PDB_ins_code");
 
-
 	// force right order
-	for (std::string da : { "acceptor_", "donor_"})
+	for (std::string da : { "acceptor_", "donor_" })
 	{
 		for (std::string i : { "1_", "2_" })
 		{
 			for (std::string n : { "label_comp_id", "label_seq_id", "label_asym_id", "auth_seq_id", "auth_asym_id", "pdbx_PDB_ins_code", "energy" })
 				hb.add_column(da + i + n);
- 		}
+		}
 	}
 
 	for (auto &res : dssp)
 	{
 		auto write_res = [&](const std::string &prefix, ResidueInfo const &r, double energy)
 		{
-			hb.back().assign({
-				{ prefix + "label_comp_id", r.compound_id() },
+			hb.back().assign({ { prefix + "label_comp_id", r.compound_id() },
 				{ prefix + "label_seq_id", r.seq_id() },
 				{ prefix + "label_asym_id", r.asym_id() },
 				// { prefix + "auth_comp_id", r.compound_id() },
 				{ prefix + "auth_seq_id", r.auth_seq_id() },
 				{ prefix + "auth_asym_id", r.auth_asym_id() },
-				{ prefix + "pdbx_PDB_ins_code", r.pdb_ins_code() }
-			});
+				{ prefix + "pdbx_PDB_ins_code", r.pdb_ins_code() } });
 
 			if (not prefix.empty())
-				hb.back().assign({
-					{ prefix + "energy", energy, 1 }
-				});
+				hb.back().assign({ { prefix + "energy", energy, 1 } });
 		};
 
-		hb.emplace({
-			{ "id", hb.get_unique_id("") }
-		});
+		hb.emplace({ { "id", hb.get_unique_id("") } });
 
 		write_res("", res, 0);
 
-		for (int i : {0, 1})
+		for (int i : { 0, 1 })
 		{
-			const auto &&[ acceptor, acceptorEnergy ] = res.acceptor(i);
-			const auto &&[ donor, donorEnergy ] = res.donor(i);
+			const auto &&[acceptor, acceptorEnergy] = res.acceptor(i);
+			const auto &&[donor, donorEnergy] = res.donor(i);
 
 			if (acceptor)
 				write_res(i ? "acceptor_2_" : "acceptor_1_", acceptor, acceptorEnergy);
@@ -293,18 +287,20 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	// clean up old info first
 
 	for (auto sheet_cat : { "struct_sheet", "struct_sheet_order", "struct_sheet_range", "struct_sheet_hbond", "pdbx_struct_sheet_hbond" })
-		db.erase(remove_if(db.begin(), db.end(), [sheet_cat](const cif::category &cat) { return cat.name() == sheet_cat; }), db.end());
+		db.erase(remove_if(db.begin(), db.end(), [sheet_cat](const cif::category &cat)
+					 { return cat.name() == sheet_cat; }),
+			db.end());
 
 	// create a list of strands, based on the SS info in DSSP. Store sheet number along with the strand.
 
-	std::vector<std::tuple<int,res_list>> strands;
-	std::map<std::tuple<std::string,int>,int> sheetMap;		// mapping from bridge number (=info.sheet()) in DSSP to sheet ID
+	std::vector<std::tuple<int, res_list>> strands;
+	std::map<std::tuple<std::string, int>, int> sheetMap; // mapping from bridge number (=info.sheet()) in DSSP to sheet ID
 
 	ss_type ss = ss_type::Loop;
 
 	for (auto &res : dssp)
 	{
-		std::tuple<std::string,int> sheetID{ res.asym_id(), res.sheet() };
+		std::tuple<std::string, int> sheetID{ res.asym_id(), res.sheet() };
 		ss_type iss = res.type();
 
 		if (iss == ss and ss == ss_type::Strand and sheetMap[sheetID] == std::get<0>(strands.back()))
@@ -326,28 +322,26 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 	// sort the strands vector
 	std::sort(strands.begin(), strands.end(), [](auto &a, auto &b)
-	{
+		{
 		const auto &[sheetA, strandsA] = a;
 		const auto &[sheetB, strandsB] = b;
 
 		int d = sheetA - sheetB;
 		if (d == 0)
 			d = strandsA.front().nr() - strandsB.front().nr();
-		return d < 0;
-	});
+		return d < 0; });
 
 	// write out the struct_sheet, since all info is available now
 	auto &struct_sheet = db["struct_sheet"];
 
 	int lastSheet = -1;
-	for (const auto &[ sheetNr, strand ] : strands)
+	for (const auto &[sheetNr, strand] : strands)
 	{
 		if (sheetNr != lastSheet)
 		{
-			struct_sheet.emplace({
-				{ "id", cif::cif_id_for_number(sheetNr) },
-				{ "number_strands", std::count_if(strands.begin(), strands.end(), [nr=sheetNr](std::tuple<int,res_list> const &s) { return std::get<0>(s) == nr; }) }
-			});
+			struct_sheet.emplace({ { "id", cif::cif_id_for_number(sheetNr) },
+				{ "number_strands", std::count_if(strands.begin(), strands.end(), [nr = sheetNr](std::tuple<int, res_list> const &s)
+										{ return std::get<0>(s) == nr; }) } });
 
 			lastSheet = sheetNr;
 		}
@@ -356,7 +350,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	// Each residue resides in a single strand which is part of a single sheet
 	// this function returns the sequence number inside the sheet for the strand
 	// containing res
-	auto strandNrForResidue = [&strands,&sheetMap](dssp::residue_info const &res)
+	auto strandNrForResidue = [&strands, &sheetMap](dssp::residue_info const &res)
 	{
 		for (const auto &[k, iSheet] : sheetMap)
 		{
@@ -379,7 +373,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 	// This map is used to record the sense of a ladder, and can be used
 	// to detect ladders already seen.
-	std::map<std::tuple<int,int,int>, std::tuple<int,bool>> ladderSense;
+	std::map<std::tuple<int, int, int>, std::tuple<int, bool>> ladderSense;
 
 	for (auto &res : dssp)
 	{
@@ -399,7 +393,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			if (s2 == s1)
 				continue;
 
-			std::tuple<std::string,int> sheetID{res.asym_id(), res.sheet() };
+			std::tuple<std::string, int> sheetID{ res.asym_id(), res.sheet() };
 			int sheet = sheetMap[sheetID];
 
 			auto k = s1 > s2 ? std::make_tuple(sheet, s2, s1) : std::make_tuple(sheet, s1, s2);
@@ -419,18 +413,16 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	auto &pdbx_struct_sheet_hbond = db["pdbx_struct_sheet_hbond"];
 	auto &pdbx_poly_seq_scheme = db["pdbx_poly_seq_scheme"];
 
-	for (const auto&[key, value] : ladderSense)
+	for (const auto &[key, value] : ladderSense)
 	{
 		const auto &[sheet, s1, s2] = key;
 		const auto &[ladder, parallel] = value;
 
-		struct_sheet_order.emplace({
-			{ "sheet_id", cif::cif_id_for_number(sheet) },
+		struct_sheet_order.emplace({ { "sheet_id", cif::cif_id_for_number(sheet) },
 			// { "dssp_struct_ladder_id", cif::cifIdForNumber(ladder) },
 			{ "range_id_1", s1 + 1 },
 			{ "range_id_2", s2 + 1 },
-			{ "sense", parallel ? "parallel" : "anti-parallel" }
-		});
+			{ "sense", parallel ? "parallel" : "anti-parallel" } });
 
 		res_list strand1, strand2;
 
@@ -440,7 +432,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			const auto &[sSheet, strand] = s;
 			if (sSheet != sheet)
 				continue;
-			
+
 			if (strandIx == s1)
 				strand1 = strand;
 			else if (strandIx == s2)
@@ -452,7 +444,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			++strandIx;
 		}
 
-		assert(not (strand1.empty() or strand2.empty()));
+		assert(not(strand1.empty() or strand2.empty()));
 
 		int beg1SeqID = 0, beg2SeqID = 0, end1SeqID = 0, end2SeqID = 0;
 		std::string beg1AtomID, beg2AtomID, end1AtomID, end2AtomID;
@@ -474,7 +466,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 					if (esi == strand2.end())
 						continue;
-					
+
 					auto bi = std::find(dssp.begin(), dssp.end(), b);
 					assert(bi != dssp.end() and bi != dssp.begin());
 
@@ -486,7 +478,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 					auto d = *std::prev(ei);
 					auto f = *std::next(ei);
 
-					if (test_bond(e, a) and test_bond(c, e))					// case I.
+					if (test_bond(e, a) and test_bond(c, e)) // case I.
 					{
 						beg1SeqID = a.seq_id();
 						beg2SeqID = e.seq_id();
@@ -494,7 +486,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 						beg1AtomID = "O";
 						beg2AtomID = "N";
 					}
-					else if (test_bond(b, d) and test_bond(f, b))				// case II.
+					else if (test_bond(b, d) and test_bond(f, b)) // case II.
 					{
 						beg1SeqID = b.seq_id();
 						beg2SeqID = d.seq_id();
@@ -522,7 +514,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 					if (esi == strand2.end())
 						continue;
-					
+
 					auto bi = std::find(dssp.begin(), dssp.end(), b);
 					assert(bi != dssp.end() and bi != dssp.begin());
 
@@ -534,7 +526,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 					auto d = *std::next(ei);
 					auto f = *std::prev(ei);
 
-					if (test_bond(a, e) and test_bond(e, c))					// case I.
+					if (test_bond(a, e) and test_bond(e, c)) // case I.
 					{
 						end1SeqID = a.seq_id();
 						end2SeqID = e.seq_id();
@@ -542,7 +534,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 						end1AtomID = "N";
 						end2AtomID = "O";
 					}
-					else if (test_bond(d, b) and test_bond(b, f))				// case II.
+					else if (test_bond(d, b) and test_bond(b, f)) // case II.
 					{
 						end1SeqID = b.seq_id();
 						end2SeqID = d.seq_id();
@@ -577,7 +569,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 					if (esi == strand2.end())
 						continue;
-					
+
 					auto bi = std::find(dssp.begin(), dssp.end(), b);
 					assert(bi != dssp.end() and bi != dssp.begin());
 
@@ -589,7 +581,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 					auto d = *std::prev(ei);
 					auto f = *std::next(ei);
 
-					if (test_bond(f, a) and test_bond(c, d))				// case III.
+					if (test_bond(f, a) and test_bond(c, d)) // case III.
 					{
 						beg1SeqID = a.seq_id();
 						beg2SeqID = f.seq_id();
@@ -597,7 +589,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 						beg1AtomID = "O";
 						beg2AtomID = "N";
 					}
-					else if (test_bond(b, e) and test_bond(e, b))			// case IV.
+					else if (test_bond(b, e) and test_bond(e, b)) // case IV.
 					{
 						beg1SeqID = b.seq_id();
 						beg2SeqID = e.seq_id();
@@ -625,7 +617,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 					if (esi == strand2.end())
 						continue;
-					
+
 					auto bi = std::find(dssp.begin(), dssp.end(), b);
 					assert(bi != dssp.end() and bi != dssp.begin());
 
@@ -637,7 +629,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 					auto d = *std::next(ei);
 					auto f = *std::prev(ei);
 
-					if (test_bond(a, f) and test_bond(d, c))				// case III.
+					if (test_bond(a, f) and test_bond(d, c)) // case III.
 					{
 						end1SeqID = a.seq_id();
 						end2SeqID = f.seq_id();
@@ -645,7 +637,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 						end1AtomID = "N";
 						end2AtomID = "O";
 					}
-					else if (test_bond(b, e) and test_bond(e, b))			// case IV.
+					else if (test_bond(b, e) and test_bond(e, b)) // case IV.
 					{
 						end1SeqID = b.seq_id();
 						end2SeqID = e.seq_id();
@@ -662,19 +654,17 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			}
 		}
 
-		struct_sheet_hbond.emplace({
-			{ "sheet_id", cif::cif_id_for_number(sheet) },
+		struct_sheet_hbond.emplace({ { "sheet_id", cif::cif_id_for_number(sheet) },
 			{ "range_id_1", s1 + 1 },
 			{ "range_id_2", s2 + 1 },
-			{ "range_1_beg_label_seq_id", beg1SeqID },	
-			{ "range_1_beg_label_atom_id", beg1AtomID },	
-			{ "range_2_beg_label_seq_id", beg2SeqID },	
-			{ "range_2_beg_label_atom_id", beg2AtomID },	
-			{ "range_1_end_label_seq_id", end1SeqID },	
-			{ "range_1_end_label_atom_id", end1AtomID },	
-			{ "range_2_end_label_seq_id", end2SeqID },	
-			{ "range_2_end_label_atom_id", end2AtomID }	
-		});
+			{ "range_1_beg_label_seq_id", beg1SeqID },
+			{ "range_1_beg_label_atom_id", beg1AtomID },
+			{ "range_2_beg_label_seq_id", beg2SeqID },
+			{ "range_2_beg_label_atom_id", beg2AtomID },
+			{ "range_1_end_label_seq_id", end1SeqID },
+			{ "range_1_end_label_atom_id", end1AtomID },
+			{ "range_2_end_label_seq_id", end2SeqID },
+			{ "range_2_end_label_atom_id", end2AtomID } });
 
 		using namespace cif::literals;
 
@@ -683,7 +673,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 		auto b2 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand2.front().asym_id() and "seq_id"_key == beg2SeqID);
 		auto e2 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand2.front().asym_id() and "seq_id"_key == end2SeqID);
 
-		if (not (b1 and e1 and b2 and e2))
+		if (not(b1 and e1 and b2 and e2))
 		{
 			if (cif::VERBOSE > 0)
 				std::cerr << "error looking up strand ends" << std::endl;
@@ -726,15 +716,12 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 				continue;
 
 			std::sort(strand.begin(), strand.end(), [](dssp::residue_info const &a, dssp::residue_info const &b)
-			{
-				return a.nr() < b.nr();
-			});
+				{ return a.nr() < b.nr(); });
 
 			auto &beg = strand.front();
 			auto &end = strand.back();
 
-			struct_sheet_range.emplace({
-				{ "sheet_id", cif::cif_id_for_number(sheet) },
+			struct_sheet_range.emplace({ { "sheet_id", cif::cif_id_for_number(sheet) },
 				{ "id", strandNrForResidue(strand.front()) + 1 },
 				{ "beg_label_comp_id", beg.compound_id() },
 				{ "beg_label_asym_id", beg.asym_id() },
@@ -749,8 +736,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 				{ "beg_auth_seq_id", beg.auth_seq_id() },
 				{ "end_auth_comp_id", end.compound_id() },
 				{ "end_auth_asym_id", end.auth_asym_id() },
-				{ "end_auth_seq_id", end.auth_seq_id() }
-			});
+				{ "end_auth_seq_id", end.auth_seq_id() } });
 		}
 	}
 }
@@ -763,20 +749,20 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 		ladder_info(const std::string &label, bool parallel, const dssp::residue_info &a, const dssp::residue_info &b)
 			: label(label)
 			, parallel(parallel)
-			, pairs({{a, b}})
+			, pairs({ { a, b } })
 		{
 		}
 
 		std::string label;
 		bool parallel;
-		std::vector<std::pair<dssp::residue_info,dssp::residue_info>> pairs;
+		std::vector<std::pair<dssp::residue_info, dssp::residue_info>> pairs;
 	};
 
 	std::vector<ladder_info> ladders;
 
 	for (auto res : dssp)
 	{
-		for (int i : { 0, 1})
+		for (int i : { 0, 1 })
 		{
 			const auto &[p, ladder, parallel] = res.bridge_partner(i);
 
@@ -790,10 +776,11 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 			{
 				if (l.label != label)
 					continue;
-				
+
 				assert(l.parallel == parallel);
 
-				if (find_if(l.pairs.begin(), l.pairs.end(), [na=p.nr(), nb=res.nr()] (const auto &p) { return p.first.nr() == na and p.second.nr() == nb; }) != l.pairs.end())
+				if (find_if(l.pairs.begin(), l.pairs.end(), [na = p.nr(), nb = res.nr()](const auto &p)
+						{ return p.first.nr() == na and p.second.nr() == nb; }) != l.pairs.end())
 				{
 					is_new = false;
 					break;
@@ -818,8 +805,7 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 		const auto &[beg1, beg2] = l.pairs.front();
 		const auto &[end1, end2] = l.pairs.back();
 
-		dssp_struct_ladder.emplace({
-			{ "id", l.label },
+		dssp_struct_ladder.emplace({ { "id", l.label },
 			{ "type", l.parallel ? "parallel" : "anti-parallel" },
 
 			{ "beg_1_label_comp_id", beg1.compound_id() },
@@ -850,12 +836,208 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 			{ "beg_2_auth_seq_id", beg2.auth_seq_id() },
 			{ "end_2_auth_comp_id", end2.compound_id() },
 			{ "end_2_auth_asym_id", end2.auth_asym_id() },
-			{ "end_2_auth_seq_id", end2.auth_seq_id() }
+			{ "end_2_auth_seq_id", end2.auth_seq_id() } });
+	}
+}
+
+void writeStatistics(cif::datablock &db, const dssp &dssp)
+{
+	using namespace std::literals;
+
+	auto stats = dssp.get_statistics();
+
+	auto &dssp_statistics = db["dssp_statistics"];
+
+	dssp_statistics.emplace({ { "entry_id", db.name() },
+		{ "nr_of_residues", stats.count.residues },
+		{ "nr_of_chains", stats.count.chains },
+		{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
+		{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
+		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges },
+
+		{ "accessible_surface_of_protein", stats.accessible_surface } });
+
+	auto &dssp_struct_hbonds = db["dssp_statistics_hbond"];
+
+	dssp_struct_hbonds.emplace({ { "entry_id", db.name() },
+		{ "type", "O(I)-->H-N(J)" },
+		{ "count", stats.count.H_bonds },
+		{ "count_per_100", stats.count.H_bonds * 100.0 / stats.count.residues, 1 } });
+
+	dssp_struct_hbonds.emplace({ { "entry_id", db.name() },
+		{ "type", "PARALLEL BRIDGES" },
+		{ "count", stats.count.H_bonds_in_parallel_bridges },
+		{ "count_per_100", stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues, 1 } });
+
+	dssp_struct_hbonds.emplace({ { "entry_id", db.name() },
+		{ "type", "ANTIPARALLEL BRIDGES" },
+		{ "count", stats.count.H_bonds_in_antiparallel_bridges },
+		{ "count_per_100", stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues, 1 } });
+
+	for (int k = 0; k < 11; ++k)
+		dssp_struct_hbonds.emplace({ { "entry_id", db.name() },
+			{ "type", "O(I)-->H-N(I"s + char(k - 5 < 0 ? '-' : '+') + std::to_string(abs(k - 5)) + ")" },
+			{ "count", stats.count.H_Bonds_per_distance[k] },
+			{ "count_per_100", stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues, 1 } });
+
+	auto &dssp_statistics_histogram = db["dssp_statistics_histogram"];
+
+	using histogram_data_type = std::tuple<const char *, const uint32_t *>;
+	for (const auto &[type, values] : std::vector<histogram_data_type>{
+			 { "parallel_bridges_per_ladder", stats.histogram.residues_per_alpha_helix },
+			 { "parallel_bridges_per_ladder", stats.histogram.parallel_bridges_per_ladder },
+			 { "antiparallel_bridges_per_ladder", stats.histogram.antiparallel_bridges_per_ladder },
+			 { "ladders_per_sheet", stats.histogram.ladders_per_sheet } })
+	{
+		auto hi = dssp_statistics_histogram.emplace({
+			{ "entry_id", db.name() },
+			{ "type", type },
+			{ "1", values[0] },
+			{ "2", values[1] },
+			{ "3", values[2] },
+			{ "4", values[3] },
+			{ "5", values[4] },
+			{ "6", values[5] },
+			{ "7", values[6] },
+			{ "8", values[7] },
+			{ "9", values[8] },
+			{ "10", values[9] },
+			{ "11", values[10] },
+			{ "12", values[11] },
+			{ "13", values[12] },
+			{ "14", values[13] },
+			{ "15", values[14] },
+			{ "16", values[15] },
+			{ "17", values[16] },
+			{ "18", values[17] },
+			{ "19", values[18] },
+			{ "20", values[19] },
+			{ "21", values[20] },
+			{ "22", values[21] },
+			{ "23", values[22] },
+			{ "24", values[23] },
+			{ "25", values[24] },
+			{ "26", values[25] },
+			{ "27", values[26] },
+			{ "28", values[27] },
+			{ "29", values[28] },
+			{ "30", values[29] },
 		});
 	}
 }
 
-void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::ostream &os)
+void writeSummary(cif::datablock &db, const dssp &dssp)
+{
+	// A approximation of the old format
+
+	auto &dssp_struct_summary = db["dssp_struct_summary"];
+
+	for (auto res : dssp)
+	{
+
+		/*
+		    This is the header line for the residue lines in a DSSP file:
+
+		    #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA
+		*/
+
+		std::string ss_bridge = ".";
+		if (res.ssBridgeNr() != 0)
+			ss_bridge = std::to_string(res.ssBridgeNr());
+
+		std::string ss = { res.type() == dssp::structure_type::Loop ? '.' : static_cast<char>(res.type()) };
+
+		std::string helix[4] = { ".", ".", ".", "." };
+		for (dssp::helix_type helixType : { dssp::helix_type::_3_10, dssp::helix_type::alpha, dssp::helix_type::pi, dssp::helix_type::pp })
+		{
+			switch (res.helix(helixType))
+			{
+				// case dssp::helix_position_type::None: helix[static_cast<int>(helixType)] = ' '; break;
+				case dssp::helix_position_type::Start:
+					helix[static_cast<int>(helixType)] = { '>' };
+					break;
+
+				case dssp::helix_position_type::End:
+					helix[static_cast<int>(helixType)] = { '<' };
+					break;
+
+				case dssp::helix_position_type::StartAndEnd:
+					helix[static_cast<int>(helixType)] = { 'X' };
+					break;
+
+				case dssp::helix_position_type::Middle:
+					if (helixType == dssp::helix_type::pp)
+						helix[static_cast<int>(helixType)] = { 'P' };
+					else
+						helix[static_cast<int>(helixType)] = { static_cast<char>('3' + static_cast<int>(helixType)) };
+					break;
+
+				default:
+					break;
+			}
+		}
+
+		std::string bend = ".";
+		if (res.bend())
+			bend = "S";
+
+		double alpha = res.alpha();
+		std::string chirality = ".";
+		if (alpha != 360)
+			chirality = alpha < 0 ? "-" : "+";
+
+		std::string ladders[2] = { ".", "." };
+
+		for (uint32_t i : { 0, 1 })
+		{
+			const auto &[p, ladder, parallel] = res.bridge_partner(i);
+			if (not p)
+				continue;
+
+			ladders[i] = cif::cif_id_for_number(ladder);
+		}
+
+		auto const &[cax, cay, caz] = res.ca_location();
+
+		dssp_struct_summary.emplace({
+			{ "entry_id", db.name() },
+			{ "label_comp_id", res.compound_id() },
+			{ "label_asym_id", res.asym_id() },
+			{ "label_seq_id", res.seq_id() },
+
+			{ "secondary_structure", ss },
+
+			{ "ss_bridge", ss_bridge },
+
+			{ "helix_3_10", helix[0] },
+			{ "helix_alpha", helix[1] },
+			{ "helix_pi", helix[2] },
+			{ "helix_pp", helix[3] },
+
+			{ "bend", bend },
+			{ "chirality", chirality },
+
+			{ "ladder_1", ladders[0] },
+			{ "ladder_2", ladders[1] },
+
+			{ "sheet", res.sheet() ? cif::cif_id_for_number(res.sheet() - 1) : "." },
+
+			{ "accesssibility", res.accessibility(), 1 },
+
+			{ "TCO", res.tco(), 3 },
+			{ "kappa", res.kappa(), 1 },
+			{ "alpha", res.alpha(), 1 },
+			{ "phi", res.phi(), 1 },
+			{ "psi", res.psi(), 1 },
+
+			{ "x_ca", cax, 1 },
+			{ "y_ca", cay, 1 },
+			{ "z_ca", caz, 1 },
+		});
+	}
+}
+
+void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool writeExperimental, std::ostream &os)
 {
 	using namespace std::literals;
 
@@ -866,208 +1048,13 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 	}
 	else
 	{
-		writeBridgePairs(db, dssp);
-		writeSheets(db, dssp);
-		writeLadders(db, dssp);
-
-		auto stats = dssp.get_statistics();
-
-		auto &dssp_statistics = db["dssp_statistics"];
-
-		dssp_statistics.emplace({
-			{ "entry_id", db.name() },
-			{ "nr_of_residues", stats.count.residues },
-			{ "nr_of_chains", stats.count.chains },
-			{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
-			{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
-			{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges },
-
-			{ "accessible_surface_of_protein", stats.accessible_surface }
-		});
-
-		auto &dssp_struct_hbonds = db["dssp_statistics_hbond"];
-
-		dssp_struct_hbonds.emplace({
-			{ "entry_id", db.name() },
-			{ "type", "O(I)-->H-N(J)" },
-			{ "count", stats.count.H_bonds },
-			{ "count_per_100", stats.count.H_bonds * 100.0 / stats.count.residues, 1 }
-		});
-
-		dssp_struct_hbonds.emplace({
-			{ "entry_id", db.name() },
-			{ "type", "PARALLEL BRIDGES" },
-			{ "count", stats.count.H_bonds_in_parallel_bridges },
-			{ "count_per_100", stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues, 1 }
-		});
-
-		dssp_struct_hbonds.emplace({
-			{ "entry_id", db.name() },
-			{ "type", "ANTIPARALLEL BRIDGES" },
-			{ "count", stats.count.H_bonds_in_antiparallel_bridges },
-			{ "count_per_100", stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues, 1 }
-		});
-
-		for (int k = 0; k < 11; ++k)
-			dssp_struct_hbonds.emplace({
-				{ "entry_id", db.name() },
-				{ "type", "O(I)-->H-N(I"s + char(k - 5 < 0 ? '-' : '+') + std::to_string(abs(k - 5)) + ")" },
-				{ "count", stats.count.H_Bonds_per_distance[k] },
-				{ "count_per_100", stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues, 1 }
-			});
-
-		auto &dssp_statistics_histogram = db["dssp_statistics_histogram"];
-		
-		using histogram_data_type = std::tuple<const char *, const uint32_t *>;
-		for (const auto &[type, values] : std::vector<histogram_data_type>{
-				{ "parallel_bridges_per_ladder", stats.histogram.residues_per_alpha_helix },
-				{ "parallel_bridges_per_ladder", stats.histogram.parallel_bridges_per_ladder },
-				{ "antiparallel_bridges_per_ladder", stats.histogram.antiparallel_bridges_per_ladder },
-				{ "ladders_per_sheet", stats.histogram.ladders_per_sheet }
-			})
+		if (writeExperimental)
 		{
-			auto hi = dssp_statistics_histogram.emplace({
-				{ "entry_id", db.name() },
-				{ "type", type },
-				{ "1", values[0] },
-				{ "2", values[1] },
-				{ "3", values[2] },
-				{ "4", values[3] },
-				{ "5", values[4] },
-				{ "6", values[5] },
-				{ "7", values[6] },
-				{ "8", values[7] },
-				{ "9", values[8] },
-				{ "10", values[9] },
-				{ "11", values[10] },
-				{ "12", values[11] },
-				{ "13", values[12] },
-				{ "14", values[13] },
-				{ "15", values[14] },
-				{ "16", values[15] },
-				{ "17", values[16] },
-				{ "18", values[17] },
-				{ "19", values[18] },
-				{ "20", values[19] },
-				{ "21", values[20] },
-				{ "22", values[21] },
-				{ "23", values[22] },
-				{ "24", values[23] },
-				{ "25", values[24] },
-				{ "26", values[25] },
-				{ "27", values[26] },
-				{ "28", values[27] },
-				{ "29", values[28] },
-				{ "30", values[29] },
-			});
-		}
-
-		// A approximation of the old format
-
-		auto &dssp_struct_summary = db["dssp_struct_summary"];
-
-		for (auto res : dssp)
-		{
-
-			/*
-				This is the header line for the residue lines in a DSSP file:
-
-				#  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA
-			*/
-
-			std::string ss_bridge = ".";
-			if (res.ssBridgeNr() != 0)
-				ss_bridge = std::to_string(res.ssBridgeNr());
-
-			std::string ss = { res.type() == dssp::structure_type::Loop ? '.' : static_cast<char>(res.type()) };
-
-			std::string helix[4] = { ".", ".", ".", "."};
-			for (dssp::helix_type helixType : {dssp::helix_type::_3_10, dssp::helix_type::alpha, dssp::helix_type::pi, dssp::helix_type::pp})
-			{
-				switch (res.helix(helixType))
-				{
-					// case dssp::helix_position_type::None: helix[static_cast<int>(helixType)] = ' '; break;
-					case dssp::helix_position_type::Start:
-						helix[static_cast<int>(helixType)] = { '>' };
-						break;
-
-					case dssp::helix_position_type::End:
-						helix[static_cast<int>(helixType)] = { '<' };
-						break;
-
-					case dssp::helix_position_type::StartAndEnd:
-						helix[static_cast<int>(helixType)] = { 'X' };
-						break;
-
-					case dssp::helix_position_type::Middle:
-						if (helixType == dssp::helix_type::pp)
-							helix[static_cast<int>(helixType)] = { 'P' };
-						else
-							helix[static_cast<int>(helixType)] = { static_cast<char>('3' + static_cast<int>(helixType)) };
-						break;
-					
-					default:
-						break;
-				}
-			}
-
-			std::string bend = ".";
-			if (res.bend())
-				bend = "S";
-
-			double alpha = res.alpha();
-			std::string chirality = ".";
-			if (alpha != 360)
-				chirality = alpha < 0 ? "-" : "+";
-
-			std::string ladders[2] = { ".", "." };
-
-			for (uint32_t i : {0, 1})
-			{
-				const auto &[p, ladder, parallel] = res.bridge_partner(i);
-				if (not p)
-					continue;
-
-				ladders[i] = cif::cif_id_for_number(ladder);
-			}
-
-			auto const &[cax, cay, caz] = res.ca_location();
-
-			dssp_struct_summary.emplace({
-				{ "entry_id", db.name() },
-				{ "label_comp_id", res.compound_id() },
-				{ "label_asym_id", res.asym_id() },
-				{ "label_seq_id", res.seq_id() },
-
-				{ "secondary_structure", ss },
-
-				{ "ss_bridge", ss_bridge },
-
-				{ "helix_3_10", helix[0] },
-				{ "helix_alpha", helix[1] },
-				{ "helix_pi", helix[2] },
-				{ "helix_pp", helix[3] },
-
-				{ "bend", bend },
-				{ "chirality", chirality },
-
-				{ "ladder_1", ladders[0] },
-				{ "ladder_2", ladders[1] },
-
-				{ "sheet", res.sheet() ? cif::cif_id_for_number(res.sheet() - 1) : "." },
-
-				{ "accesssibility", res.accessibility(), 1 },
-
-				{ "TCO", res.tco(), 3 },
-				{ "kappa", res.kappa(), 1 },
-				{ "alpha", res.alpha(), 1 },
-				{ "phi", res.phi(), 1 },
-				{ "psi", res.psi(), 1 },
-
-				{ "x_ca", cax, 1 },
-				{ "y_ca", cay, 1 },
-				{ "z_ca", caz, 1 },
-			});
+			writeBridgePairs(db, dssp);
+			writeSheets(db, dssp);
+			writeLadders(db, dssp);
+			writeStatistics(db, dssp);
+			writeSummary(db, dssp);
 		}
 
 		// replace all struct_conf and struct_conf_type records
@@ -1177,8 +1164,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 	}
 
 	auto &software = db["software"];
-	software.emplace({
-		{ "pdbx_ordinal", software.get_unique_id("") },
+	software.emplace({ { "pdbx_ordinal", software.get_unique_id("") },
 		{ "name", "dssp" },
 		{ "version", kVersionNumber },
 		{ "date", kBuildDate },

@@ -72,6 +72,7 @@ int d_main(int argc, const char *argv[])
 		mcfp::make_option<std::string>("output-format", "Output format, can be either 'dssp' for classic DSSP or 'mmcif' for annotated mmCIF. The default is chosen based on the extension of the output file, if any."),
 		mcfp::make_option<short>("min-pp-stretch", 3, "Minimal number of residues having PSI/PHI in range for a PP helix, default is 3"),
 		mcfp::make_option("write-other", "If set, write the type OTHER for loops, default is to leave this out"),
+		mcfp::make_option("write-experimental", "If set, write the new, experimental DSSP output in mmCIF format, default is to leave this out"),
 
 		// mcfp::make_option("components",			po::value<std::string,	"Location of the components.cif file from CCD")
 	    // mcfp::make_option("extra-compounds",		po::value<std::string,	"File containing residue information for extra compounds in this specific target, should be either in CCD format or a CCP4 restraints file")
@@ -185,14 +186,14 @@ int d_main(int argc, const char *argv[])
 		if (fmt == "dssp")
 			writeDSSP(dssp, out);
 		else
-			annotateDSSP(f.front(), dssp, writeOther, out);
+			annotateDSSP(f.front(), dssp, writeOther, config.has("write-experimental"), out);
 	}
 	else
 	{
 		if (fmt == "dssp")
 			writeDSSP(dssp, std::cout);
 		else
-			annotateDSSP(f.front(), dssp, writeOther, std::cout);
+			annotateDSSP(f.front(), dssp, writeOther, config.has("write-experimental"), std::cout);
 	}
 
 	return 0;
