@@ -220,11 +220,30 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 
 // --------------------------------------------------------------------
 
-void writeHBonds(cif::datablock &db, const dssp &dssp)
+void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 {
 	using ResidueInfo = dssp::residue_info;
 
-	auto &hb = db["dssp_struct_hbond"];
+	auto &hb = db["dssp_struct_bridge_pairs"];
+
+	hb.add_column("id");
+	hb.add_column("label_comp_id");
+	hb.add_column("label_seq_id");
+	hb.add_column("label_asym_id");
+	hb.add_column("auth_seq_id");
+	hb.add_column("auth_asym_id");
+	hb.add_column("pdbx_PDB_ins_code");
+
+
+	// force right order
+	for (std::string da : { "acceptor_", "donor_"})
+	{
+		for (std::string i : { "1_", "2_" })
+		{
+			for (std::string n : { "label_comp_id", "label_seq_id", "label_asym_id", "auth_seq_id", "auth_asym_id", "pdbx_PDB_ins_code", "energy" })
+				hb.add_column(da + i + n);
+ 		}
+	}
 
 	for (auto &res : dssp)
 	{
@@ -254,15 +273,14 @@ void writeHBonds(cif::datablock &db, const dssp &dssp)
 
 		for (int i : {0, 1})
 		{
-			const auto &&[ donor, donorEnergy ] = res.donor(i);
-
-			if (donor)
-				write_res(i ? "donor_2_" : "donor_1_", donor, donorEnergy);
-
 			const auto &&[ acceptor, acceptorEnergy ] = res.acceptor(i);
+			const auto &&[ donor, donorEnergy ] = res.donor(i);
 
 			if (acceptor)
 				write_res(i ? "acceptor_2_" : "acceptor_1_", acceptor, acceptorEnergy);
+
+			if (donor)
+				write_res(i ? "donor_2_" : "donor_1_", donor, donorEnergy);
 		}
 	}
 }
@@ -848,7 +866,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 	}
 	else
 	{
-		writeHBonds(db, dssp);
+		writeBridgePairs(db, dssp);
 		writeSheets(db, dssp);
 		writeLadders(db, dssp);
 
@@ -946,7 +964,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 
 		// A approximation of the old format
 
-		auto &dssp_struct_legacy = db["dssp_struct_legacy"];
+		auto &dssp_struct_summary = db["dssp_struct_summary"];
 
 		for (auto res : dssp)
 		{
@@ -1015,7 +1033,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, std::os
 
 			auto const &[cax, cay, caz] = res.ca_location();
 
-			dssp_struct_legacy.emplace({
+			dssp_struct_summary.emplace({
 				{ "entry_id", db.name() },
 				{ "label_comp_id", res.compound_id() },
 				{ "label_asym_id", res.asym_id() },
