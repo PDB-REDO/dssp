@@ -1,5 +1,6 @@
-Version 4.1.1
-- Better packaging
+Version 4.2
+- Changes for packaging
+- New mmCIF DSSP output, added several categories
 
 Version 4.1.0
 - Based on new libcifpp version 5

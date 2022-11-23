@@ -239,15 +239,20 @@ if(ENABLE_TESTING)
 	add_test(NAME unit-test-dssp COMMAND $<TARGET_FILE:unit-test-dssp> -- ${PROJECT_SOURCE_DIR}/test)
 endif()
 
-option(DSSP_BUILD_INSTALLER "Build an installer" OFF)
+include(InstallRequiredSystemLibraries)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 
-if(DSSP_BUILD_INSTALLER)
-	include(InstallRequiredSystemLibraries)
-	set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+# Tarball generation
+set(CPACK_SOURCE_TGZ ON)
+set(CPACK_SOURCE_TBZ2 OFF)
+set(CPACK_SOURCE_TXZ OFF)
+set(CPACK_SOURCE_TZ OFF)
+set(CPACK_SOURCE_IGNORE_FILES "/data/components.cif;/build;/.vscode;/.git")
+set (CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
+set (CPACK_SOURCE_PACKAGE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
 
-	# NSIS options
-	set(CPACK_NSIS_MODIFY_PATH ON)
+# NSIS options
+set(CPACK_NSIS_MODIFY_PATH ON)
 
-	# configuration done, include CPack
-	include(CPack)
-endif()
+# configuration done, include CPack
+include(CPack)

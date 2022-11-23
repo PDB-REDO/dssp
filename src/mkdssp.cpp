@@ -112,8 +112,6 @@ int d_main(int argc, const char *argv[])
 	}
 
 	cif::VERBOSE = config.count("verbose");
-	if (config.has("debug"))
-		cif::VERBOSE = config.get<int>("debug");
 
 	// --------------------------------------------------------------------
 
