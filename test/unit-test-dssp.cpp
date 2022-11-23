@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(ut_mmcif_2)
 
 	std::stringstream test;
 
-	annotateDSSP(f.front(), dssp, true, test);
+	annotateDSSP(f.front(), dssp, true, false, test);
 
 	cif::file rf(gTestDir / "1cbs-dssp.cif");
 
