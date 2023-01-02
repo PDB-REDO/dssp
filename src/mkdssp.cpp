@@ -81,6 +81,7 @@ int d_main(int argc, const char *argv[])
 		mcfp::make_option("help,h", "Display help message"),
 		mcfp::make_option("version", "Print version"),
 		mcfp::make_option("verbose,v", "verbose output"),
+		mcfp::make_option("quiet", "Reduce verbose output to a minimum"),
 
 		mcfp::make_hidden_option<int>("debug,d", "Debug level (for even more verbose output)"));
 
@@ -112,7 +113,10 @@ int d_main(int argc, const char *argv[])
 		exit(1);
 	}
 
-	cif::VERBOSE = config.count("verbose");
+	if (config.count("quiet"))
+		cif::VERBOSE = -1;
+	else
+		cif::VERBOSE = config.count("verbose");
 
 	// --------------------------------------------------------------------
 
@@ -138,11 +142,8 @@ int d_main(int argc, const char *argv[])
 	}
 
 	cif::file f = cif::pdb::read(in);
-	if (not f.is_valid())
-	{
-		std::cerr << "Could not validate file" << std::endl;
-		exit(1);
-	}
+	if (cif::VERBOSE >= 0 and not f.is_valid())
+		std::cerr << "Warning, the input file is not valid. Run with --verbose to see why." << std::endl;
 
 	// --------------------------------------------------------------------
 

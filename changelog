@@ -1,3 +1,7 @@
+Version 4.2.1
+- The previous version was a bit overly strict
+- Introduce a --quiet flag.
+
 Version 4.2.0
 - Changes for packaging
 - New mmCIF DSSP output, added several categories
