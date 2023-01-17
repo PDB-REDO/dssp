@@ -143,7 +143,7 @@ class dssp
 		float omega() const;
 
 		bool is_pre_pro() const;
-		bool is_cis() const { return omega() < 30.0f; }
+		bool is_cis() const { return std::abs(omega()) < 30.0f; }
 
 		float chiral_volume() const;
 		std::size_t nr_of_chis() const;
