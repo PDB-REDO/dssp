@@ -1,3 +1,7 @@
+Version 4.2.2
+- Building for CCP4
+- Fix is_cis
+
 Version 4.2.1
 - The previous version was a bit overly strict
 - Introduce a --quiet flag.
