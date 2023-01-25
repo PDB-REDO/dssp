@@ -83,12 +83,12 @@ include(VersionString)
 write_version_header("${PROJECT_SOURCE_DIR}/src")
 
 # Optionally use mrc to create resources
-find_package(Mrc)
+find_package(Mrc QUIET)
 
 if(MRC_FOUND)
 	option(USE_RSRC "Use mrc to create resources" ON)
 else()
-	message(WARNING "Not using resources since mrc was not found")
+	message(STATUS "Not using resources since mrc was not found")
 endif()
 
 set(CMAKE_THREAD_PREFER_PTHREAD)
@@ -97,7 +97,7 @@ find_package(Threads)
 
 if(NOT PDB_REDO_META)
 	find_package(libmcfp REQUIRED)
-	find_package(cifpp 5.0.4 REQUIRED)
+	find_package(cifpp 5.0.6 REQUIRED)
 endif()
 
 # The DSSP code is in a separate library, optionally to be used by others
