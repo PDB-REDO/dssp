@@ -26,11 +26,12 @@
 
 // Calculate DSSP-like secondary structure information
 
+#include "dssp.hpp"
+
+#include <deque>
 #include <iomanip>
 #include <numeric>
 #include <thread>
-
-#include "dssp.hpp"
 
 using residue = dssp::residue;
 using statistics = dssp::statistics;
@@ -96,16 +97,16 @@ float dihedral_angle(const point &p1, const point &p2, const point &p3, const po
 	point x = cross_product(z, v43);
 	point y = cross_product(z, x);
 
-	double u = dot_product(x, x);
-	double v = dot_product(y, y);
+	float u = dot_product(x, x);
+	float v = dot_product(y, y);
 
-	double result = 360;
+	float result = 360;
 	if (u > 0 and v > 0)
 	{
 		u = dot_product(p, x) / std::sqrt(u);
 		v = dot_product(p, y) / std::sqrt(v);
 		if (u != 0 or v != 0)
-			result = std::atan2(v, u) * 180 / kPI;
+			result = std::atan2(v, u) * 180.f / static_cast<float>(kPI);
 	}
 
 	return result;
@@ -116,9 +117,9 @@ float cosinus_angle(const point &p1, const point &p2, const point &p3, const poi
 	point v12 = p1 - p2;
 	point v34 = p3 - p4;
 
-	double result = 0;
+	float result = 0;
 
-	double x = dot_product(v12, v12) * dot_product(v34, v34);
+	float x = dot_product(v12, v12) * dot_product(v34, v34);
 	if (x > 0)
 		result = dot_product(v12, v34) / std::sqrt(x);
 
@@ -450,8 +451,8 @@ struct dssp::residue
 		return mSSBridgeNr;
 	}
 
-	double CalculateSurface(const std::vector<residue> &inResidues);
-	double CalculateSurface(const point &inAtom, float inRadius, const std::vector<residue *> &inNeighbours);
+	float CalculateSurface(const std::vector<residue> &inResidues);
+	float CalculateSurface(const point &inAtom, float inRadius, const std::vector<residue *> &inNeighbours);
 
 	bool AtomIntersectsBox(const point &atom, float inRadius) const
 	{
@@ -527,10 +528,10 @@ struct dssp::residue
 	float mRadius;
 	point mCenter;
 	std::vector<std::tuple<std::string, point>> mSideChain;
-	double mAccessibility = 0;
-	double mChiralVolume = 0;
+	float mAccessibility = 0;
+	float mChiralVolume = 0;
 
-	double mAlpha = 360, mKappa = 360, mPhi = 360, mPsi = 360, mTCO = 0, mOmega = 360;
+	float mAlpha = 360, mKappa = 360, mPhi = 360, mPsi = 360, mTCO = 0, mOmega = 360;
 
 	residue_type mType;
 	uint8_t mSSBridgeNr = 0;
@@ -629,7 +630,7 @@ MSurfaceDots::MSurfaceDots(int32_t N)
 	}
 }
 
-double residue::CalculateSurface(const point &inAtom, float inRadius, const std::vector<residue *> &inNeighbours)
+float residue::CalculateSurface(const point &inAtom, float inRadius, const std::vector<residue *> &inNeighbours)
 {
 	accumulator accumulate;
 
@@ -650,7 +651,7 @@ double residue::CalculateSurface(const point &inAtom, float inRadius, const std:
 	accumulate.sort();
 
 	float radius = inRadius + kRadiusWater;
-	double surface = 0;
+	float surface = 0;
 
 	MSurfaceDots &surfaceDots = MSurfaceDots::Instance();
 
@@ -663,20 +664,20 @@ double residue::CalculateSurface(const point &inAtom, float inRadius, const std:
 			free = accumulate.m_x[k].radius < distance_sq(xx, accumulate.m_x[k].location);
 
 		if (free)
-			surface += surfaceDots.weight();
+			surface += static_cast<float>(surfaceDots.weight());
 	}
 
 	return surface * radius * radius;
 }
 
-double residue::CalculateSurface(const std::vector<residue> &inResidues)
+float residue::CalculateSurface(const std::vector<residue> &inResidues)
 {
 	std::vector<residue *> neighbours;
 
 	for (auto &r : inResidues)
 	{
 		point center = r.mCenter;
-		double radius = r.mRadius;
+		float radius = r.mRadius;
 
 		if (distance(mCenter, center) < mRadius + radius)
 			neighbours.push_back(const_cast<residue *>(&r));
@@ -1215,8 +1216,8 @@ void CalculatePPHelices(std::vector<residue> &inResidues, statistics &stats, int
 
 	for (uint32_t i = 1; i + 1 < inResidues.size(); ++i)
 	{
-		phi[i] = inResidues[i].mPhi;
-		psi[i] = inResidues[i].mPsi;
+		phi[i] = static_cast<float>(inResidues[i].mPhi);
+		psi[i] = static_cast<float>(inResidues[i].mPsi);
 	}
 
 	for (uint32_t i = 1; i + 3 < inResidues.size(); ++i)
@@ -1435,13 +1436,13 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 
 			if (NoChainBreak(prevPrev, nextNext) and prevPrev.mSeqID + 4 == nextNext.mSeqID)
 			{
-				double ckap = cosinus_angle(
+				float ckap = cosinus_angle(
 					cur.mCAlpha,
 					prevPrev.mCAlpha,
 					nextNext.mCAlpha,
 					cur.mCAlpha);
-				double skap = std::sqrt(1 - ckap * ckap);
-				cur.mKappa = std::atan2(skap, ckap) * 180 / kPI;
+				float skap = std::sqrt(1 - ckap * ckap);
+				cur.mKappa = std::atan2(skap, ckap) * static_cast<float>(180 / kPI);
 			}
 		}
 
@@ -2086,7 +2087,7 @@ dssp::iterator &dssp::iterator::operator--()
 // --------------------------------------------------------------------
 
 dssp::dssp(const cif::mm::structure &s, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility)
-	: dssp(s.get_datablock(), s.get_model_nr(), min_poly_proline_stretch_length, calculateSurfaceAccessibility)
+	: dssp(s.get_datablock(), static_cast<int>(s.get_model_nr()), min_poly_proline_stretch_length, calculateSurfaceAccessibility)
 {
 }
 

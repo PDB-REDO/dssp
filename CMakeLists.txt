@@ -50,13 +50,20 @@ elseif(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 endif()
 
-if(NOT "$ENV{CCP4}" STREQUAL "")
-	set(CCP4 $ENV{CCP4})
-	list(PREPEND CMAKE_MODULE_PATH "${CCP4}/Lib")
-	list(APPEND CMAKE_PREFIX_PATH ${CCP4})
+# Optionally build a version to be installed inside CCP4
+option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
 
-	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-		set(CMAKE_INSTALL_PREFIX ${CCP4})
+if(BUILD_FOR_CCP4)
+	if("$ENV{CCP4}" STREQUAL "" OR NOT EXISTS $ENV{CCP4})
+		message(FATAL_ERROR "A CCP4 built was requested but CCP4 was not sourced")
+	else()
+		list(APPEND CMAKE_MODULE_PATH "$ENV{CCP4}")
+		list(APPEND CMAKE_PREFIX_PATH "$ENV{CCP4}")
+		set(CMAKE_INSTALL_PREFIX "$ENV{CCP4}")
+
+		if(WIN32)
+			set(BUILD_SHARED_LIBS ON)
+		endif()
 	endif()
 endif()
 

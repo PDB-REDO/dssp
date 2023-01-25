@@ -166,16 +166,16 @@ BOOST_AUTO_TEST_CASE(dssp_1)
 
 		std::cout << line << std::endl;
 
-		auto f = cif::split(line, "\t");
+		auto fld = cif::split(line, "\t");
 
-		BOOST_CHECK_EQUAL(f.size(), 3);
-		if (f.size() != 3)
+		BOOST_CHECK_EQUAL(fld.size(), 3);
+		if (fld.size() != 3)
 			continue;
 
 		int seqID;
-		std::from_chars(f[0].begin(), f[0].end(), seqID);
-		std::string asymID{ f[1] };
-		std::string secstr{ f[2] };
+		std::from_chars(fld[0].data(), fld[0].data() + fld[0].length(), seqID);
+		std::string asymID{ fld[1] };
+		std::string secstr{ fld[2] };
 		if (secstr == "_")
 			secstr = " ";
 
@@ -200,16 +200,16 @@ BOOST_AUTO_TEST_CASE(dssp_2)
 
 	while (getline(t, line))
 	{
-		auto f = cif::split(line, "\t");
+		auto fld = cif::split(line, "\t");
 
-		BOOST_CHECK_EQUAL(f.size(), 3);
-		if (f.size() != 3)
+		BOOST_CHECK_EQUAL(fld.size(), 3);
+		if (fld.size() != 3)
 			continue;
 
 		int seqID;
-		std::from_chars(f[0].begin(), f[0].end(), seqID);
-		std::string asymID{ f[1] };
-		std::string secstr{ f[2] };
+		std::from_chars(fld[0].data(), fld[0].data() + fld[0].length(), seqID);
+		std::string asymID{ fld[1] };
+		std::string secstr{ fld[2] };
 		if (secstr == "_")
 			secstr = " ";
 
