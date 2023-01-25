@@ -29,9 +29,9 @@
 /// \file DSSP.hpp
 /// Calculate DSSP-like secondary structure information.
 
-#include <filesystem>
-
 #include <cif++.hpp>
+
+#include <filesystem>
 
 class dssp
 {

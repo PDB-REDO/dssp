@@ -7,3 +7,4 @@ build
 .gdb_history
 **/*.dssp
 src/revision.hpp
+out/

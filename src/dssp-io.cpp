@@ -24,19 +24,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if __has_include("config.hpp")
-#include "config.hpp"
-#endif
+#include "dssp-io.hpp"
+#include "revision.hpp"
+
+#include <cif++/pdb/io.hpp>
 
 #include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 
-#include <cif++/pdb/io.hpp>
-
-#include "dssp-io.hpp"
-#include "revision.hpp"
 
 // --------------------------------------------------------------------
 
@@ -315,7 +312,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			continue;
 
 		if (not sheetMap.count(sheetID))
-			sheetMap[sheetID] = sheetMap.size();
+			sheetMap[sheetID] = static_cast<int>(sheetMap.size());
 
 		strands.emplace_back(std::make_tuple(sheetMap[sheetID], res_list{ res }));
 	}
