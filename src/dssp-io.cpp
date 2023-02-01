@@ -665,10 +665,10 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 		using namespace cif::literals;
 
-		auto b1 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand1.front().asym_id() and "seq_id"_key == beg1SeqID);
-		auto e1 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand1.front().asym_id() and "seq_id"_key == end1SeqID);
-		auto b2 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand2.front().asym_id() and "seq_id"_key == beg2SeqID);
-		auto e2 = pdbx_poly_seq_scheme.find1("asym_id"_key == strand2.front().asym_id() and "seq_id"_key == end2SeqID);
+		auto b1 = pdbx_poly_seq_scheme.find_first("asym_id"_key == strand1.front().asym_id() and "seq_id"_key == beg1SeqID);
+		auto e1 = pdbx_poly_seq_scheme.find_first("asym_id"_key == strand1.front().asym_id() and "seq_id"_key == end1SeqID);
+		auto b2 = pdbx_poly_seq_scheme.find_first("asym_id"_key == strand2.front().asym_id() and "seq_id"_key == beg2SeqID);
+		auto e2 = pdbx_poly_seq_scheme.find_first("asym_id"_key == strand2.front().asym_id() and "seq_id"_key == end2SeqID);
 
 		if (not(b1 and e1 and b2 and e2))
 		{
