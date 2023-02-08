@@ -1,3 +1,6 @@
+Version 4.2.2.1
+- Fixed dependency on libcifpp
+
 Version 4.2.2
 - Building for CCP4
 - Fix is_cis

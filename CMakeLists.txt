@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(mkdssp VERSION 4.2.2 LANGUAGES CXX)
+project(mkdssp VERSION 4.2.2.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -104,7 +104,7 @@ find_package(Threads)
 
 if(NOT PDB_REDO_META)
 	find_package(libmcfp REQUIRED)
-	find_package(cifpp 5.0.6 REQUIRED)
+	find_package(cifpp 5.0.8 REQUIRED)
 endif()
 
 # The DSSP code is in a separate library, optionally to be used by others
