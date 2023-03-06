@@ -24,10 +24,12 @@ The tools are based on [libcif++](https://github.com/PDB-REDO/libcifpp)
 and the code is written in modern C++ so you need a compiler capable
 of handling C++17 code.
 
+You also need [libmcfp](https://github.com/mhekkel/libmcfp.git)
+
 Building
 --------
 
-Make sure you install [libcif++](https://github.com/PDB-REDO/libcifpp) first before building.
+Make sure you install [libcif++](https://github.com/PDB-REDO/libcifpp) and [libmcfp](https://github.com/mhekkel/libmcfp.git) first before building.
 
 After that, building should be as easy as typing:
 
