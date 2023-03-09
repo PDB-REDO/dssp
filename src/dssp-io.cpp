@@ -300,7 +300,8 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 		std::tuple<std::string, int> sheetID{ res.asym_id(), res.sheet() };
 		ss_type iss = res.type();
 
-		if (iss == ss and ss == ss_type::Strand and sheetMap[sheetID] == std::get<0>(strands.back()))
+		if (iss == ss and ss == ss_type::Strand and
+			sheetMap.count(sheetID) > 0 and sheetMap[sheetID] == std::get<0>(strands.back()))
 		{
 			std::get<1>(strands.back()).emplace_back(res);
 			continue;
