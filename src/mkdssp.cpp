@@ -164,9 +164,13 @@ int d_main(int argc, const char *argv[])
 	if (fmt.empty() and not output.empty())
 	{
 		if (output.extension() == ".gz" or output.extension() == ".xz")
-			output = output.stem();
-
-		if (output.extension() == ".dssp")
+		{
+			if (output.stem().extension() == ".dssp")
+				fmt = "dssp";
+			else
+				fmt = "cif";
+		}
+		else if (output.extension() == ".dssp")
 			fmt = "dssp";
 		else
 			fmt = "cif";
