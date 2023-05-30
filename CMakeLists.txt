@@ -109,6 +109,7 @@ if(NOT PDB_REDO_META)
 
 	if(BUILD_WEBSERVER)
 		find_package(zeep REQUIRED)
+		find_package(gxrio REQUIRED)
 	endif()
 endif()
 
@@ -145,7 +146,7 @@ if(BUILD_WEBSERVER)
 		${PROJECT_SOURCE_DIR}/src/dssp-io.cpp
 		${PROJECT_SOURCE_DIR}/src/dssp-server.cpp)
 
-	target_link_libraries(dsspd PRIVATE dssp cifpp::cifpp libmcfp::libmcfp dssp::dssp zeep::zeep)
+	target_link_libraries(dsspd PRIVATE dssp cifpp::cifpp libmcfp::libmcfp dssp::dssp zeep::zeep gxrio::gxrio)
 
 	# yarn rules for javascripts
 	set(webpack_input

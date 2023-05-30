@@ -1,5 +1,4 @@
-<!DOCTYPE html SYSTEM "about:legacy-compat" [
-<!ENTITY nbsp "&#160;">
+<!DOCTYPE html SYSTEM "about:legacy-compat" [ <!ENTITY nbsp "&#160;">
 ]>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:z2="http://www.hekkelman.com/libzeep/m2" lang="nl">
@@ -26,7 +25,24 @@
 		<article>
 			<h2>Submit your structure</h2>
 
-			
+			<form z2:fragment="submit-form" name="job-form" method="post" enctype="multipart/form-data"
+				z2:action="@{/do}">
+				<div class="input-group mb-3">
+					<label class="input-group-text" for="input-group-pdb-file">Coordinates</label>
+					<input type="file" class="form-control" id="input-group-pdb-file" name="data" required="required" />
+				</div>
+
+
+				<div class="input-group mb-3">
+					<label class="input-group-text" for="format-select">Format</label>
+					<select class="form-select" id="format-select" name="format">
+						<option value="mmcif">Annotated mmCIF</option>
+						<option value="dssp">Historic DSSP format, may fail on larger structures</option>
+					</select>
+				</div>
+
+				<button type="submit" class="btn btn-sm btn-primary mt-3">Submit</button>
+			</form>
 
 		</article>
 

@@ -28,14 +28,17 @@
 
 #include "revision.hpp"
 
+#include <cif++.hpp>
+
+#include <gxrio.hpp>
 #include <mcfp.hpp>
 
+#include <zeep/http/daemon.hpp>
 #include <zeep/http/html-controller.hpp>
 #include <zeep/http/rest-controller.hpp>
-#include <zeep/http/daemon.hpp>
+#include <zeep/streambuf.hpp>
 
 // --------------------------------------------------------------------
-
 
 class dssp_html_controller : public zeep::http::html_controller
 {
@@ -48,7 +51,7 @@ class dssp_html_controller : public zeep::http::html_controller
 		mount("", &dssp_html_controller::index);
 	}
 
-	void index(const zeep::http::request& request, const zeep::http::scope& scope, zeep::http::reply& reply)
+	void index(const zeep::http::request &request, const zeep::http::scope &scope, zeep::http::reply &reply)
 	{
 		get_template_processor().create_reply_from_template("index", scope, reply);
 	}
@@ -59,12 +62,54 @@ class dssp_html_controller : public zeep::http::html_controller
 class dssp_rest_controller : public zeep::http::rest_controller
 {
   public:
-	dssp_rest_controller()
-		: zeep::http::rest_controller("")
+	dssp_rest_controller(const std::string &prefix)
+		: zeep::http::rest_controller(prefix)
 	{
-		// map_post_request("dssp", &dssp_rest_controller::calculate, "data");
+		map_post_request("do", &dssp_rest_controller::work, "data", "format");
 	}
+
+	zeep::http::reply work(const zeep::http::file_param &coordinates, std::optional<std::string> format);
 };
+
+zeep::http::reply dssp_rest_controller::work(const zeep::http::file_param &coordinates, std::optional<std::string> format)
+{
+	zeep::char_streambuf sb(coordinates.data, coordinates.length);
+
+	gxrio::istream in(&sb);
+
+	cif::file f = cif::pdb::read(in);
+	if (f.empty())
+		throw std::runtime_error("Invalid input file, is it empty?");
+
+	// --------------------------------------------------------------------
+
+	short pp_stretch = 3; //minPPStretch.value_or(3);
+
+	std::string fmt = format.value_or("mmcif");
+
+	dssp dssp(f.front(), 1, pp_stretch, true);
+
+	std::ostringstream os;
+
+	if (fmt == "dssp")
+		writeDSSP(dssp, os);
+	else
+		annotateDSSP(f.front(), dssp, true, true, os);
+
+	// --------------------------------------------------------------------
+	
+	std::string name = f.front().name();
+	if (fmt == "dssp")
+		name += ".dssp";
+	else
+		name += ".cif";
+
+	zeep::http::reply rep{ zeep::http::ok };
+	rep.set_content(os.str(), "text/plain");
+	rep.set_header("content-disposition", "attachement; filename = \"" + name + '"');
+
+	return rep;
+}
 
 // --------------------------------------------------------------------
 
@@ -90,7 +135,7 @@ int main(int argc, char *argv[])
 		mcfp::make_option<std::string>("context", "", "Root context for web server"),
 
 		mcfp::make_option("no-daemon,F", "Do not fork into background"),
-		
+
 		mcfp::make_option<std::string>("config", "Config file to use"));
 
 	std::error_code ec;
@@ -124,7 +169,7 @@ int main(int argc, char *argv[])
 		std::cout << config << std::endl;
 		exit(0);
 	}
-	
+
 	if (config.operands().empty())
 	{
 		std::cerr << "Missing command, should be one of start, stop, status or reload" << std::endl;
@@ -137,8 +182,8 @@ int main(int argc, char *argv[])
 	std::string address = config.get<std::string>("address");
 	uint16_t port = config.get<uint16_t>("port");
 
-	zh::daemon server([&]()
-	{
+	zeep::http::daemon server([&, context = config.get("context")]()
+		{
 		auto s = new zeep::http::server();
 
 #ifndef NDEBUG
@@ -146,10 +191,10 @@ int main(int argc, char *argv[])
 #else
 		s->set_template_processor(new zeep::http::rsrc_based_html_template_processor());
 #endif
-		s->add_controller(new dssp_rest_controller());
-		s->add_controller(new dssp_html_controller(config.get("context")));
-		return s;
-	}, kProjectName );
+		s->add_controller(new dssp_rest_controller(context));
+		s->add_controller(new dssp_html_controller(context));
+		return s; },
+		kProjectName);
 
 	std::string command = config.operands().front();
 
