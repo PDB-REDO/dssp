@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 	std::error_code ec;
 
 	config.parse(argc, argv, ec);
-	if (ec != std::errc())
+	if (ec)
 	{
 		std::cerr << "Error parsing command line arguments: " << ec.message() << std::endl
 				  << std::endl
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 	}
 
 	config.parse_config_file("config", "dsspd.conf", { ".", "/etc" }, ec);
-	if (ec != std::errc())
+	if (ec)
 	{
 		std::cerr << "Error parsing config file: " << ec.message() << std::endl;
 		exit(1);
