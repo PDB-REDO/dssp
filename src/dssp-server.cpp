@@ -48,12 +48,9 @@ class dssp_html_controller : public zeep::http::html_controller
 	{
 		mount("{css,scripts,fonts,images,favicon}/", &dssp_html_controller::handle_file);
 		mount("{favicon.ico,browserconfig.xml,manifest.json}", &dssp_html_controller::handle_file);
-		mount("", &dssp_html_controller::index);
-	}
-
-	void index(const zeep::http::request &request, const zeep::http::scope &scope, zeep::http::reply &reply)
-	{
-		get_template_processor().create_reply_from_template("index", scope, reply);
+		map_get("", "index");
+		map_get("about", "about");
+		map_get("download", "download");
 	}
 };
 
