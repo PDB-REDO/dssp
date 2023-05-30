@@ -1,0 +1,243 @@
+@use "sass:math";
+
+// (Required) Import Bootstrap
+@import "bootstrap/scss/_functions";
+@import "bootstrap/scss/_variables";
+@import "bootstrap/scss/_mixins";
+
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+
+.alert {
+	border: 1px solid;
+}
+
+@import "bootstrap/scss/_alert";
+
+$font-family-sans-serif: "Verdana", "Arial", "Helvetica", "sans-serif";
+
+$primary: rgb(100, 100, 100);
+$primary-rgb: 100, 100, 100;
+
+$nav-primary: #FF9933;
+$nav-secondary: #ffecbf;
+$nav-link: #3366cc;
+
+$nav-primary-hover: #d8c7a5;
+
+$dropdown-bg: $nav-secondary;
+$dropdown-link-color: $nav-link;
+$dropdown-link-hover-color: $nav-link;
+$dropdown-link-hover-bg: $nav-primary-hover;
+$dropdown-border-radius: 0;
+
+$pdb-redo-colors: (
+	"primary": $primary,
+	"nav-primary": $nav-primary,
+	"nav-secondary": $nav-secondary,
+);
+
+$navbar-padding-y: 0;
+$nav-link-padding-y: math.div($spacer, 2);
+
+
+// (Required) Import Bootstrap
+@import "bootstrap/scss/bootstrap";
+
+$theme-colors: map-merge($pdb-redo-colors, $theme-colors);
+
+@mixin hover-focus() {
+
+	&:hover,
+	&:focus {
+		@content;
+	}
+}
+
+.site {
+	display: flex;
+	min-height: 100vh;
+	height: 100%;
+	flex-direction: column;
+
+	header,
+	footer {
+		flex: none;
+	}
+
+	footer {
+		clear: both;
+		border-top: 1px solid #888;
+		padding: 0.5em;
+		margin-top: 2em;
+		font-size: small;
+		color: #555;
+		white-space: pre;
+	}
+	
+	.site-content {
+		flex: 1 0 auto;
+		padding: var(--space) var(--space) 0;
+		width: 100%;
+
+		&::after {
+			content: '\00a0';
+			/* &nbsp; */
+			display: block;
+			margin-top: var(--space);
+			height: 0px;
+			visibility: hidden;
+		}
+	}
+}
+
+// for the pdb-redo header
+
+header {
+	min-height: 6em;
+	padding-bottom: 1em;
+
+	img {
+		min-height: calc(6em + 30px);
+		margin: -15px 0;
+		width: auto;
+	}
+
+	div {
+		flex: 1 0 0%;
+	}
+
+	div.my-overflow {
+		overflow: hidden;
+		white-space: nowrap;
+	}
+
+	nav.first {
+		padding: 0.8em !important;
+	}
+
+	.navbar {
+		.navbar-nav {
+			.nav-link {
+				color: $nav-link;
+
+				@include hover-focus() {
+					background-color: $nav-primary-hover;
+				}
+
+				&.active {
+					background-color: lighten($nav-link, 5%);
+					color: white;
+				}
+
+				&.disabled {
+					color: mix($nav-link, $nav-secondary, 50%);
+				}
+			}
+		}
+
+		.navbar-toggler {
+			border-color: rgba($black, .1);
+		}
+
+		.navbar-toggler-icon {
+			background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke='#{$navbar-light-color}' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg>");
+		}
+	}
+
+	.first {
+		background-color: $nav-primary;
+		color: white;
+
+		a {
+			color: white;
+			text-decoration: none;
+		}
+	}
+
+	.second {
+		background-color: $nav-secondary;
+	}
+
+	a {
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+@media all and (max-width: 1024px) {
+
+	header {
+		min-height: 4em;
+
+		img {
+			min-height: calc(4em + 30px);
+		}
+
+		nav.first {
+			padding: 0.4em !important;
+		}
+
+		.second {
+			padding: 0.2em;
+		}
+	}
+}
+
+article {
+	margin-top: 1em;
+	margin-bottom: 2em;
+}
+
+article h2 {
+	margin-bottom: 0.5em;
+	font-size: x-large;
+}
+
+a {
+	color: #3366cc;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+.error-info {
+	list-style: none;
+}
+
+.nummer {
+	text-align: right;
+}
+
+.error-head-text {
+	font-size: large;
+}
+
+.logo img {
+	margin: -15px 0;
+	height: 2em;
+	background-color: white;
+}
+
+ul.error-info {
+	margin: 0;
+	list-style: none;
+}
+
+a.action {
+	color: #888;
+}
+
+a.action:hover {
+	color: #555;
+}
+
+.no-list {
+	list-style: none;
+	margin: 0;
+	padding: 1px;
+}

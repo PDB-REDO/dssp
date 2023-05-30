@@ -1,0 +1,71 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:z2="http://www.hekkelman.com/libzeep/m2" lang="nl">
+
+<body>
+
+	<header z2:fragment="navbar(page)" class="d-flex">
+		<a href="https://pdb-redo.eu/" z2:href="@{/}"><img z2:src="@{/images/PDB_logo_rect_medium.svg}" /></a>
+		<div>
+			<div class="my-overflow">
+
+				<nav class="first">
+					<a href="http://www.nki.nl" target="_BLANK">NKI Research</a> |
+<!--					<a href="http://www.nki.nl/divisions/biochemistry/" title="BioChemistry Homepage"
+						target="_BLANK">Biochemistry</a>
+					|-->
+					<a href="https://www.nki.nl/research/research-groups/anastassis-tassos-perrakis/" target="_BLANK">Perrakis
+						group</a>
+				</nav>
+			</div>
+			<nav class="navbar navbar-expand-md bg-nav-secondary navbar-light second">
+
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+					data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+					aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+
+				<div class="collapse navbar-collapse" id="navbarSupportedContent">
+					<ul class="navbar-nav mr-auto">
+
+						<li class="nav-item">
+							<a class="nav-link" z2:classappend="${page == 'home' ? 'active' : ''}"
+								z2:href="@{/}">Home</a>
+						</li>
+
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button"
+								data-bs-toggle="dropdown" aria-expanded="false">
+								Tools
+							</a>
+
+							<ul class="dropdown-menu m-0" aria-labelledby="navbarDropdown2">
+								<li><a class="dropdown-item" href="https://alphafill.eu">AlphaFill</a></li>
+								<li><a class="dropdown-item" href="https://pdb-redo.eu/dssp">DSSP</a></li>
+								<li><a class="dropdown-item" href="https://pdb-redo.eu/tortoize">Tortoize</a></li>
+								<li><a class="dropdown-item" href="https://ccd.rhpc.nki.nl/">CCD</a></li>
+								<li><a class="dropdown-item" href="https://pdb-redo.eu/archive">Archive</a></li>
+								<li><a class="dropdown-item" href="https://lahma.pdb-redo.eu/">Lahma</a></li>
+							</ul>
+						</li>
+
+						<li class="nav-item">
+							<a class="nav-link" z2:classappend="${page == 'about' ? 'active' : ''}"
+								z2:href="@{/about}">About</a>
+						</li>
+
+						<li class="nav-item">
+							<a class="nav-link" z2:classappend="${page == 'download' ? 'active' : ''}"
+								z2:href="@{/download}">Download</a>
+						</li>
+
+					</ul>
+				</div>
+			</nav>
+		</div>
+	</header>
+
+</body>
+
+</html>
