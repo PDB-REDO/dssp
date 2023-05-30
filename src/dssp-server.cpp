@@ -43,8 +43,8 @@
 class dssp_html_controller : public zeep::http::html_controller
 {
   public:
-	dssp_html_controller(const std::string &prefix)
-		: zeep::http::html_controller(prefix)
+	dssp_html_controller()
+		: zeep::http::html_controller()
 	{
 		mount("{css,scripts,fonts,images,favicon}/", &dssp_html_controller::handle_file);
 		mount("{favicon.ico,browserconfig.xml,manifest.json}", &dssp_html_controller::handle_file);
@@ -62,8 +62,8 @@ class dssp_html_controller : public zeep::http::html_controller
 class dssp_rest_controller : public zeep::http::rest_controller
 {
   public:
-	dssp_rest_controller(const std::string &prefix)
-		: zeep::http::rest_controller(prefix)
+	dssp_rest_controller()
+		: zeep::http::rest_controller("")
 	{
 		map_post_request("do", &dssp_rest_controller::work, "data", "format");
 	}
@@ -191,8 +191,11 @@ int main(int argc, char *argv[])
 #else
 		s->set_template_processor(new zeep::http::rsrc_based_html_template_processor());
 #endif
-		s->add_controller(new dssp_rest_controller(context));
-		s->add_controller(new dssp_html_controller(context));
+		s->add_controller(new dssp_rest_controller());
+		s->add_controller(new dssp_html_controller());
+
+		s->set_context_name(context);
+
 		return s; },
 		kProjectName);
 
