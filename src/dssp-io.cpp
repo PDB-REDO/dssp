@@ -139,7 +139,11 @@ std::string ResidueToDSSPLine(const dssp::residue_info &info)
 		ss, helix[3], helix[0], helix[1], helix[2], bend, chirality, bridgelabel[0], bridgelabel[1],
 		bp[0], bp[1], sheet, floor(info.accessibility() + 0.5),
 		NHO[0], ONH[0], NHO[1], ONH[1],
-		residue.tco(), residue.kappa(), alpha, residue.phi(), residue.psi(),
+		residue.tco().value_or(0),
+		residue.kappa().value_or(360),
+		residue.alpha().value_or(360),
+		residue.phi().value_or(360),
+		residue.psi().value_or(360),
 		cax, cay, caz)
 	    .str();
 }
@@ -153,7 +157,7 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 	std::time_t today = system_clock::to_time_t(system_clock::now());
 	std::tm *tm = std::gmtime(&today);
 
-	os << "==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== DATE=" << std::put_time(tm, "%F") << "        ." << std::endl
+	os << "==== Secondary Structure Definition by the program DSSP, NKI version 4.3                           ==== DATE=" << std::put_time(tm, "%F") << "        ." << std::endl
 	   << "REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637                                                              ." << std::endl
 	   << dssp.get_pdb_header_line(dssp::pdb_record_type::HEADER) << '.' << std::endl
 	   << dssp.get_pdb_header_line(dssp::pdb_record_type::COMPND) << '.' << std::endl
