@@ -91,7 +91,7 @@ std::string ResidueToDSSPLine(const dssp::residue_info &info)
 	if (info.bend())
 		bend = 'S';
 
-	double alpha = residue.alpha();
+	double alpha = residue.alpha().value_or(360);
 	char chirality = alpha == 360 ? ' ' : (alpha < 0 ? '-' : '+');
 
 	uint32_t bp[2] = {};
@@ -882,7 +882,7 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 
 	using histogram_data_type = std::tuple<const char *, const uint32_t *>;
 	for (const auto &[type, values] : std::vector<histogram_data_type>{
-			 { "parallel_bridges_per_ladder", stats.histogram.residues_per_alpha_helix },
+			 { "residues_per_alpha_helix", stats.histogram.residues_per_alpha_helix },
 			 { "parallel_bridges_per_ladder", stats.histogram.parallel_bridges_per_ladder },
 			 { "antiparallel_bridges_per_ladder", stats.histogram.antiparallel_bridges_per_ladder },
 			 { "ladders_per_sheet", stats.histogram.ladders_per_sheet } })
@@ -929,6 +929,11 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 	// A approximation of the old format
 
 	auto &dssp_struct_summary = db["dssp_struct_summary"];
+
+	// prime the category with the field labels we need, this is to ensure proper order in writing out the data.
+
+	for (auto label : { "entry_id", "label_comp_id", "label_asym_id", "label_seq_id", "secondary_structure", "ss_bridge", "helix_3_10", "helix_alpha", "helix_pi", "helix_pp", "bend", "chirality", "ladder_1", "ladder_2", "sheet", "accessibility", "TCO", "kappa", "alpha", "phi", "psi", "x_ca", "y_ca", "z_ca"})
+		dssp_struct_summary.add_column(label);
 
 	for (auto res : dssp)
 	{
@@ -979,10 +984,9 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 		if (res.bend())
 			bend = "S";
 
-		double alpha = res.alpha();
 		std::string chirality = ".";
-		if (alpha != 360)
-			chirality = alpha < 0 ? "-" : "+";
+		if (res.alpha().has_value())
+			chirality = *res.alpha() < 0 ? "-" : "+";
 
 		std::string ladders[2] = { ".", "." };
 
@@ -997,7 +1001,7 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 
 		auto const &[cax, cay, caz] = res.ca_location();
 
-		dssp_struct_summary.emplace({
+		cif::row_initializer data{
 			{ "entry_id", db.name() },
 			{ "label_comp_id", res.compound_id() },
 			{ "label_asym_id", res.asym_id() },
@@ -1020,18 +1024,39 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 
 			{ "sheet", res.sheet() ? cif::cif_id_for_number(res.sheet() - 1) : "." },
 
-			{ "accesssibility", res.accessibility(), 1 },
-
-			{ "TCO", res.tco(), 3 },
-			{ "kappa", res.kappa(), 1 },
-			{ "alpha", res.alpha(), 1 },
-			{ "phi", res.phi(), 1 },
-			{ "psi", res.psi(), 1 },
+			{ "accessibility", res.accessibility(), 1 },
 
 			{ "x_ca", cax, 1 },
 			{ "y_ca", cay, 1 },
 			{ "z_ca", caz, 1 },
-		});
+		};
+
+		if (res.tco().has_value())
+			data.emplace_back("TCO", *res.tco(), 3);
+		else
+			data.emplace_back("TCO", ".");
+
+		if (res.kappa().has_value())
+			data.emplace_back("kappa", *res.kappa(), 1);
+		else
+			data.emplace_back("kappa", ".");
+
+		if (res.alpha().has_value())
+			data.emplace_back("alpha", *res.alpha(), 1);
+		else
+			data.emplace_back("alpha", ".");
+
+		if (res.phi().has_value())
+			data.emplace_back("phi", *res.phi(), 1);
+		else
+			data.emplace_back("phi", ".");
+
+		if (res.psi().has_value())
+			data.emplace_back("psi", *res.psi(), 1);
+		else
+			data.emplace_back("psi", ".");
+		
+		dssp_struct_summary.emplace(std::move(data));
 	}
 }
 
