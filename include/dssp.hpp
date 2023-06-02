@@ -135,15 +135,15 @@ class dssp
 		int pdb_seq_num() const;
 		std::string pdb_ins_code() const;
 
-		float alpha() const;
-		float kappa() const;
-		float phi() const;
-		float psi() const;
-		float tco() const;
-		float omega() const;
+		std::optional<float> alpha() const;
+		std::optional<float> kappa() const;
+		std::optional<float> phi() const;
+		std::optional<float> psi() const;
+		std::optional<float> tco() const;
+		std::optional<float> omega() const;
 
 		bool is_pre_pro() const;
-		bool is_cis() const { return std::abs(omega()) < 30.0f; }
+		bool is_cis() const { return std::abs(omega().value_or(360)) < 30.0f; }
 
 		float chiral_volume() const;
 		std::size_t nr_of_chis() const;

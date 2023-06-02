@@ -1,0 +1,1782 @@
+## File: dssp-extension.dic
+## Date: 30-May-2023
+##
+# Items containing Secondary Structure information as written by e.g. DSSP
+#
+#
+
+data_mmcif_pdbx-def-dssp.dic
+
+########################################
+##  Category dssp_struct_bridge_pairs ##
+########################################
+
+save_dssp_struct_bridge_pairs
+   #
+   _category.description     'dssp_struct_bridge_pairs describes bridge pairs as assigned by DSSP.'
+   _category.id              dssp_struct_bridge_pairs
+   _category.mandatory_code  no
+   #
+   _category_key.name        '_dssp_struct_bridge_pairs.id'
+    loop_
+    _category_group.id      'inclusive_group'
+                            'struct_group'
+   #
+    loop_
+    _category_examples.detail
+    _category_examples.case
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+;
+    Example taken from 1cbs, first bridge pair
+;
+;
+	_dssp_struct_bridge_pairs.id                             2        
+	_dssp_struct_bridge_pairs.label_comp_id                  ASN                   
+	_dssp_struct_bridge_pairs.label_seq_id                   2                  
+	_dssp_struct_bridge_pairs.label_asym_id                  A                   
+	_dssp_struct_bridge_pairs.auth_seq_id                    2                 
+	_dssp_struct_bridge_pairs.auth_asym_id                   A                  
+	_dssp_struct_bridge_pairs.pdbx_PDB_ins_code              ?                       
+	_dssp_struct_bridge_pairs.acceptor_1_label_comp_id       PHE                              
+	_dssp_struct_bridge_pairs.acceptor_1_label_seq_id        3                             
+	_dssp_struct_bridge_pairs.acceptor_1_label_asym_id       A                              
+	_dssp_struct_bridge_pairs.acceptor_1_auth_seq_id         3                            
+	_dssp_struct_bridge_pairs.acceptor_1_auth_asym_id        A                             
+	_dssp_struct_bridge_pairs.acceptor_1_pdbx_PDB_ins_code   ?                                  
+	_dssp_struct_bridge_pairs.acceptor_1_energy              -0.1                       
+	_dssp_struct_bridge_pairs.acceptor_2_label_comp_id       SER                              
+	_dssp_struct_bridge_pairs.acceptor_2_label_seq_id        4                             
+	_dssp_struct_bridge_pairs.acceptor_2_label_asym_id       A                              
+	_dssp_struct_bridge_pairs.acceptor_2_auth_seq_id         4                            
+	_dssp_struct_bridge_pairs.acceptor_2_auth_asym_id        A                             
+	_dssp_struct_bridge_pairs.acceptor_2_pdbx_PDB_ins_code   ?                                  
+	_dssp_struct_bridge_pairs.acceptor_2_energy              -0.1                       
+	_dssp_struct_bridge_pairs.donor_1_label_comp_id          ASN                           
+	_dssp_struct_bridge_pairs.donor_1_label_seq_id           91                          
+	_dssp_struct_bridge_pairs.donor_1_label_asym_id          A                           
+	_dssp_struct_bridge_pairs.donor_1_auth_seq_id            91                         
+	_dssp_struct_bridge_pairs.donor_1_auth_asym_id           A                          
+	_dssp_struct_bridge_pairs.donor_1_pdbx_PDB_ins_code      ?                               
+	_dssp_struct_bridge_pairs.donor_1_energy                 -0.0                    
+	_dssp_struct_bridge_pairs.donor_2_label_comp_id          GLU                           
+	_dssp_struct_bridge_pairs.donor_2_label_seq_id           46                          
+	_dssp_struct_bridge_pairs.donor_2_label_asym_id          A                           
+	_dssp_struct_bridge_pairs.donor_2_auth_seq_id            46                         
+	_dssp_struct_bridge_pairs.donor_2_auth_asym_id           A                          
+	_dssp_struct_bridge_pairs.donor_2_pdbx_PDB_ins_code      ?                               
+	_dssp_struct_bridge_pairs.donor_2_energy                 -0.0                    
+;
+save_
+#
+
+save__dssp_struct_bridge_pairs.id
+	_item.description
+;	The value of _dssp_struct_bridge_pairs.id must uniquely identify a record in the
+    dssp_struct_bridge_pairs list.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        yes
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.label_comp_id
+	_item.description
+;	A component of the identifier for this monomer.
+
+	This data item is a pointer to _chem_comp.id in the CHEM_COMP
+	category.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.label_comp_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        yes
+	_item_type.code             ucode
+	save_
+
+save__dssp_struct_bridge_pairs.label_seq_id
+	_item.description
+;	A component of the identifier for this monomer.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.label_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        yes
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.label_asym_id
+	_item.description
+;   A component of the identifier for this monomer
+;
+	_item.name                  '_dssp_struct_bridge_pairs.label_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        yes
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.auth_seq_id
+	_item.description
+;   A component of the identifier for this monomer
+;
+	_item.name                  '_dssp_struct_bridge_pairs.auth_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.auth_asym_id
+	_item.description
+;   A component of the identifier for this monomer
+;
+	_item.name                  '_dssp_struct_bridge_pairs.auth_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.pdbx_PDB_ins_code
+	_item.description
+;   A component of the identifier for this monomer
+;
+	_item.name                  '_dssp_struct_bridge_pairs.pdbx_PDB_ins_code'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_1_label_comp_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_1_label_comp_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             ucode
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_1_label_seq_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_1_label_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_1_label_asym_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_1_label_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        yes
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_1_auth_seq_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_1_auth_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_1_auth_asym_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_1_auth_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_1_pdbx_PDB_ins_code
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_1_pdbx_PDB_ins_code'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_1_energy
+	_item.description
+;	The calculated energy for the H-bond between this residue and the first
+	acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_1_energy'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             float
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_2_label_comp_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_2_label_comp_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             ucode
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_2_label_seq_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_2_label_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_2_label_asym_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_2_label_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        yes
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_2_auth_seq_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_2_auth_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_2_auth_asym_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_2_auth_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_2_pdbx_PDB_ins_code
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_2_pdbx_PDB_ins_code'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.acceptor_2_energy
+	_item.description
+;	The calculated energy for the H-bond between this residue and the second
+	acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.acceptor_2_energy'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             float
+	save_
+
+save__dssp_struct_bridge_pairs.donor_1_label_comp_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_1_label_comp_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             ucode
+	save_
+
+save__dssp_struct_bridge_pairs.donor_1_label_seq_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_1_label_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.donor_1_label_asym_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_1_label_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        yes
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.donor_1_auth_seq_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_1_auth_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.donor_1_auth_asym_id
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_1_auth_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.donor_1_pdbx_PDB_ins_code
+	_item.description
+;	A component of the identifier of the first residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_1_pdbx_PDB_ins_code'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.donor_1_energy
+	_item.description
+;	The calculated energy for the H-bond between this residue and the first
+	donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_1_energy'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             float
+	save_
+
+save__dssp_struct_bridge_pairs.donor_2_label_comp_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_2_label_comp_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             ucode
+	save_
+
+save__dssp_struct_bridge_pairs.donor_2_label_seq_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_2_label_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.donor_2_label_asym_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_2_label_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        yes
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.donor_2_auth_seq_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_2_auth_seq_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             int
+	save_
+
+save__dssp_struct_bridge_pairs.donor_2_auth_asym_id
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_2_auth_asym_id'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.donor_2_pdbx_PDB_ins_code
+	_item.description
+;	A component of the identifier of the second residue that forms a bridge pair
+	with this monomer where this monomer is the acceptor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_2_pdbx_PDB_ins_code'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             code
+	save_
+
+save__dssp_struct_bridge_pairs.donor_2_energy
+	_item.description
+;	The calculated energy for the H-bond between this residue and the second
+	donor.
+;
+	_item.name                  '_dssp_struct_bridge_pairs.donor_2_energy'
+	_item.category_id           dssp_struct_bridge_pairs
+	_item.mandatory_code        no
+	_item_type.code             float
+	save_
+
+########################################
+##  Category dssp_struct_ladder ##
+########################################
+
+save_dssp_struct_ladder
+   #
+   _category.description     'dssp_struct_ladder describes ladders as assigned by DSSP.'
+   _category.id              dssp_struct_ladder
+   _category.mandatory_code  no
+   #
+   _category_key.name        '_dssp_struct_ladder.id'
+    loop_
+    _category_group.id      'inclusive_group'
+                            'struct_group'
+   #
+    loop_
+    _category_examples.detail
+    _category_examples.case
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+;
+    Example taken from 1cbs, first ladder
+;
+;
+	_dssp_struct_ladder.id                        A      
+	_dssp_struct_ladder.type                      anti-parallel        
+	_dssp_struct_ladder.beg_1_label_comp_id       GLY                       
+	_dssp_struct_ladder.beg_1_label_asym_id       A                       
+	_dssp_struct_ladder.beg_1_label_seq_id        5                      
+	_dssp_struct_ladder.pdbx_beg_1_PDB_ins_code   ?                           
+	_dssp_struct_ladder.end_1_label_comp_id       TRP                       
+	_dssp_struct_ladder.end_1_label_asym_id       A                       
+	_dssp_struct_ladder.end_1_label_seq_id        7                      
+	_dssp_struct_ladder.pdbx_end_1_PDB_ins_code   ?                           
+	_dssp_struct_ladder.beg_1_auth_comp_id        GLY                      
+	_dssp_struct_ladder.beg_1_auth_asym_id        A                      
+	_dssp_struct_ladder.beg_1_auth_seq_id         5                     
+	_dssp_struct_ladder.end_1_auth_comp_id        TRP                      
+	_dssp_struct_ladder.end_1_auth_asym_id        A                      
+	_dssp_struct_ladder.end_1_auth_seq_id         7                     
+	_dssp_struct_ladder.beg_2_label_comp_id       ILE                       
+	_dssp_struct_ladder.beg_2_label_asym_id       A                       
+	_dssp_struct_ladder.beg_2_label_seq_id        43                      
+	_dssp_struct_ladder.pdbx_beg_2_PDB_ins_code   ?                           
+	_dssp_struct_ladder.end_2_label_comp_id       VAL                       
+	_dssp_struct_ladder.end_2_label_asym_id       A                       
+	_dssp_struct_ladder.end_2_label_seq_id        41                      
+	_dssp_struct_ladder.pdbx_end_2_PDB_ins_code   ?                           
+	_dssp_struct_ladder.beg_2_auth_comp_id        ILE                      
+	_dssp_struct_ladder.beg_2_auth_asym_id        A                      
+	_dssp_struct_ladder.beg_2_auth_seq_id         43                     
+	_dssp_struct_ladder.end_2_auth_comp_id        VAL                      
+	_dssp_struct_ladder.end_2_auth_asym_id        A                      
+	_dssp_struct_ladder.end_2_auth_seq_id         41                     
+;
+save_
+
+save__dssp_struct_ladder.id
+	_item.description
+;	The value of _dssp_struct_ladder.id must uniquely identify a record in the
+    dssp_struct_ladder list.
+;
+	_item.name               '_dssp_struct_ladder.id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.type
+	_item.description
+;	The type of the ladder, be it parallel or anti-parallel
+;
+	_item.name               '_dssp_struct_ladder.type'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          code
+	loop_
+	_item_enumeration.value
+	_item_enumeration.detail
+	parallel		'The strands forming a ladder are oriented parallel'
+	anti-parallel	'The strands forming a ladder are oriented anti-parallel'
+	save_
+
+save__dssp_struct_ladder.beg_1_label_comp_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_1_label_comp_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          ucode
+	save_
+
+save__dssp_struct_ladder.beg_1_label_asym_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_1_label_asym_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.beg_1_label_seq_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_1_label_seq_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          int
+	save_
+
+save__dssp_struct_ladder.pdbx_beg_1_PDB_ins_code
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.pdbx_beg_1_PDB_ins_code'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.end_1_label_comp_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_1_label_comp_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          ucode
+	save_
+
+save__dssp_struct_ladder.end_1_label_asym_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_1_label_asym_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.end_1_label_seq_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_1_label_seq_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          int
+	save_
+
+save__dssp_struct_ladder.pdbx_end_1_PDB_ins_code
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.pdbx_end_1_PDB_ins_code'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.beg_1_auth_comp_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_1_auth_comp_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          ucode
+	save_
+
+save__dssp_struct_ladder.beg_1_auth_asym_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_1_auth_asym_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.beg_1_auth_seq_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_1_auth_seq_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          int
+	save_
+
+save__dssp_struct_ladder.end_1_auth_comp_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_1_auth_comp_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          ucode
+	save_
+
+save__dssp_struct_ladder.end_1_auth_asym_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_1_auth_asym_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.end_1_auth_seq_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	first ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_1_auth_seq_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          int
+	save_
+
+save__dssp_struct_ladder.beg_2_label_comp_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_2_label_comp_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          ucode
+	save_
+
+save__dssp_struct_ladder.beg_2_label_asym_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_2_label_asym_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.beg_2_label_seq_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_2_label_seq_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          int
+	save_
+
+save__dssp_struct_ladder.pdbx_beg_2_PDB_ins_code
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.pdbx_beg_2_PDB_ins_code'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.end_2_label_comp_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_2_label_comp_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          ucode
+	save_
+
+save__dssp_struct_ladder.end_2_label_asym_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_2_label_asym_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.end_2_label_seq_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_2_label_seq_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          int
+	save_
+
+save__dssp_struct_ladder.pdbx_end_2_PDB_ins_code
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.pdbx_end_2_PDB_ins_code'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.beg_2_auth_comp_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_2_auth_comp_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          ucode
+	save_
+
+save__dssp_struct_ladder.beg_2_auth_asym_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_2_auth_asym_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.beg_2_auth_seq_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment begins.
+;
+	_item.name               '_dssp_struct_ladder.beg_2_auth_seq_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          int
+	save_
+
+save__dssp_struct_ladder.end_2_auth_comp_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_2_auth_comp_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          ucode
+	save_
+
+save__dssp_struct_ladder.end_2_auth_asym_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_2_auth_asym_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.end_2_auth_seq_id
+	_item.description
+;	A component of the identifier for the residue at which the
+	second ladder segment ends.
+;
+	_item.name               '_dssp_struct_ladder.end_2_auth_seq_id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     no
+	_item_type.code          int
+	save_
+
+
+########################################
+##  Category dssp_statistics ##
+########################################
+
+save_dssp_statistics
+   #
+   _category.description     'dssp_statistics contains secondary structure statistics as calculated by DSSP.'
+   _category.id              dssp_statistics
+   _category.mandatory_code  no
+   #
+   _category_key.name        '_dssp_statistics.entry_id'
+    loop_
+    _category_group.id      'inclusive_group'
+                            'struct_group'
+   #
+    loop_
+    _category_examples.detail
+    _category_examples.case
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+;
+    Example taken from 1cbs
+;
+;
+	_dssp_statistics.entry_id                        1CBS 
+	_dssp_statistics.nr_of_residues                  137 
+	_dssp_statistics.nr_of_chains                    1 
+	_dssp_statistics.nr_of_ss_bridges_total          0 
+	_dssp_statistics.nr_of_ss_bridges_intra_chain    0 
+	_dssp_statistics.nr_of_ss_bridges_inter_chain    0 
+	_dssp_statistics.accessible_surface_of_protein   7905.01 
+;
+	save_
+
+save__dssp_statistics.entry_id
+	_item.description
+;	The entry ID for which these statistics are calculated.
+;
+	_item.name               '_dssp_statistics.entry_id'
+	_item.category_id        dssp_statistics
+	_item.mandatory_code     yes
+	_item_type.code          code
+	save_
+
+save__dssp_statistics.nr_of_residues
+	_item.description
+;	The total number of residues to which secondary structure information was assigned.
+;
+	_item.name               '_dssp_statistics.nr_of_residues'
+	_item.category_id        dssp_statistics
+	_item.mandatory_code     yes
+	_item_type.code          int
+	save_
+
+save__dssp_statistics.nr_of_chains
+	_item.description
+;	The number of chains used
+;
+	_item.name               '_dssp_statistics.nr_of_chains'
+	_item.category_id        dssp_statistics
+	_item.mandatory_code     yes
+	_item_type.code          int
+	save_
+
+save__dssp_statistics.nr_of_ss_bridges_total
+	_item.description
+;	The number of sulfur-sulfur bridges assigned.
+;
+	_item.name               '_dssp_statistics.nr_of_ss_bridges_total'
+	_item.category_id        dssp_statistics
+	_item.mandatory_code     yes
+	_item_type.code          int
+	save_
+
+save__dssp_statistics.nr_of_ss_bridges_intra_chain
+	_item.description
+;	The number of intra-chain sulfur-sulfur bridges assigned.
+;
+	_item.name               '_dssp_statistics.nr_of_ss_bridges_intra_chain'
+	_item.category_id        dssp_statistics
+	_item.mandatory_code     yes
+	_item_type.code          int
+	save_
+
+save__dssp_statistics.nr_of_ss_bridges_inter_chain
+	_item.description
+;	The number of inter-chain sulfur-sulfur bridges assigned.
+;
+	_item.name               '_dssp_statistics.nr_of_ss_bridges_inter_chain'
+	_item.category_id        dssp_statistics
+	_item.mandatory_code     yes
+	_item_type.code          int
+	save_
+
+save__dssp_statistics.accessible_surface_of_protein
+	_item.description
+;	The total accessible surface of the protein in square Angstroms.
+;
+	_item.name               '_dssp_statistics.accessible_surface_of_protein'
+	_item.category_id        dssp_statistics
+	_item.mandatory_code     yes
+	_item_type.code          float
+	save_
+
+########################################
+##  Category dssp_statistics_hbond ##
+########################################
+
+save_dssp_statistics_hbond
+   #
+   _category.description     'dssp_statistics_hbond contains statistics for the collection of h-bond variants calculated by DSSP.'
+   _category.id              dssp_statistics_hbond
+   _category.mandatory_code  no
+   #
+   loop_
+   _category_key.name        '_dssp_statistics_hbond.entry_id'
+                             '_dssp_statistics_hbond.type'
+    loop_
+    _category_group.id      'inclusive_group'
+                            'struct_group'
+   #
+    loop_
+    _category_examples.detail
+    _category_examples.case
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+;
+    Example taken from 1cbs
+;
+;
+	_dssp_statistics_hbond.entry_id        1CBS    
+	_dssp_statistics_hbond.type            O(I)-->H-N(J)
+	_dssp_statistics_hbond.count           94 
+	_dssp_statistics_hbond.count_per_100   68.6         
+;
+	save_
+
+save__dssp_statistics_hbond.entry_id
+	_item.description
+;	The entry ID for which these statistics are calculated.
+;
+	_item.name                  '_dssp_statistics_hbond.entry_id'
+	_item.category              dssp_statistics_hbond
+	_item.mandatory_code        yes
+	_item_type.code             code
+	save_
+
+save__dssp_statistics_hbond.type
+	_item.description
+;	The type of the h-bond
+;
+	_item.name                  '_dssp_statistics_hbond.type'
+	_item.category              dssp_statistics_hbond
+	_item.mandatory_code        yes
+	_item_type.code             text
+	loop_
+	_item_enumeration.value
+	_item_enumeration.detail
+		O(I)-->H-N(J)           'non-bridge h-bond with residue further away than 5 residues'  
+		'PARALLEL BRIDGES'      'h-bond forming a parallel bridge'  
+		'ANTIPARALLEL BRIDGES'  'h-bond forming a anti-parallel bridge'  
+		O(I)-->H-N(I-5)         'h-bond with residue five residues before the current one'  
+		O(I)-->H-N(I-4)         'h-bond with residue four residues before the current one'  
+		O(I)-->H-N(I-3)         'h-bond with residue three residues before the current one'  
+		O(I)-->H-N(I-2)         'h-bond with residue two residues before the current one'  
+		O(I)-->H-N(I-1)         'h-bond with residue one residue before the current one'  
+		O(I)-->H-N(I+0)         'h-bond with current residue itself'  
+		O(I)-->H-N(I+1)         'h-bond with residue one residues after the current one'  
+		O(I)-->H-N(I+2)         'h-bond with residue two residues after the current one'  
+		O(I)-->H-N(I+3)         'h-bond with residue three residues after the current one'  
+		O(I)-->H-N(I+4)         'h-bond with residue four residues after the current one'  
+		O(I)-->H-N(I+5)         'h-bond with residue five residues after the current one'	  
+	save_
+
+save__dssp_statistics_hbond.count
+	_item.description
+;	Absolute number of h-bonds of this type
+;
+	_item.name                  '_dssp_statistics_hbond.count'
+	_item.category              dssp_statistics_hbond
+	_item.mandatory_code        yes
+	_item_type.code             int
+	save_
+
+save__dssp_statistics_hbond.count_per_100
+	_item.description
+;	Number of h-bonds of this type per hundred residues in the entire structure
+;
+	_item.name                  '_dssp_statistics_hbond.count_per_100'
+	_item.category              dssp_statistics_hbond
+	_item.mandatory_code        yes
+	_item_type.code             float
+	save_
+
+########################################
+##  Category dssp_statistics_histogram ##
+########################################
+
+save_dssp_statistics_histogram
+   #
+   _category.description     'dssp_statistics_histogram contains the statistics for the ladders and helices in the form of a histogram as calculated by DSSP.'
+   _category.id              dssp_statistics_histogram
+   _category.mandatory_code  no
+   #
+   loop_
+   _category_key.name        '_dssp_statistics_histogram.entry_id'
+                             '_dssp_statistics_histogram.type'
+    loop_
+    _category_group.id      'inclusive_group'
+                            'struct_group'
+   #
+    loop_
+    _category_examples.detail
+    _category_examples.case
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+;
+    Example taken from 1cbs
+;
+;
+	_dssp_statistics_histogram.entry_id  1CBS          
+	_dssp_statistics_histogram.type      antiparallel_bridges_per_ladder      
+	_dssp_statistics_histogram.1         0   
+	_dssp_statistics_histogram.2         0   
+	_dssp_statistics_histogram.3         1   
+	_dssp_statistics_histogram.4         1   
+	_dssp_statistics_histogram.5         1   
+	_dssp_statistics_histogram.6         1   
+	_dssp_statistics_histogram.7         4   
+	_dssp_statistics_histogram.8         1   
+	_dssp_statistics_histogram.9         0   
+	_dssp_statistics_histogram.10        0    
+	_dssp_statistics_histogram.11        0    
+	_dssp_statistics_histogram.12        0    
+	_dssp_statistics_histogram.13        0    
+	_dssp_statistics_histogram.14        0    
+	_dssp_statistics_histogram.15        0    
+	_dssp_statistics_histogram.16        0    
+	_dssp_statistics_histogram.17        0    
+	_dssp_statistics_histogram.18        0    
+	_dssp_statistics_histogram.19        0    
+	_dssp_statistics_histogram.20        0    
+	_dssp_statistics_histogram.21        0    
+	_dssp_statistics_histogram.22        0    
+	_dssp_statistics_histogram.23        0    
+	_dssp_statistics_histogram.24        0    
+	_dssp_statistics_histogram.25        0    
+	_dssp_statistics_histogram.26        0    
+	_dssp_statistics_histogram.27        0    
+	_dssp_statistics_histogram.28        0    
+	_dssp_statistics_histogram.29        0    
+	_dssp_statistics_histogram.30        0    
+;
+	save_
+
+save__dssp_statistics_histogram.entry_id
+	_item.description
+;	The entry ID for which these statistics are calculated.
+;
+	_item.name              '_dssp_statistics_histogram.entry_id'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         code
+	save_
+
+save__dssp_statistics_histogram.type
+	_item.description
+;	The type for which this histogram contains data
+;
+	_item.name              '_dssp_statistics_histogram.type'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         code
+	loop_
+	_item_enumeration.value
+	_item_enumeration.detail
+		residues_per_alpha_helix         'residues per alpha helix'              
+		parallel_bridges_per_ladder      'parallel bridges per ladder'              
+		antiparallel_bridges_per_ladder  'antiparallel bridges per ladder'                  
+		ladders_per_sheet                'ladders per sheet'    
+	save_
+
+save__dssp_statistics_histogram.1
+	_item.description
+;	The count of this type of ladder with a length of 1 residues
+;
+	_item.name              '_dssp_statistics_histogram.1'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.2
+	_item.description
+;	The count of this type of ladder with a length of 2 residues
+;
+	_item.name              '_dssp_statistics_histogram.2'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.3
+	_item.description
+;	The count of this type of ladder with a length of 3 residues
+;
+	_item.name              '_dssp_statistics_histogram.3'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.4
+	_item.description
+;	The count of this type of ladder with a length of 4 residues
+;
+	_item.name              '_dssp_statistics_histogram.4'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.5
+	_item.description
+;	The count of this type of ladder with a length of 5 residues
+;
+	_item.name              '_dssp_statistics_histogram.5'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.6
+	_item.description
+;	The count of this type of ladder with a length of 6 residues
+;
+	_item.name              '_dssp_statistics_histogram.6'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.7
+	_item.description
+;	The count of this type of ladder with a length of 7 residues
+;
+	_item.name              '_dssp_statistics_histogram.7'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.8
+	_item.description
+;	The count of this type of ladder with a length of 8 residues
+;
+	_item.name              '_dssp_statistics_histogram.8'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.9
+	_item.description
+;	The count of this type of ladder with a length of 9 residues
+;
+	_item.name              '_dssp_statistics_histogram.9'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.10
+	_item.description
+;	The count of this type of ladder with a length of 10 residues
+;
+	_item.name              '_dssp_statistics_histogram.10'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.11
+	_item.description
+;	The count of this type of ladder with a length of 11 residues
+;
+	_item.name              '_dssp_statistics_histogram.11'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.12
+	_item.description
+;	The count of this type of ladder with a length of 12 residues
+;
+	_item.name              '_dssp_statistics_histogram.12'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.13
+	_item.description
+;	The count of this type of ladder with a length of 13 residues
+;
+	_item.name              '_dssp_statistics_histogram.13'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.14
+	_item.description
+;	The count of this type of ladder with a length of 14 residues
+;
+	_item.name              '_dssp_statistics_histogram.14'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.15
+	_item.description
+;	The count of this type of ladder with a length of 15 residues
+;
+	_item.name              '_dssp_statistics_histogram.15'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.16
+	_item.description
+;	The count of this type of ladder with a length of 16 residues
+;
+	_item.name              '_dssp_statistics_histogram.16'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.17
+	_item.description
+;	The count of this type of ladder with a length of 17 residues
+;
+	_item.name              '_dssp_statistics_histogram.17'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.18
+	_item.description
+;	The count of this type of ladder with a length of 18 residues
+;
+	_item.name              '_dssp_statistics_histogram.18'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.19
+	_item.description
+;	The count of this type of ladder with a length of 19 residues
+;
+	_item.name              '_dssp_statistics_histogram.19'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.20
+	_item.description
+;	The count of this type of ladder with a length of 20 residues
+;
+	_item.name              '_dssp_statistics_histogram.20'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.21
+	_item.description
+;	The count of this type of ladder with a length of 21 residues
+;
+	_item.name              '_dssp_statistics_histogram.21'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.22
+	_item.description
+;	The count of this type of ladder with a length of 22 residues
+;
+	_item.name              '_dssp_statistics_histogram.22'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.23
+	_item.description
+;	The count of this type of ladder with a length of 23 residues
+;
+	_item.name              '_dssp_statistics_histogram.23'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.24
+	_item.description
+;	The count of this type of ladder with a length of 24 residues
+;
+	_item.name              '_dssp_statistics_histogram.24'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.25
+	_item.description
+;	The count of this type of ladder with a length of 25 residues
+;
+	_item.name              '_dssp_statistics_histogram.25'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.26
+	_item.description
+;	The count of this type of ladder with a length of 26 residues
+;
+	_item.name              '_dssp_statistics_histogram.26'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.27
+	_item.description
+;	The count of this type of ladder with a length of 27 residues
+;
+	_item.name              '_dssp_statistics_histogram.27'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.28
+	_item.description
+;	The count of this type of ladder with a length of 28 residues
+;
+	_item.name              '_dssp_statistics_histogram.28'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.29
+	_item.description
+;	The count of this type of ladder with a length of 29 residues
+;
+	_item.name              '_dssp_statistics_histogram.29'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+save__dssp_statistics_histogram.30
+	_item.description
+;	The count of this type of ladder with a length of 30 or more residues
+;
+	_item.name              '_dssp_statistics_histogram.30'
+	_item.category          dssp_statistics_histogram
+	_item.mandatory_code    yes
+	_item_type.code         int
+	save_
+
+########################################
+##  Category dssp_struct_summary ##
+########################################
+
+save_dssp_struct_summary
+   #
+   _category.description     'dssp_struct_summary contains the extra secondary structure information per residue as calculated by DSSP.'
+   _category.id              dssp_struct_summary
+   _category.mandatory_code  no
+   #
+   loop_
+   _category_key.name        '_dssp_struct_summary.entry_id'
+                             '_dssp_struct_summary.label_asym_id'
+                             '_dssp_struct_summary.label_seq_id'
+                             '_dssp_struct_summary.label_comp_id'
+    loop_
+    _category_group.id      'inclusive_group'
+                            'struct_group'
+   #
+    loop_
+    _category_examples.detail
+    _category_examples.case
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+;
+    Example taken from 1cbs
+;
+;
+	_dssp_struct_summary.entry_id               1CBS     
+	_dssp_struct_summary.label_comp_id          PHE          
+	_dssp_struct_summary.label_asym_id          A          
+	_dssp_struct_summary.label_seq_id           15         
+	_dssp_struct_summary.secondary_structure    H                
+	_dssp_struct_summary.ss_bridge              .      
+	_dssp_struct_summary.helix_3_10             .       
+	_dssp_struct_summary.helix_alpha            >        
+	_dssp_struct_summary.helix_pi               .     
+	_dssp_struct_summary.helix_pp               .     
+	_dssp_struct_summary.bend                   S 
+	_dssp_struct_summary.chirality              +      
+	_dssp_struct_summary.ladder_1               .     
+	_dssp_struct_summary.ladder_2               .     
+	_dssp_struct_summary.sheet                  .  
+	_dssp_struct_summary.accessibility         23.1           
+	_dssp_struct_summary.TCO                    0.940
+	_dssp_struct_summary.kappa                  73.9  
+	_dssp_struct_summary.alpha                  44.8  
+	_dssp_struct_summary.phi                    -66.9
+	_dssp_struct_summary.psi                    -48.6
+	_dssp_struct_summary.x_ca                   22.4 
+	_dssp_struct_summary.y_ca                   17.2 
+	_dssp_struct_summary.z_ca                   17.7 
+;
+	save_
+
+save__dssp_struct_summary.entry_id
+	_item.description
+;	The entry ID for which these statistics are calculated.
+;
+	_item.name             '_dssp_struct_summary.entry_id'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   yes
+	_item_type.code        code
+	save_
+
+save__dssp_struct_summary.label_comp_id
+	_item.description
+;	A component of the identifier for this monomer.
+
+	This data item is a pointer to _chem_comp.id in the CHEM_COMP
+	category.
+;
+	_item.name             '_dssp_struct_summary.label_comp_id'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   yes
+	_item_type.code        ucode
+	save_
+
+save__dssp_struct_summary.label_asym_id
+	_item.description
+;   A component of the identifier for this monomer
+;
+	_item.name             '_dssp_struct_summary.label_asym_id'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   yes
+	_item_type.code        code
+	save_
+
+save__dssp_struct_summary.label_seq_id
+	_item.description
+;   A component of the identifier for this monomer
+;
+	_item.name             '_dssp_struct_summary.label_seq_id'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   yes
+	_item_type.code        code
+	save_
+
+save__dssp_struct_summary.secondary_structure
+	_item.description
+;	The secondary structure assigned to this residue in a single letter code
+
+	The value for this field may be empty in which case the assigned
+	secondary structure is Loop.
+;
+	_item.name             '_dssp_struct_summary.secondary_structure'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	loop_
+	_item_enumeration.value
+	_item_enumeration.detail
+		H             Alphahelix
+		B             Betabridge
+		E             Strand
+		G             Helix_3
+		I             Helix_5
+		P             Helix_PPII
+		T             Turn
+		S             Bend
+	save_
+
+save__dssp_struct_summary.ss_bridge
+	_item.description
+;	Identifier for the SS-Bridge formed by this residue
+;
+	_item.name             '_dssp_struct_summary.ss_bridge'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        int
+	save_
+
+save__dssp_struct_summary.helix_3_10
+	_item.description
+;	In case this residue is a candidate to form a 3_10 helix, this
+	field contains the position of the residue in the helix.
+;
+	_item.name             '_dssp_struct_summary.helix_3_10'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	loop_
+	_item_enumeration.value
+	_item_enumeration.detail
+		'>'               'The residue has h-bond(s) is a candidate to start a 3_10 helix'
+		'3'               'The residue has h-bond(s) is a candidate to be within a 3_10 helix'
+		'<'               'The residue has h-bond(s) is a candidate to end a 3_10 helix'
+		'X'               'The residue has h-bond(s) is a candidate for both a start and an end of a 3_10 helix'
+	save_
+
+save__dssp_struct_summary.helix_alpha
+	_item.description
+;	In case this residue is a candidate to form a alpha helix, this
+	field contains the position of the residue in the helix.
+;
+	_item.name             '_dssp_struct_summary.helix_alpha'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	loop_
+	_item_enumeration.value
+	_item_enumeration.detail
+		'>'               'The residue has h-bond(s) is a candidate to start a alpha helix'
+		'4'               'The residue has h-bond(s) is a candidate to be within a alpha helix'
+		'<'               'The residue has h-bond(s) is a candidate to end a alpha helix'
+		'X'               'The residue has h-bond(s) is a candidate for both a start and an end of a alpha helix'
+	save_
+
+save__dssp_struct_summary.helix_pi
+	_item.description
+;	In case this residue is a candidate to form a pi helix, this
+	field contains the position of the residue in the helix.
+;
+	_item.name             '_dssp_struct_summary.helix_pi'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	loop_
+	_item_enumeration.value
+	_item_enumeration.detail
+		'>'               'The residue has h-bond(s) is a candidate to start a pi helix'
+		'5'               'The residue has h-bond(s) is a candidate to be within a pi helix'
+		'<'               'The residue has h-bond(s) is a candidate to end a pi helix'
+		'X'               'The residue has h-bond(s) is a candidate for both a start and an end of a pi helix'
+	save_
+
+save__dssp_struct_summary.helix_pp
+	_item.description
+;	In case this residue is a candidate to form a poly-proline helix, this
+	field contains the position of the residue in the helix.
+;
+	_item.name             '_dssp_struct_summary.helix_pp'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	loop_
+	_item_enumeration.value
+	_item_enumeration.detail
+		'>'               'The residue has h-bond(s) is a candidate to start a poly-proline helix'
+		'P'               'The residue has h-bond(s) is a candidate to be within a poly-proline helix'
+		'<'               'The residue has h-bond(s) is a candidate to end a poly-proline helix'
+		'X'               'The residue has h-bond(s) is a candidate for both a start and an end of a poly-proline helix'
+	save_
+
+save__dssp_struct_summary.bend
+	_item.description
+;	If this field contains S this indicates that the assigned secondary structure Turn actually forms a Bend.
+;
+	_item.name                '_dssp_struct_summary.bend'
+	_item.category            dssp_struct_summary
+	_item.mandatory_code      no
+	_item_type.code           code
+	_item_enumeration.value	  S
+	_item_enumeration.detail  'The residue forms a Bend'
+	save_
+
+save__dssp_struct_summary.chirality
+	_item.description
+;	The chirality for the virtual torsion angle (dihedral angle) defined by the four C-alpha atoms of residues I-1, I, I+1 and I+2.
+;
+	_item.name               '_dssp_struct_summary.chirality'
+	_item.category           dssp_struct_summary
+	_item.mandatory_code     no
+	_item_type.code          code
+	loop_
+	_item_enumeration.value  '+'
+	                         '-'
+	save_
+
+save__dssp_struct_summary.ladder_1
+	_item.description
+;	Label for the first beta bridge of which this residue is part.
+;
+	_item.name             '_dssp_struct_summary.ladder_1'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	save_
+
+save__dssp_struct_summary.ladder_2
+	_item.description
+;	Label for the second beta bridge of which this residue is part.
+;
+	_item.name             '_dssp_struct_summary.ladder_2'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	save_
+
+save__dssp_struct_summary.sheet
+	_item.description
+;	Label for the sheet of which this residue is part.
+;
+	_item.name             '_dssp_struct_summary.sheet'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	save_
+
+save__dssp_struct_summary.accessibility
+	_item.description
+;	Solvent accessibility for this residue in square Angstroms
+;
+	_item.name             '_dssp_struct_summary.accessibility'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        float
+	save_
+
+save__dssp_struct_summary.TCO
+	_item.description
+;	The cosine of the angle between C=O of residue I and C=O of residue I-1. For alpha-helices, TCO is near +1, for Beta-sheets TCO is near -1.
+
+	Not used for structure definition. 
+;
+	_item.name             '_dssp_struct_summary.TCO'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        float
+	save_
+
+save__dssp_struct_summary.kappa
+	_item.description
+;	The virtual bond angle (bend angle) defined by the three C-alpha atoms of residues I-2, I and I+2.
+	
+	Used to define bend (structure code 'S'). 
+;
+	_item.name             '_dssp_struct_summary.kappa'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        float
+	save_
+
+save__dssp_struct_summary.alpha
+	_item.description
+;	The virtual torsion angle (dihedral angle) defined by the four C-alpha atoms of residues I-1, I, I+1 and I+2.
+
+	Used to define chirality (structure code '+' or '-'). 
+;
+	_item.name             '_dssp_struct_summary.alpha'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        float
+	save_
+
+save__dssp_struct_summary.phi
+	_item.description
+;	IUPAC peptide backbone torsion phi angle
+;
+	_item.name             '_dssp_struct_summary.phi'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        float
+	save_
+
+save__dssp_struct_summary.psi
+	_item.description
+;	IUPAC peptide backbone torsion psi angle
+;
+	_item.name             '_dssp_struct_summary.psi'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        float
+	save_
+
+save__dssp_struct_summary.x_ca
+	_item.description
+;	The x coordinate of the C-alpha atom for this residue
+;
+	_item.name             '_dssp_struct_summary.x_ca'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        float
+	save_
+
+save__dssp_struct_summary.y_ca
+	_item.description
+;	The y coordinate of the C-alpha atom for this residue
+;
+	_item.name             '_dssp_struct_summary.y_ca'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        float
+	save_
+
+save__dssp_struct_summary.z_ca
+	_item.description
+;	The z coordinate of the C-alpha atom for this residue
+;
+	_item.name             '_dssp_struct_summary.z_ca'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        float
+	save_

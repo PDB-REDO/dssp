@@ -1,0 +1,54 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat" [ <!ENTITY nbsp "&#160;">
+]>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:z2="http://www.hekkelman.com/libzeep/m2" lang="nl">
+
+<head z2:replace="~{head::head(~{::title},~{::head/script})}">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+	<title>DSSP</title>
+</head>
+
+<body class="site">
+	<nav z2:replace="~{menu :: navbar('home')}"></nav>
+
+	<div class="container site-content">
+
+		<article>
+			<h2>DSSP: Assign secondary structure to proteins</h2>
+
+			<p>DSSP (Dictionary of Secondary Structure in Proteins) is an algorithm originally designed by Wolfgang Kabsch and Chris Sander to standardise secondary structure assigment based on atomic coordinates. DSSP does not predict secondary structure. You can run DSSP using the form below or you can <a z2:href="@{/download}">install</a> the program locally. Ready-made annotations of PDB entries are available below and you can also <a z2:href="@{/download}">download</a> the whole databank at once. More details about the DSSP output are <a z2:href="@{/about}">here</a>.  
+			</p>
+		</article>
+
+		<article>
+			<h2>Submit your structure</h2>
+
+			<form z2:fragment="submit-form" name="job-form" method="post" enctype="multipart/form-data"
+				z2:action="@{/do}">
+				<div class="input-group mb-3">
+					<label class="input-group-text" for="input-group-pdb-file">Coordinates</label>
+					<input type="file" class="form-control" id="input-group-pdb-file" name="data" required="required" />
+				</div>
+
+
+				<div class="input-group mb-3">
+					<label class="input-group-text" for="format-select">Format</label>
+					<select class="form-select" id="format-select" name="format">
+						<option value="mmcif">Annotated mmCIF</option>
+						<option value="dssp">Historic DSSP format, may fail on larger structures</option>
+					</select>
+				</div>
+
+				<button type="submit" class="btn btn-sm btn-primary mt-3">Submit</button>
+			</form>
+
+		</article>
+
+	</div>
+
+	<footer z2:replace="~{footer::content}"></footer>
+</body>
+
+</html>

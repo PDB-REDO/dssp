@@ -531,7 +531,8 @@ struct dssp::residue
 	float mAccessibility = 0;
 	float mChiralVolume = 0;
 
-	float mAlpha = 360, mKappa = 360, mPhi = 360, mPsi = 360, mTCO = 0, mOmega = 360;
+	// float mAlpha = 360, mKappa = 360, mPhi = 360, mPsi = 360, mTCO = 0, mOmega = 360;
+	std::optional<float> mAlpha, mKappa, mPhi, mPsi, mTCO, mOmega;
 
 	residue_type mType;
 	uint8_t mSSBridgeNr = 0;
@@ -1114,8 +1115,8 @@ void CalculateAlphaHelices(std::vector<residue> &inResidues, statistics &stats, 
 
 	for (auto &r : inResidues)
 	{
-		double kappa = r.mKappa;
-		r.SetBend(kappa != 360 and kappa > 70);
+		if (r.mKappa.has_value())
+			r.SetBend(*r.mKappa > 70);
 	}
 
 	for (uint32_t i = 1; i + 4 < inResidues.size(); ++i)
@@ -1216,8 +1217,8 @@ void CalculatePPHelices(std::vector<residue> &inResidues, statistics &stats, int
 
 	for (uint32_t i = 1; i + 1 < inResidues.size(); ++i)
 	{
-		phi[i] = static_cast<float>(inResidues[i].mPhi);
-		psi[i] = static_cast<float>(inResidues[i].mPsi);
+		phi[i] = static_cast<float>(inResidues[i].mPhi.value_or(360));
+		psi[i] = static_cast<float>(inResidues[i].mPsi.value_or(360));
 	}
 
 	for (uint32_t i = 1; i + 3 < inResidues.size(); ++i)
@@ -1888,32 +1889,32 @@ std::string dssp::residue_info::pdb_ins_code() const
 	return m_impl->mPDBInsCode;
 }
 
-float dssp::residue_info::alpha() const
+std::optional<float> dssp::residue_info::alpha() const
 {
 	return m_impl->mAlpha;
 }
 
-float dssp::residue_info::kappa() const
+std::optional<float> dssp::residue_info::kappa() const
 {
 	return m_impl->mKappa;
 }
 
-float dssp::residue_info::omega() const
+std::optional<float> dssp::residue_info::omega() const
 {
 	return m_impl->mOmega;
 }
 
-float dssp::residue_info::phi() const
+std::optional<float> dssp::residue_info::phi() const
 {
 	return m_impl->mPhi;
 }
 
-float dssp::residue_info::psi() const
+std::optional<float> dssp::residue_info::psi() const
 {
 	return m_impl->mPsi;
 }
 
-float dssp::residue_info::tco() const
+std::optional<float> dssp::residue_info::tco() const
 {
 	return m_impl->mTCO;
 }

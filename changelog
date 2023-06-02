@@ -1,3 +1,9 @@
+Version 4.3
+- Write new output by default
+- Fix some issues with this new output, typo e.g.
+- Added web service implementation
+- Added mmcif_pdbx dictionary extension
+
 Version 4.2.2.1
 - Fixed dependency on libcifpp
 

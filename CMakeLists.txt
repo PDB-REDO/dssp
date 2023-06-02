@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(mkdssp VERSION 4.2.2.1 LANGUAGES CXX)
+project(mkdssp VERSION 4.3 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -52,6 +52,7 @@ endif()
 
 # Optionally build a version to be installed inside CCP4
 option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
+option(BUILD_WEBSERVER "Add code to run dssp as a web service" OFF)
 
 if(BUILD_FOR_CCP4)
 	if("$ENV{CCP4}" STREQUAL "" OR NOT EXISTS $ENV{CCP4})
@@ -105,6 +106,11 @@ find_package(Threads)
 if(NOT PDB_REDO_META)
 	find_package(libmcfp REQUIRED)
 	find_package(cifpp 5.0.8 REQUIRED)
+
+	if(BUILD_WEBSERVER)
+		find_package(zeep REQUIRED)
+		find_package(gxrio REQUIRED)
+	endif()
 endif()
 
 # The DSSP code is in a separate library, optionally to be used by others
@@ -124,12 +130,52 @@ add_executable(mkdssp
 	${PROJECT_SOURCE_DIR}/src/dssp-io.hpp
 	${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
 
-target_include_directories(mkdssp PRIVATE ${PROJECT_BINARY_DIR})
 target_link_libraries(mkdssp PRIVATE dssp cifpp::cifpp libmcfp::libmcfp dssp::dssp)
 
 if(USE_RSRC)
-	message("Using resources compiled with ${MRC}")
-	mrc_target_resources(mkdssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
+	mrc_target_resources(mkdssp
+		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
+		${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
+endif()
+
+if(BUILD_WEBSERVER)
+
+	find_program(YARN yarn REQUIRED)
+
+	add_executable(dsspd
+		${PROJECT_SOURCE_DIR}/src/dssp-io.cpp
+		${PROJECT_SOURCE_DIR}/src/dssp-server.cpp)
+
+	target_link_libraries(dsspd PRIVATE dssp cifpp::cifpp libmcfp::libmcfp dssp::dssp zeep::zeep gxrio::gxrio)
+
+	# yarn rules for javascripts
+	set(webpack_input
+		${CMAKE_CURRENT_SOURCE_DIR}/webapp/pdb-redo-style.scss
+		${CMAKE_CURRENT_SOURCE_DIR}/webapp/index.js
+		${CMAKE_CURRENT_SOURCE_DIR}/webpack.config.js
+	)
+
+	set(webpack_output ${CMAKE_CURRENT_SOURCE_DIR}/docroot/scripts/index.js)
+
+	add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/node_modules
+		COMMAND ${YARN}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		VERBATIM)
+
+	add_custom_command(OUTPUT ${webpack_output}
+		DEPENDS ${webpack_input} ${CMAKE_CURRENT_SOURCE_DIR}/node_modules
+		COMMAND ${YARN} run $<IF:$<CONFIG:Debug>,build,build-production>
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		VERBATIM)
+
+	add_custom_target(generate_webpack DEPENDS ${webpack_output})
+
+	add_dependencies(dsspd generate_webpack)
+
+	mrc_target_resources(dsspd
+		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
+		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
+		${PROJECT_SOURCE_DIR}/docroot/)
 endif()
 
 # Install rules

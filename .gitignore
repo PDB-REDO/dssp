@@ -8,3 +8,7 @@ build
 **/*.dssp
 src/revision.hpp
 out/
+node_modules
+docroot/fonts
+docroot/scripts
+docroot/css

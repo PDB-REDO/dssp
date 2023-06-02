@@ -1,9 +1,9 @@
-DSSP 4.0
+DSSP 4.3
 ========
 
 This is a rewrite of DSSP, now offering full mmCIF support. The difference
 with previous releases of DSSP is that it now writes out an annotated mmCIF
-file by default, storing the secondary structure information in the 
+file by default, storing the secondary structure information in the
 _struct_conf category.
 
 Another new feature in this version of DSSP is that it now defines
@@ -33,19 +33,14 @@ Make sure you install [libcif++](https://github.com/PDB-REDO/libcifpp) and [libm
 
 After that, building should be as easy as typing:
 
-```
+```bash
 git clone https://github.com/PDB-REDO/dssp.git
 cd dssp
 mkdir build
-cd build
-cmake ..
-cmake --build . --config Release
-ctest -C Release
-cmake --install .
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+cmake --install build
 ```
-
-This will install the `mkdssp` program in `$HOME/.local/bin`. If you want to
-install elsewhere, specify the prefix with the [CMAKE_INSTALL_PREFIX](https://cmake.org/cmake/help/v3.21/variable/CMAKE_INSTALL_PREFIX.html) variable.
 
 Usage
 -----

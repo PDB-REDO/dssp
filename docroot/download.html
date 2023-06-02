@@ -1,0 +1,214 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat" [ <!ENTITY nbsp "&#160;">
+]>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:z2="http://www.hekkelman.com/libzeep/m2" lang="nl">
+
+<head z2:replace="~{head::head(~{::title},~{::head/script})}">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+	<title>PDB-REDO</title>
+</head>
+
+<body class="site">
+	<nav z2:replace="~{menu :: navbar('download')}" />
+
+	<div class="container site-content">
+
+					<!-- TODO: fill in -->
+
+		<!-- <article>
+			<h2>Downloading the PDB-REDO software</h2>
+
+			<p>If you are working with sensistive data you can install PDB-REDO locally on <a
+					href="https://pdb-redo.eu/others/pdb-redo.tar.bz2">Linux and WSL</a>.
+				You can also use it to run large sets of custom PDB-REDO jobs. Alternatively, you can use the
+				<a z2:href="@{/api-doc}">PDB-REDO API</a> to commit batches of custom calculations.
+			</p>
+		</article>
+
+		<article>
+			<h2>Downloading PDB-REDO entries</h2>
+
+			<p>You can download PDB-REDO entries using you favorite molecular graphics program or manually. You can also
+				download the entire databank at once. Below are some basic examples, more data from the PDB-REDO
+				databank is described underneath.</p>
+			<h2>Molecular graphics:</h2>
+			<ul>
+				<li><a href="http://www.yasara.org" target="_blank">YASARA</a> has a native PDB-REDO <a
+						href="http://www.yasara.org/pdbredo.htm" target="_blank">interface to show models</a>.
+				</li>
+				<li><a href="http://www.ccp4.ac.uk/MG/" target="_blank">CCP4mg</a> can download PDB-REDO models and
+					maps.</li>
+				<li><a href="http://www2.mrc-lmb.cam.ac.uk/Personal/pemsley/coot/" target="_blank">(Win)COOT</a> also
+					has a native
+					PDB-REDO interface that shows models, maps, and a guided tour through the model changes.
+				</li>
+
+			</ul>
+			<h2>Manual download (single entries) via the website or using <code>wget</code>:</h2>
+			<ul>
+				<li><code>wget https://pdb-redo.eu/db/9xyz/9xyz_final.pdb</code> downloads the fully optimised
+					(re-refined and
+					rebuilt) PDB file.
+				</li>
+				<li><code>wget https://pdb-redo.eu/db/9xyz/9xyz_final.mtz</code> downloads the MTZ files to generate
+					electron
+					density maps.
+				</li>
+				<li><code>wget https://pdb-redo.eu/db/9xyz.zip</code> downloads all files of a PDB-REDO entry.</li>
+			</ul>
+
+			<h2>Download entire PDB-REDO databank using <code>rsync</code>:</h2>
+			<ul>
+				<li><code>rsync -av rsync://rsync.pdb-redo.eu/pdb-redo/ pdb-redo/</code> downloads the entire archive.
+				</li>
+			</ul>
+
+			<h2>License</h2>
+			<p><a href="license.txt" z2:href="@{/license}">Here</a> you can find the data usage license.</p>
+
+		</article>
+
+
+		<article>
+			<h2>PDB-REDO entry description</h2>
+
+			<p>Each PDB-REDO entry consists of a set of files that describe the structure model in different states
+				(original,
+				re-refined, and re-refined &amp; rebuilt). Some of the data is provided for easy data mining. The table
+				below shows
+				the typical URLs of the files for the fictitious entry <code>9xyz</code>.</p>
+			<br />
+			<table>
+				<thead>
+					<tr>
+						<th>Description</th>
+						<th>Typical URL (for fictitious entry 9xyz)</th>
+					</tr>
+				</thead>
+				<tbody>
+
+					<tr>
+						<td colspan="2" class="group">Atomic coordinates</td>
+					</tr>
+					<tr>
+						<td>Initial model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_0cyc.pdb.gz</code></td>
+					</tr>
+					<tr>
+						<td>Re-refined (only) model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_besttls.pdb.gz</code></td>
+					</tr>
+					<tr>
+						<td>Re-refined &amp; rebuilt structure model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_final.pdb</code></td>
+					</tr>
+					<tr>
+						<td>Re-refined &amp; rebuilt structure model with total B-factors (PDB)</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_final_tot.pdb</code></td>
+					</tr>
+					<tr>
+						<td>Re-refined &amp; rebuilt structure model with total B-factors (mmCIF)</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_final.cif</code></td>
+					</tr>
+
+
+					<tr>
+						<td colspan="2" class="group">Electron density</td>
+					</tr>
+					<tr>
+						<td>Map coefficients for the original model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_0cyc.mtz.gz</code></td>
+					</tr>
+					<tr>
+						<td>Map coefficients for re-refined (only) model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_besttls.mtz.gz</code></td>
+					</tr>
+					<tr>
+						<td>Map coefficients for re-refined &amp; rebuilt structure model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_final.mtz</code></td>
+					</tr>
+
+					<tr>
+						<td colspan="2" class="group">Validation data</td>
+					</tr>
+					<tr>
+						<td>WHAT_CHECK report for initial model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/wo/pdbout.txt</code></td>
+					</tr>
+					<tr>
+						<td>WHAT_CHECK report for re-refined (only) model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/wc/pdbout.txt</code></td>
+					</tr>
+					<tr>
+						<td>WHAT_CHECK report for re-refined &amp; rebuilt model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/wf/pdbout.txt</code></td>
+					</tr>
+					<tr>
+						<td>Ligand and ligand interaction data for the initial and re-refined &amp; rebuilt structure
+							model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_ligval.json</code> (only for entries with ligands; <a
+								href="id_ligval.json.schema" z2:href="@{/schema/id_ligval.json.schema}">JSON Schema</a>)
+						</td>
+					</tr>
+					<tr>
+						<td>Map fitting scores for the initial model <br />(RSCC, RSR, EDIAm, OPIA)</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_0cyc.json.gz</code> (<a href="id_0cyc.json.schema"
+								z2:href="@{/schema/id_0cyc.json.schema}">JSON Schema</a>)</td>
+					</tr>
+					<tr>
+						<td>Map fitting scores for the re-refined &amp; rebuilt model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_final.json</code> (<a href="id_final.json.schema"
+								z2:href="@{/schema/id_final.json.schema}">JSON Schema</a>)</td>
+					</tr>
+					<tr>
+						<td>Data for model improvement sliders</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/pdbe.json</code> (<a href="pdbe.json.schema"
+								z2:href="@{/schema/pdbe.json.schema}">JSON Schema</a>)</td>
+					</tr>
+					<tr>
+						<td colspan="2" class="group">Visual tools</td>
+					</tr>
+					<tr>
+						<td>COOT script to show model changes</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_final.py</code> (Python) or
+							<code>https://pdb-redo.eu/db/9xyz/9xyz_final.scm</code>
+							(Scheme)
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2" class="group">Descriptive data</td>
+					</tr>
+					<tr>
+						<td>PDB-REDO statistics for data mining (crystal parameters, R-factors, validation scores, etc.)
+						</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/data.json</code> (<a href="data.json.schema"
+								z2:href="@{/schema/data.json.schema}">JSON Schema</a>)</td>
+					</tr>
+					<tr>
+						<td>List of homologous entries in PDB-REDO databank</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_available_homologs.json</code> (<a
+								href="id_available_homologs.json.schema"
+								z2:href="@{/schema/id_available_homologs.json.schema}">JSON Schema</a>)</td>
+					</tr>
+					<tr>
+						<td>DSSP analysis of the re-refined &amp; rebuilt model</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/9xyz_final.dssp</code></td>
+					</tr>
+					<tr>
+						<td>Software versions of all programs used</td>
+						<td><code>https://pdb-redo.eu/db/9xyz/versions.json</code> (<a href="versions.json.schema"
+								z2:href="@{/schema/versions.json.schema}">JSON Schema</a>)</td>
+					</tr>
+				</tbody>
+			</table>
+		</article> -->
+
+
+	</div>
+
+	<footer z2:replace="~{footer::content}"></footer>
+</body>
+
+</html>

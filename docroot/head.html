@@ -1,0 +1,29 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:z2="http://www.hekkelman.com/libzeep/m2"
+	  lang="nl" >
+
+<head z2:fragment="head(title,script)">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; child-src 'none'; img-src 'self' data:;" />
+
+	<title z2:replace="${title}">DSSP - PDB-REDO version</title>
+
+	<script z2:src="@{/scripts/index.js}"></script>
+	<script z2:replace="${script}"></script>
+
+	<link z2:href="@{/css/index.css}" rel="stylesheet" />
+
+	<!-- favicon stuff -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/apple-touch-icon.png"/>
+	<link rel="icon" type="image/png" href="/images/favicon/favicon-32x32.png" sizes="32x32"/>
+	<link rel="icon" type="image/png" href="/images/favicon/favicon-16x16.png" sizes="16x16"/>
+	<link rel="manifest" href="/images/favicon/manifest.json"/>
+	<link rel="mask-icon" href="/images/favicon/safari-pinned-tab.svg" color="#5bbad5"/>
+	<meta name="theme-color" content="#ffffff"/>
+</head>
+
+</html>
