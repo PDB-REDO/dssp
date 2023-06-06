@@ -1552,7 +1552,7 @@ void DSSP_impl::calculateSecondaryStructure()
 	std::thread hbond_thread(std::bind(&CalculateHBondEnergies, std::ref(mResidues), std::ref(q1)));
 
 	std::unique_ptr<cif::progress_bar> progress;
-	if (cif::VERBOSE == 0)
+	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
 		progress.reset(new cif::progress_bar((mResidues.size() * (mResidues.size() - 1) / 2), "calculate hbond energies"));
 
 	for (uint32_t i = 0; i + 1 < mResidues.size(); ++i)
