@@ -249,13 +249,16 @@ const float
 
 struct dssp::residue
 {
+	residue(residue &&) = default;
+	residue &operator=(residue &&) = default;
+
 	residue(int model_nr,
-		std::string_view pdb_strand_id, int pdb_seq_num, std::string_view pdb_ins_code,
-		const std::vector<cif::row_handle> &atoms)
+		std::string_view pdb_strand_id, int pdb_seq_num, std::string_view pdb_ins_code)
 		: mPDBStrandID(pdb_strand_id)
 		, mPDBSeqNum(pdb_seq_num)
 		, mPDBInsCode(pdb_ins_code)
 		, mChainBreak(chain_break_type::None)
+		, m_model_nr(model_nr)
 	{
 		// update the box containing all atoms
 		mBox[0].mX = mBox[0].mY = mBox[0].mZ = std::numeric_limits<float>::max();
@@ -263,105 +266,105 @@ struct dssp::residue
 
 		mH = point{ std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
 
-		int seen = 0;
-
-		std::array<point, 4> chiralAtoms;
-		for (auto &p : chiralAtoms)
+		for (auto &p : m_chiralAtoms)
 			p = {};
+	}
 
-		for (auto atom : atoms)
+	void addAtom(cif::row_handle atom)
+	{
+		std::string asymID, compID, atomID, type, authAsymID;
+		std::optional<std::string> altID;
+		int seqID, authSeqID;
+		std::optional<int> model;
+		float x, y, z;
+
+		cif::tie(asymID, compID, atomID, altID, type, seqID, model, x, y, z, authAsymID, authSeqID) =
+			atom.get("label_asym_id", "label_comp_id", "label_atom_id", "label_alt_id", "type_symbol", "label_seq_id",
+				"pdbx_PDB_model_num", "Cartn_x", "Cartn_y", "Cartn_z",
+				"auth_asym_id", "auth_seq_id");
+
+		if (model and model != m_model_nr)
+			return;
+
+		if (m_seen == 0)
 		{
-			std::string asymID, compID, atomID, type, authAsymID;
-			std::optional<std::string> altID;
-			int seqID, authSeqID;
-			std::optional<int> model;
-			float x, y, z;
+			mAsymID = asymID;
+			mCompoundID = compID;
+			mSeqID = seqID;
 
-			cif::tie(asymID, compID, atomID, altID, type, seqID, model, x, y, z, authAsymID, authSeqID) =
-				atom.get("label_asym_id", "label_comp_id", "label_atom_id", "label_alt_id", "type_symbol", "label_seq_id",
-					"pdbx_PDB_model_num", "Cartn_x", "Cartn_y", "Cartn_z",
-					"auth_asym_id", "auth_seq_id");
+			mAuthSeqID = authSeqID;
+			mAuthAsymID = authAsymID;
 
-			if (model and model != model_nr)
-				continue;
+			mType = MapResidue(mCompoundID);
 
-			if (seen == 0)
-			{
-				mAsymID = asymID;
-				mCompoundID = compID;
-				mSeqID = seqID;
-
-				mAuthSeqID = authSeqID;
-				mAuthAsymID = authAsymID;
-
-				mType = MapResidue(mCompoundID);
-
-				if (altID)
-					mAltID = *altID;
-			}
-
-			if (atomID == "CA")
-			{
-				seen |= 1;
-				mCAlpha = { x, y, z };
-				ExtendBox(mCAlpha, kRadiusCA + 2 * kRadiusWater);
-
-				if (mType == kValine)
-					chiralAtoms[1] = mCAlpha;
-			}
-			else if (atomID == "C")
-			{
-				seen |= 2;
-				mC = { x, y, z };
-				ExtendBox(mC, kRadiusC + 2 * kRadiusWater);
-			}
-			else if (atomID == "N")
-			{
-				seen |= 4;
-				mH = mN = { x, y, z };
-				ExtendBox(mN, kRadiusN + 2 * kRadiusWater);
-			}
-			else if (atomID == "O")
-			{
-				seen |= 8;
-				mO = { x, y, z };
-				ExtendBox(mO, kRadiusO + 2 * kRadiusWater);
-			}
-			else if (type != "H")
-			{
-				seen |= 16;
-				mSideChain.emplace_back(atomID, point{ x, y, z });
-				ExtendBox(point{ x, y, z }, kRadiusSideAtom + 2 * kRadiusWater);
-
-				if (mType == kLeucine)
-				{
-					if (atomID == "CG")
-						chiralAtoms[0] = { x, y, z };
-					else if (atomID == "CB")
-						chiralAtoms[1] = { x, y, z };
-					else if (atomID == "CD1")
-						chiralAtoms[2] = { x, y, z };
-					else if (atomID == "CD2")
-						chiralAtoms[3] = { x, y, z };
-				}
-				else if (mType == kValine)
-				{
-					if (atomID == "CB")
-						chiralAtoms[0] = { x, y, z };
-					else if (atomID == "CG1")
-						chiralAtoms[2] = { x, y, z };
-					else if (atomID == "CG2")
-						chiralAtoms[3] = { x, y, z };
-				}
-			}
+			if (altID)
+				mAltID = *altID;
 		}
 
+		if (atomID == "CA")
+		{
+			m_seen |= 1;
+			mCAlpha = { x, y, z };
+			ExtendBox(mCAlpha, kRadiusCA + 2 * kRadiusWater);
+
+			if (mType == kValine)
+				m_chiralAtoms[1] = mCAlpha;
+		}
+		else if (atomID == "C")
+		{
+			m_seen |= 2;
+			mC = { x, y, z };
+			ExtendBox(mC, kRadiusC + 2 * kRadiusWater);
+		}
+		else if (atomID == "N")
+		{
+			m_seen |= 4;
+			mH = mN = { x, y, z };
+			ExtendBox(mN, kRadiusN + 2 * kRadiusWater);
+		}
+		else if (atomID == "O")
+		{
+			m_seen |= 8;
+			mO = { x, y, z };
+			ExtendBox(mO, kRadiusO + 2 * kRadiusWater);
+		}
+		else if (type != "H")
+		{
+			m_seen |= 16;
+			mSideChain.emplace_back(atomID, point{ x, y, z });
+			ExtendBox(point{ x, y, z }, kRadiusSideAtom + 2 * kRadiusWater);
+
+			if (mType == kLeucine)
+			{
+				if (atomID == "CG")
+					m_chiralAtoms[0] = { x, y, z };
+				else if (atomID == "CB")
+					m_chiralAtoms[1] = { x, y, z };
+				else if (atomID == "CD1")
+					m_chiralAtoms[2] = { x, y, z };
+				else if (atomID == "CD2")
+					m_chiralAtoms[3] = { x, y, z };
+			}
+			else if (mType == kValine)
+			{
+				if (atomID == "CB")
+					m_chiralAtoms[0] = { x, y, z };
+				else if (atomID == "CG1")
+					m_chiralAtoms[2] = { x, y, z };
+				else if (atomID == "CG2")
+					m_chiralAtoms[3] = { x, y, z };
+			}
+		}
+	}
+
+	void finish()
+	{
 		const int kSeenAll = (1 bitor 2 bitor 4 bitor 8);
-		mComplete = (seen bitand kSeenAll) == kSeenAll;
+		mComplete = (m_seen bitand kSeenAll) == kSeenAll;
 
 		if (mType == kValine or mType == kLeucine)
-			mChiralVolume = dot_product(chiralAtoms[1] - chiralAtoms[0],
-				cross_product(chiralAtoms[2] - chiralAtoms[0], chiralAtoms[3] - chiralAtoms[0]));
+			mChiralVolume = dot_product(m_chiralAtoms[1] - m_chiralAtoms[0],
+				cross_product(m_chiralAtoms[2] - m_chiralAtoms[0], m_chiralAtoms[3] - m_chiralAtoms[0]));
 
 		mRadius = mBox[1].mX - mBox[0].mX;
 		if (mRadius < mBox[1].mY - mBox[0].mY)
@@ -543,6 +546,9 @@ struct dssp::residue
 	helix_position_type mHelixFlags[4] = { helix_position_type::None, helix_position_type::None, helix_position_type::None, helix_position_type::None }; //
 	bool mBend = false;
 	chain_break_type mChainBreak = chain_break_type::None;
+
+	int m_seen = 0, m_model_nr = 0;
+	std::array<point, 4> m_chiralAtoms;
 };
 
 // --------------------------------------------------------------------
@@ -680,7 +686,7 @@ float residue::CalculateSurface(const std::vector<residue> &inResidues)
 		point center = r.mCenter;
 		float radius = r.mRadius;
 
-		if (distance(mCenter, center) < mRadius + radius)
+		if (distance_sq(mCenter, center) < (mRadius + radius) * (mRadius + radius))
 			neighbours.push_back(const_cast<residue *>(&r));
 	}
 
@@ -761,7 +767,15 @@ double CalculateHBondEnergy(residue &inDonor, residue &inAcceptor)
 
 void CalculateHBondEnergies(std::vector<residue> &inResidues)
 {
+	if (cif::VERBOSE)
+		std::cerr << "calculating hbond energies" << std::endl;
+
 	// Calculate the HBond energies
+
+	std::unique_ptr<cif::progress_bar> progress;
+	if (cif::VERBOSE == 0)
+		progress.reset(new cif::progress_bar(inResidues.size() * (inResidues.size() - 1), "calculate hbond energies"));
+
 	for (uint32_t i = 0; i + 1 < inResidues.size(); ++i)
 	{
 		auto &ri = inResidues[i];
@@ -770,12 +784,15 @@ void CalculateHBondEnergies(std::vector<residue> &inResidues)
 		{
 			auto &rj = inResidues[j];
 
-			if (distance(ri.mCAlpha, rj.mCAlpha) < kMinimalCADistance)
+			if (distance_sq(ri.mCAlpha, rj.mCAlpha) < kMinimalCADistance * kMinimalCADistance)
 			{
 				CalculateHBondEnergy(ri, rj);
 				if (j != i + 1)
 					CalculateHBondEnergy(rj, ri);
 			}
+
+			if (progress)
+				progress->consumed(1);
 		}
 	}
 }
@@ -854,6 +871,9 @@ bool Linked(const bridge &a, const bridge &b)
 
 void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats)
 {
+	if (cif::VERBOSE)
+		std::cerr << "calculating beta sheets" << std::endl;
+
 	// Calculate Bridges
 	std::vector<bridge> bridges;
 
@@ -1089,6 +1109,9 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats)
 
 void CalculateAlphaHelices(std::vector<residue> &inResidues, statistics &stats, bool inPreferPiHelices = true)
 {
+	if (cif::VERBOSE)
+		std::cerr << "calculating alpha helices" << std::endl;
+
 	// Helix and Turn
 	for (helix_type helixType : { helix_type::_3_10, helix_type::alpha, helix_type::pi })
 	{
@@ -1180,7 +1203,7 @@ void CalculateAlphaHelices(std::vector<residue> &inResidues, statistics &stats, 
 
 	std::string asym;
 	size_t helixLength = 0;
-	for (auto r : inResidues)
+	for (auto &r : inResidues)
 	{
 		if (r.mAsymID != asym)
 		{
@@ -1205,6 +1228,9 @@ void CalculateAlphaHelices(std::vector<residue> &inResidues, statistics &stats, 
 
 void CalculatePPHelices(std::vector<residue> &inResidues, statistics &stats, int stretch_length)
 {
+	if (cif::VERBOSE)
+		std::cerr << "calculating pp helices" << std::endl;
+
 	size_t N = inResidues.size();
 
 	const float epsilon = 29;
@@ -1368,49 +1394,69 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 	: mDB(db)
 	, m_min_poly_proline_stretch_length(min_poly_proline_stretch_length)
 {
+	using namespace cif::literals;
+
+	if (cif::VERBOSE)
+		std::cerr << "loading residues" << std::endl;
+
 	int resNumber = 0;
 
 	auto &pdbx_poly_seq_scheme = mDB["pdbx_poly_seq_scheme"];
 	auto &atom_site = mDB["atom_site"];
 
-	for (auto r : pdbx_poly_seq_scheme)
+	using key_type = std::tuple<std::string,int>;
+	using index_type = std::map<key_type, size_t>;
+
+	index_type index;
+
+	for (const auto &[asym_id, seq_id, pdb_strand_id, pdb_seq_num, pdb_ins_code]
+		: pdbx_poly_seq_scheme.rows<std::string,int, std::string, int, std::string>("asym_id", "seq_id", "pdb_strand_id", "pdb_seq_num", "pdb_ins_code"))
 	{
-		std::string pdb_strand_id, pdb_ins_code;
-		int pdb_seq_num;
+		index[{asym_id, seq_id}] = mResidues.size();
+		mResidues.emplace_back(model_nr, pdb_strand_id, pdb_seq_num, pdb_ins_code);
+	}
 
-		cif::tie(pdb_strand_id, pdb_seq_num, pdb_ins_code) = r.get("pdb_strand_id", "pdb_seq_num", "pdb_ins_code");
+	for (auto atom : atom_site)
+	{
+		std::string asym_id;
+		int seq_id;
 
-		chain_break_type brk = chain_break_type::NewChain;
-
-		residue residue(model_nr, pdb_strand_id, pdb_seq_num, pdb_ins_code, pdbx_poly_seq_scheme.get_children(r, atom_site));
-
-		if (not residue.mComplete)
+		cif::tie(asym_id, seq_id) = atom.get("label_asym_id", "label_seq_id");
+		auto i = index.find({asym_id, seq_id});
+		if (i == index.end())
 			continue;
+		
+		mResidues[i->second].addAtom(atom);
+	}
 
+	for (auto &residue : mResidues)
+		residue.finish();
+	
+	mResidues.erase(std::remove_if(mResidues.begin(), mResidues.end(), [](const dssp::residue &r) { return not r.mComplete; }), mResidues.end());
+	mStats.count.chains = 1;
+
+	chain_break_type brk = chain_break_type::NewChain;
+	for (size_t i = 0; i < mResidues.size(); ++i)
+	{
+		auto &residue = mResidues[i];
 		++resNumber;
 
-		if (mResidues.empty())
-			mStats.count.chains = 1;
-		else
+		if (i > 0)
 		{
-			if (mResidues.back().mAsymID != residue.mAsymID)
-				++mStats.count.chains;
-
-			if (distance(mResidues.back().mC, residue.mN) > kMaxPeptideBondLength)
+			if (distance(mResidues[i - 1].mC, mResidues[i].mN) > kMaxPeptideBondLength)
 			{
-				if (mResidues.back().mAsymID == residue.mAsymID)
-				{
-					++mStats.count.chains;
+				++mStats.count.chains;
+				if (mResidues[i - 1].mAsymID == mResidues[i].mAsymID)
 					brk = chain_break_type::Gap;
-				}
+				else
+					brk = chain_break_type::NewChain;
+
 				++resNumber;
 			}
 		}
 
 		residue.mChainBreak = brk;
 		residue.mNumber = resNumber;
-
-		mResidues.emplace_back(std::move(residue));
 
 		brk = chain_break_type::None;
 	}
@@ -1482,6 +1528,9 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 
 void DSSP_impl::calculateSecondaryStructure()
 {
+	if (cif::VERBOSE)
+		std::cerr << "calculating secondary structure" << std::endl;
+
 	using namespace cif::literals;
 
 	for (auto [asym1, seq1, asym2, seq2] : mDB["struct_conn"].find<std::string, int, std::string, int>("conn_type_id"_key == "disulf",

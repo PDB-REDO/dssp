@@ -130,8 +130,6 @@ int d_main(int argc, const char *argv[])
 	}
 
 	cif::file f = cif::pdb::read(in);
-	if (cif::VERBOSE >= 0 and not f.is_valid())
-		std::cerr << "Warning, the input file is not valid. Run with --verbose to see why." << std::endl;
 
 	// --------------------------------------------------------------------
 
