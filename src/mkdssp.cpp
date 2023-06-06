@@ -93,16 +93,10 @@ int d_main(int argc, const char *argv[])
 		exit(0);
 	}
 
-	if (config.has("help"))
+	if (config.has("help") or config.operands().empty())
 	{
 		std::cerr << config << std::endl;
-		exit(0);
-	}
-
-	if (config.operands().empty())
-	{
-		std::cerr << "Input file not specified" << std::endl;
-		exit(1);
+		exit(config.has("help") ? 0 : 1);
 	}
 
 	if (config.has("output-format") and config.get<std::string>("output-format") != "dssp" and config.get<std::string>("output-format") != "mmcif")
@@ -130,8 +124,6 @@ int d_main(int argc, const char *argv[])
 	}
 
 	cif::file f = cif::pdb::read(in);
-	if (cif::VERBOSE > 0 and not f.is_valid())
-		std::cerr << "Warning, the input file is not valid. Run with --verbose to see why." << std::endl;
 
 	// --------------------------------------------------------------------
 
