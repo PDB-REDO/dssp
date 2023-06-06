@@ -1413,6 +1413,8 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 
 	index_type index;
 
+	mResidues.reserve(pdbx_poly_seq_scheme.size());
+
 	for (const auto &[asym_id, seq_id, pdb_strand_id, pdb_seq_num, pdb_ins_code]
 		: pdbx_poly_seq_scheme.rows<std::string,int, std::string, int, std::string>("asym_id", "seq_id", "pdb_strand_id", "pdb_seq_num", "pdb_ins_code"))
 	{
