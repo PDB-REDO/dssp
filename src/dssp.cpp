@@ -28,7 +28,6 @@
 
 #include "dssp.hpp"
 
-#include <atomic>
 #include <deque>
 #include <iomanip>
 #include <numeric>
@@ -766,48 +765,36 @@ double CalculateHBondEnergy(residue &inDonor, residue &inAcceptor)
 
 // --------------------------------------------------------------------
 
-void CalculateHBondEnergies(std::vector<residue> &inResidues, int max_thread_count)
+void CalculateHBondEnergies(std::vector<residue> &inResidues)
 {
 	if (cif::VERBOSE)
 		std::cerr << "calculating hbond energies" << std::endl;
 
 	// Calculate the HBond energies
 
-	std::vector<std::thread> tg;
-	std::atomic<size_t> next(0);
-
 	std::unique_ptr<cif::progress_bar> progress;
-	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
+	if (cif::VERBOSE == 0)
 		progress.reset(new cif::progress_bar((inResidues.size() * (inResidues.size() - 1) / 2), "calculate hbond energies"));
 
-	for (int t = 0; t < max_thread_count; ++t)
+	for (uint32_t i = 0; i + 1 < inResidues.size(); ++i)
 	{
-		tg.emplace_back([&next,&inResidues,progress=progress.get()]()
+		auto &ri = inResidues[i];
+
+		for (uint32_t j = i + 1; j < inResidues.size(); ++j)
 		{
-			for (uint32_t i = next++; i < inResidues.size(); i = next++)
+			auto &rj = inResidues[j];
+
+			if (distance_sq(ri.mCAlpha, rj.mCAlpha) < kMinimalCADistance * kMinimalCADistance)
 			{
-				auto &ri = inResidues[i];
-
-				for (uint32_t j = i + 1; j < inResidues.size(); ++j)
-				{
-					auto &rj = inResidues[j];
-
-					if (distance_sq(ri.mCAlpha, rj.mCAlpha) < kMinimalCADistance * kMinimalCADistance)
-					{
-						CalculateHBondEnergy(ri, rj);
-						if (j != i + 1)
-							CalculateHBondEnergy(rj, ri);
-					}
-
-					if (progress)
-						progress->consumed(1);
-				}
+				CalculateHBondEnergy(ri, rj);
+				if (j != i + 1)
+					CalculateHBondEnergy(rj, ri);
 			}
-		});
+
+			if (progress)
+				progress->consumed(1);
+		}
 	}
-	
-	for (auto &t : tg)
-		t.join();
 }
 
 // --------------------------------------------------------------------
@@ -1378,8 +1365,7 @@ void CalculatePPHelices(std::vector<residue> &inResidues, statistics &stats, int
 
 struct DSSP_impl
 {
-	DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_proline_stretch_length,
-		int max_thread_count);
+	DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_proline_stretch_length);
 
 	auto findRes(const std::string &asymID, int seqID)
 	{
@@ -1400,21 +1386,15 @@ struct DSSP_impl
 	std::vector<std::pair<residue *, residue *>> mSSBonds;
 	int m_min_poly_proline_stretch_length;
 	statistics mStats = {};
-
-	int m_max_thread_count;
 };
 
 // --------------------------------------------------------------------
 
-DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_proline_stretch_length, int max_thread_count)
+DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_proline_stretch_length)
 	: mDB(db)
 	, m_min_poly_proline_stretch_length(min_poly_proline_stretch_length)
-	, m_max_thread_count(max_thread_count)
 {
 	using namespace cif::literals;
-
-	if (m_max_thread_count <= 0)
-		m_max_thread_count = std::thread::hardware_concurrency();
 
 	if (cif::VERBOSE)
 		std::cerr << "loading residues" << std::endl;
@@ -1577,7 +1557,7 @@ void DSSP_impl::calculateSecondaryStructure()
 		mSSBonds.emplace_back(&*r1, &*r2);
 	}
 
-	CalculateHBondEnergies(mResidues, m_max_thread_count);
+	CalculateHBondEnergies(mResidues);
 	CalculateBetaSheets(mResidues, mStats);
 	CalculateAlphaHelices(mResidues, mStats);
 	CalculatePPHelices(mResidues, mStats, m_min_poly_proline_stretch_length);
@@ -2156,13 +2136,13 @@ dssp::iterator &dssp::iterator::operator--()
 
 // --------------------------------------------------------------------
 
-dssp::dssp(const cif::mm::structure &s, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility, int max_thread_count)
-	: dssp(s.get_datablock(), static_cast<int>(s.get_model_nr()), min_poly_proline_stretch_length, calculateSurfaceAccessibility, max_thread_count)
+dssp::dssp(const cif::mm::structure &s, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility)
+	: dssp(s.get_datablock(), static_cast<int>(s.get_model_nr()), min_poly_proline_stretch_length, calculateSurfaceAccessibility)
 {
 }
 
-dssp::dssp(const cif::datablock &db, int model_nr, int min_poly_proline_stretch, bool calculateSurfaceAccessibility, int max_thread_count)
-	: m_impl(new DSSP_impl(db, model_nr, min_poly_proline_stretch, max_thread_count))
+dssp::dssp(const cif::datablock &db, int model_nr, int min_poly_proline_stretch, bool calculateSurfaceAccessibility)
+	: m_impl(new DSSP_impl(db, model_nr, min_poly_proline_stretch))
 {
 	if (calculateSurfaceAccessibility)
 	{

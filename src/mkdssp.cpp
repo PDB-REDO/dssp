@@ -81,8 +81,6 @@ int d_main(int argc, const char *argv[])
 		mcfp::make_option("verbose,v", "verbose output"),
 		mcfp::make_option("quiet", "Reduce verbose output to a minimum"),
 
-		mcfp::make_option<unsigned>("max-threads", 0, "Maximum number of threads to use, if zero the nummber of CPU's is the max"),
-
 		mcfp::make_hidden_option<int>("debug,d", "Debug level (for even more verbose output)"));
 
 	config.parse(argc, argv);
@@ -95,16 +93,10 @@ int d_main(int argc, const char *argv[])
 		exit(0);
 	}
 
-	if (config.has("help"))
+	if (config.has("help") or config.operands().empty())
 	{
 		std::cerr << config << std::endl;
-		exit(0);
-	}
-
-	if (config.operands().empty())
-	{
-		std::cerr << "Input file not specified" << std::endl;
-		exit(1);
+		exit(config.has("help") ? 0 : 1);
 	}
 
 	if (config.has("output-format") and config.get<std::string>("output-format") != "dssp" and config.get<std::string>("output-format") != "mmcif")
@@ -164,7 +156,7 @@ int d_main(int argc, const char *argv[])
 			fmt = "cif";
 	}
 
-	dssp dssp(f.front(), 1, pp_stretch, true, config.get<unsigned>("max-threads"));
+	dssp dssp(f.front(), 1, pp_stretch, true);
 
 	if (not output.empty())
 	{
