@@ -97,8 +97,8 @@ class dssp
 		Gap
 	};
 
-	dssp(const cif::datablock &db, int model_nr, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility);
-	dssp(const cif::mm::structure &s, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility);
+	dssp(const cif::datablock &db, int model_nr, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility, int max_thread_count);
+	dssp(const cif::mm::structure &s, int min_poly_proline_stretch_length, bool calculateSurfaceAccessibility, int max_thread_count);
 
 	~dssp();
 
