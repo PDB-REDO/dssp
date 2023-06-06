@@ -877,6 +877,10 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats)
 	// Calculate Bridges
 	std::vector<bridge> bridges;
 
+	std::unique_ptr<cif::progress_bar> progress;
+	if (cif::VERBOSE == 0)
+		progress.reset(new cif::progress_bar(((inResidues.size() - 5) * (inResidues.size() - 4) / 2), "calculate beta sheets"));
+
 	for (uint32_t i = 1; i + 4 < inResidues.size(); ++i)
 	{
 		auto &ri = inResidues[i];
