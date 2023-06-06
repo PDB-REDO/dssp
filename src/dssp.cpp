@@ -27,6 +27,7 @@
 // Calculate DSSP-like secondary structure information
 
 #include "dssp.hpp"
+#include "queue.hpp"
 
 #include <deque>
 #include <iomanip>
@@ -39,6 +40,8 @@ using structure_type = dssp::structure_type;
 using helix_type = dssp::helix_type;
 using helix_position_type = dssp::helix_position_type;
 using chain_break_type = dssp::chain_break_type;
+
+using queue_type = blocking_queue<std::tuple<uint32_t,uint32_t>>;
 
 // --------------------------------------------------------------------
 
@@ -765,35 +768,21 @@ double CalculateHBondEnergy(residue &inDonor, residue &inAcceptor)
 
 // --------------------------------------------------------------------
 
-void CalculateHBondEnergies(std::vector<residue> &inResidues)
+void CalculateHBondEnergies(std::vector<residue> &inResidues, queue_type &q1)
 {
-	if (cif::VERBOSE)
-		std::cerr << "calculating hbond energies" << std::endl;
-
-	// Calculate the HBond energies
-
-	std::unique_ptr<cif::progress_bar> progress;
-	if (cif::VERBOSE == 0)
-		progress.reset(new cif::progress_bar((inResidues.size() * (inResidues.size() - 1) / 2), "calculate hbond energies"));
-
-	for (uint32_t i = 0; i + 1 < inResidues.size(); ++i)
+	for (;;)
 	{
+		const auto &[i, j] = q1.pop();
+
+		if (i == 0 and j == 0)
+			break;
+
 		auto &ri = inResidues[i];
+		auto &rj = inResidues[j];
 
-		for (uint32_t j = i + 1; j < inResidues.size(); ++j)
-		{
-			auto &rj = inResidues[j];
-
-			if (distance_sq(ri.mCAlpha, rj.mCAlpha) < kMinimalCADistance * kMinimalCADistance)
-			{
-				CalculateHBondEnergy(ri, rj);
-				if (j != i + 1)
-					CalculateHBondEnergy(rj, ri);
-			}
-
-			if (progress)
-				progress->consumed(1);
-		}
+		CalculateHBondEnergy(ri, rj);
+		if (j != i + 1)
+			CalculateHBondEnergy(rj, ri);
 	}
 }
 
@@ -869,7 +858,7 @@ bool Linked(const bridge &a, const bridge &b)
 
 // --------------------------------------------------------------------
 
-void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats)
+void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, std::vector<std::tuple<uint32_t, uint32_t>> &q)
 {
 	if (cif::VERBOSE)
 		std::cerr << "calculating beta sheets" << std::endl;
@@ -877,57 +866,49 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats)
 	// Calculate Bridges
 	std::vector<bridge> bridges;
 
-	std::unique_ptr<cif::progress_bar> progress;
-	if (cif::VERBOSE == 0)
-		progress.reset(new cif::progress_bar(((inResidues.size() - 5) * (inResidues.size() - 4) / 2), "calculate beta sheets"));
-
-	for (uint32_t i = 1; i + 4 < inResidues.size(); ++i)
+	for (const auto &[i, j] : q)
 	{
 		auto &ri = inResidues[i];
+		auto &rj = inResidues[j];
 
-		for (uint32_t j = i + 3; j + 1 < inResidues.size(); ++j)
+		bridge_type type = TestBridge(ri, rj);
+		if (type == bridge_type::None)
+			continue;
+
+		bool found = false;
+		for (bridge &bridge : bridges)
 		{
-			auto &rj = inResidues[j];
-
-			bridge_type type = TestBridge(ri, rj);
-			if (type == bridge_type::None)
+			if (type != bridge.type or i != bridge.i.back() + 1)
 				continue;
 
-			bool found = false;
-			for (bridge &bridge : bridges)
+			if (type == bridge_type::Parallel and bridge.j.back() + 1 == j)
 			{
-				if (type != bridge.type or i != bridge.i.back() + 1)
-					continue;
-
-				if (type == bridge_type::Parallel and bridge.j.back() + 1 == j)
-				{
-					bridge.i.push_back(i);
-					bridge.j.push_back(j);
-					found = true;
-					break;
-				}
-
-				if (type == bridge_type::AntiParallel and bridge.j.front() - 1 == j)
-				{
-					bridge.i.push_back(i);
-					bridge.j.push_front(j);
-					found = true;
-					break;
-				}
-			}
-
-			if (not found)
-			{
-				bridge bridge = {};
-
-				bridge.type = type;
 				bridge.i.push_back(i);
-				bridge.chainI = ri.mAsymID;
 				bridge.j.push_back(j);
-				bridge.chainJ = rj.mAsymID;
-
-				bridges.push_back(bridge);
+				found = true;
+				break;
 			}
+
+			if (type == bridge_type::AntiParallel and bridge.j.front() - 1 == j)
+			{
+				bridge.i.push_back(i);
+				bridge.j.push_front(j);
+				found = true;
+				break;
+			}
+		}
+
+		if (not found)
+		{
+			bridge bridge = {};
+
+			bridge.type = type;
+			bridge.i.push_back(i);
+			bridge.chainI = ri.mAsymID;
+			bridge.j.push_back(j);
+			bridge.chainJ = rj.mAsymID;
+
+			bridges.push_back(bridge);
 		}
 	}
 
@@ -1563,10 +1544,48 @@ void DSSP_impl::calculateSecondaryStructure()
 		mSSBonds.emplace_back(&*r1, &*r2);
 	}
 
-	CalculateHBondEnergies(mResidues);
-	CalculateBetaSheets(mResidues, mStats);
+	// Calculate the HBond energies
+
+	queue_type q1, q2;
+	std::vector<std::tuple<uint32_t,uint32_t>> near;
+
+	std::thread hbond_thread(std::bind(&CalculateHBondEnergies, std::ref(mResidues), std::ref(q1)));
+
+	std::unique_ptr<cif::progress_bar> progress;
+	if (cif::VERBOSE == 0)
+		progress.reset(new cif::progress_bar((mResidues.size() * (mResidues.size() - 1) / 2), "calculate hbond energies"));
+
+	for (uint32_t i = 0; i + 1 < mResidues.size(); ++i)
+	{
+		auto &ri = mResidues[i];
+
+		for (uint32_t j = i + 1; j < mResidues.size(); ++j)
+		{
+			auto &rj = mResidues[j];
+
+			if (distance_sq(ri.mCAlpha, rj.mCAlpha) < kMinimalCADistance * kMinimalCADistance)
+			{
+				q1.push({ i, j });
+				near.emplace_back(i, j);
+			}
+
+			if (progress)
+				progress->consumed(1);
+		}
+	}
+
+	q1.push({0, 0});
+
+	hbond_thread.join();
+
+	std::thread bsheet_thread(std::bind(&CalculateBetaSheets, std::ref(mResidues), std::ref(mStats), std::ref(near)));
+
+	// CalculateHBondEnergies(mResidues);
+	// CalculateBetaSheets(mResidues, mStats);
 	CalculateAlphaHelices(mResidues, mStats);
 	CalculatePPHelices(mResidues, mStats, m_min_poly_proline_stretch_length);
+
+	bsheet_thread.join();
 
 	if (cif::VERBOSE > 1)
 	{
