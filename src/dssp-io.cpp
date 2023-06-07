@@ -359,7 +359,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 		if (not sheetMap.count(sheetID))
 			sheetMap[sheetID] = static_cast<int>(sheetMap.size());
 
-		strands.emplace_back(std::make_tuple(sheetMap[sheetID], res_list{ res }));
+		strands.emplace_back(sheetMap[sheetID], res_list{ res });
 	}
 
 	// sort the strands vector
@@ -379,10 +379,15 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	int lastSheet = -1;
 	for (const auto &[sheetNr, strand] : strands)
 	{
-		if (sheetNr != lastSheet)
+		if (sheetNr == lastSheet)
+			continue;
+
+		auto id = cif::cif_id_for_number(sheetNr);
+
+		if (not struct_sheet.exists(cif::key("id") == id))
 		{
 			struct_sheet.emplace({
-				{ "id", cif::cif_id_for_number(sheetNr) },
+				{ "id", id },
 				{ "number_strands",
 					std::count_if(strands.begin(), strands.end(), [nr = sheetNr](std::tuple<int, res_list> const &s)
 						{ return std::get<0>(s) == nr; })
