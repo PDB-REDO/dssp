@@ -1562,7 +1562,7 @@ void DSSP_impl::calculateSecondaryStructure()
 
 	std::unique_ptr<cif::progress_bar> progress;
 	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
-		progress.reset(new cif::progress_bar(mResidues.size() - 1, "calculate distances"));
+		progress.reset(new cif::progress_bar((mResidues.size() * (mResidues.size() - 1)), "calculate distances"));
 
 	// Calculate the HBond energies
 	std::vector<std::tuple<uint32_t,uint32_t>> near;
@@ -1582,7 +1582,7 @@ void DSSP_impl::calculateSecondaryStructure()
 		}
 
 		if (progress)
-			progress->consumed(1);
+			progress->consumed(mResidues.size() - i - 1);
 	}
 
 	if (cif::VERBOSE > 0)

@@ -74,6 +74,8 @@ int d_main(int argc, const char *argv[])
 		mcfp::make_option("write-other", "If set, write the type OTHER for loops, default is to leave this out"),
 		mcfp::make_option("no-dssp-categories", "If set, will suppress output of new DSSP output in mmCIF format"),
 
+		mcfp::make_option("calculate-accessibility", "Default is to not calculate the surface accessibility when the output format is mmCIF"),
+
 		mcfp::make_option<std::string>("mmcif-dictionary", "Path to the mmcif_pdbx.dic file to use instead of default"),
 
 		mcfp::make_option("help,h", "Display help message"),
@@ -156,7 +158,7 @@ int d_main(int argc, const char *argv[])
 			fmt = "cif";
 	}
 
-	dssp dssp(f.front(), 1, pp_stretch, true);
+	dssp dssp(f.front(), 1, pp_stretch, fmt == "dssp" or config.has("calculate-accessibility"));
 
 	if (not output.empty())
 	{
