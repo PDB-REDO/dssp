@@ -341,9 +341,13 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	{
 		if (sheetNr != lastSheet)
 		{
-			struct_sheet.emplace({ { "id", cif::cif_id_for_number(sheetNr) },
-				{ "number_strands", std::count_if(strands.begin(), strands.end(), [nr = sheetNr](std::tuple<int, res_list> const &s)
-										{ return std::get<0>(s) == nr; }) } });
+			struct_sheet.emplace({
+				{ "id", cif::cif_id_for_number(sheetNr) },
+				{ "number_strands",
+					std::count_if(strands.begin(), strands.end(), [nr = sheetNr](std::tuple<int, res_list> const &s)
+						{ return std::get<0>(s) == nr; })
+				}
+			});
 
 			lastSheet = sheetNr;
 		}

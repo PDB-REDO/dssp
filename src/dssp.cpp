@@ -860,14 +860,21 @@ bool Linked(const bridge &a, const bridge &b)
 
 void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, std::vector<std::tuple<uint32_t, uint32_t>> &q)
 {
-	if (cif::VERBOSE)
-		std::cerr << "calculating beta sheets" << std::endl;
+	// if (cif::VERBOSE)
+	// 	std::cerr << "calculating beta sheets" << std::endl;
+
+	std::unique_ptr<cif::progress_bar> progress;
+	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
+		progress.reset(new cif::progress_bar(q.size(), "calculate hbond energies"));
 
 	// Calculate Bridges
 	std::vector<bridge> bridges;
 
 	for (const auto &[i, j] : q)
 	{
+		if (progress)
+			progress->consumed(1);
+
 		auto &ri = inResidues[i];
 		auto &rj = inResidues[j];
 
@@ -1578,14 +1585,14 @@ void DSSP_impl::calculateSecondaryStructure()
 
 	hbond_thread.join();
 
-	std::thread bsheet_thread(std::bind(&CalculateBetaSheets, std::ref(mResidues), std::ref(mStats), std::ref(near)));
+	// std::thread bsheet_thread(std::bind(&CalculateBetaSheets, std::ref(mResidues), std::ref(mStats), std::ref(near)));
 
 	// CalculateHBondEnergies(mResidues);
-	// CalculateBetaSheets(mResidues, mStats);
+	CalculateBetaSheets(mResidues, mStats, near);
 	CalculateAlphaHelices(mResidues, mStats);
 	CalculatePPHelices(mResidues, mStats, m_min_poly_proline_stretch_length);
 
-	bsheet_thread.join();
+	// bsheet_thread.join();
 
 	if (cif::VERBOSE > 1)
 	{
