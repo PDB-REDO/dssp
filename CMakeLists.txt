@@ -135,7 +135,8 @@ target_link_libraries(mkdssp PRIVATE dssp cifpp::cifpp libmcfp::libmcfp dssp::ds
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
 		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
-		${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
+		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
+		${PROJECT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic)
 endif()
 
 if(BUILD_WEBSERVER)

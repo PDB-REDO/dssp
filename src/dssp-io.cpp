@@ -28,6 +28,7 @@
 #include "revision.hpp"
 
 #include <cif++/pdb/io.hpp>
+#include <cif++/dictionary_parser.hpp>
 
 #include <exception>
 #include <filesystem>
@@ -224,8 +225,6 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 
 void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 {
-	using ResidueInfo = dssp::residue_info;
-
 	auto &hb = db["dssp_struct_bridge_pairs"];
 
 	hb.add_column("id");
@@ -248,23 +247,16 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 
 	for (auto &res : dssp)
 	{
-		auto write_res = [&](const std::string &prefix, ResidueInfo const &r, double energy)
-		{
-			hb.back().assign({ { prefix + "label_comp_id", r.compound_id() },
-				{ prefix + "label_seq_id", r.seq_id() },
-				{ prefix + "label_asym_id", r.asym_id() },
-				// { prefix + "auth_comp_id", r.compound_id() },
-				{ prefix + "auth_seq_id", r.auth_seq_id() },
-				{ prefix + "auth_asym_id", r.auth_asym_id() },
-				{ prefix + "pdbx_PDB_ins_code", r.pdb_ins_code() } });
-
-			if (not prefix.empty())
-				hb.back().assign({ { prefix + "energy", energy, 1 } });
-		};
-
-		hb.emplace({ { "id", hb.get_unique_id("") } });
-
-		write_res("", res, 0);
+		cif::row_initializer data({
+			{ "id", hb.get_unique_id("") },
+			{ "label_comp_id", res.compound_id() },
+			{ "label_seq_id", res.seq_id() },
+			{ "label_asym_id", res.asym_id() },
+			// { "auth_comp_id", res.compound_id() },
+			{ "auth_seq_id", res.auth_seq_id() },
+			{ "auth_asym_id", res.auth_asym_id() },
+			{ "pdbx_PDB_ins_code", res.pdb_ins_code() }
+		});
 
 		for (int i : { 0, 1 })
 		{
@@ -272,11 +264,59 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 			const auto &&[donor, donorEnergy] = res.donor(i);
 
 			if (acceptor)
-				write_res(i ? "acceptor_2_" : "acceptor_1_", acceptor, acceptorEnergy);
+			{
+				if (i == 0)
+				{
+					data.emplace_back("acceptor_1_label_comp_id", acceptor.compound_id());
+					data.emplace_back("acceptor_1_label_seq_id", acceptor.seq_id());
+					data.emplace_back("acceptor_1_label_asym_id", acceptor.asym_id());
+					// data.emplace_back("acceptor_1_auth_comp_id", acceptor.compound_id());
+					data.emplace_back("acceptor_1_auth_seq_id", acceptor.auth_seq_id());
+					data.emplace_back("acceptor_1_auth_asym_id", acceptor.auth_asym_id());
+					data.emplace_back("acceptor_1_pdbx_PDB_ins_code", acceptor.pdb_ins_code());
+					data.emplace_back("acceptor_1_energy", acceptorEnergy, 1);
+				}
+				else
+				{
+					data.emplace_back("acceptor_2_label_comp_id", acceptor.compound_id());
+					data.emplace_back("acceptor_2_label_seq_id", acceptor.seq_id());
+					data.emplace_back("acceptor_2_label_asym_id", acceptor.asym_id());
+					// data.emplace_back("acceptor_2_auth_comp_id", acceptor.compound_id());
+					data.emplace_back("acceptor_2_auth_seq_id", acceptor.auth_seq_id());
+					data.emplace_back("acceptor_2_auth_asym_id", acceptor.auth_asym_id());
+					data.emplace_back("acceptor_2_pdbx_PDB_ins_code", acceptor.pdb_ins_code());
+					data.emplace_back("acceptor_2_energy", acceptorEnergy, 1);
+				}
+			}
 
 			if (donor)
-				write_res(i ? "donor_2_" : "donor_1_", donor, donorEnergy);
+			{
+				if (i == 0)
+				{
+					data.emplace_back("donor_1_label_comp_id", donor.compound_id());
+					data.emplace_back("donor_1_label_seq_id", donor.seq_id());
+					data.emplace_back("donor_1_label_asym_id", donor.asym_id());
+					// data.emplace_back("donor_1_auth_comp_id", donor.compound_id());
+					data.emplace_back("donor_1_auth_seq_id", donor.auth_seq_id());
+					data.emplace_back("donor_1_auth_asym_id", donor.auth_asym_id());
+					data.emplace_back("donor_1_pdbx_PDB_ins_code", donor.pdb_ins_code());
+					data.emplace_back("donor_1_energy", donorEnergy, 1);
+				}
+				else
+				{
+					data.emplace_back("donor_2_label_comp_id", donor.compound_id());
+					data.emplace_back("donor_2_label_seq_id", donor.seq_id());
+					data.emplace_back("donor_2_label_asym_id", donor.asym_id());
+					// data.emplace_back("donor_2_auth_comp_id", donor.compound_id());
+					data.emplace_back("donor_2_auth_seq_id", donor.auth_seq_id());
+					data.emplace_back("donor_2_auth_asym_id", donor.auth_asym_id());
+					data.emplace_back("donor_2_pdbx_PDB_ins_code", donor.pdb_ins_code());
+					data.emplace_back("donor_2_energy", donorEnergy, 1);
+				}
+			}
 		}
+
+		hb.emplace(std::move(data));
 	}
 }
 
@@ -1071,6 +1111,14 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool writeExperimental, std::ostream &os)
 {
 	using namespace std::literals;
+
+	auto &validator = const_cast<cif::validator &>(*db.get_validator());
+	if (validator.get_validator_for_category("dssp_struct_summary") == nullptr)
+	{
+		auto dssp_extension = cif::load_resource("dssp-extension.dic");
+		if (dssp_extension)
+			cif::extend_dictionary(validator, *dssp_extension);
+	}
 
 	if (dssp.empty())
 	{
