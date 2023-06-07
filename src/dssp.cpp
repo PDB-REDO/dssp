@@ -768,7 +768,7 @@ double CalculateHBondEnergy(residue &inDonor, residue &inAcceptor)
 
 // --------------------------------------------------------------------
 
-void CalculateHBondEnergies(std::vector<residue> &inResidues, queue_type &q1)
+void CalculateHBondEnergies(std::vector<residue> &inResidues, queue_type &q1, cif::progress_bar *progress)
 {
 	for (;;)
 	{
@@ -783,6 +783,9 @@ void CalculateHBondEnergies(std::vector<residue> &inResidues, queue_type &q1)
 		CalculateHBondEnergy(ri, rj);
 		if (j != i + 1)
 			CalculateHBondEnergy(rj, ri);
+		
+		if (progress)
+			progress->consumed(1);
 	}
 }
 
@@ -865,7 +868,7 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, st
 
 	std::unique_ptr<cif::progress_bar> progress;
 	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
-		progress.reset(new cif::progress_bar(q.size(), "calculate hbond energies"));
+		progress.reset(new cif::progress_bar(q.size(), "calculate beta sheets"));
 
 	// Calculate Bridges
 	std::vector<bridge> bridges;
@@ -1556,11 +1559,11 @@ void DSSP_impl::calculateSecondaryStructure()
 	queue_type q1, q2;
 	std::vector<std::tuple<uint32_t,uint32_t>> near;
 
-	std::thread hbond_thread(std::bind(&CalculateHBondEnergies, std::ref(mResidues), std::ref(q1)));
-
 	std::unique_ptr<cif::progress_bar> progress;
 	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
 		progress.reset(new cif::progress_bar((mResidues.size() * (mResidues.size() - 1) / 2), "calculate hbond energies"));
+
+	std::thread hbond_thread(std::bind(&CalculateHBondEnergies, std::ref(mResidues), std::ref(q1), progress.get()));
 
 	for (uint32_t i = 0; i + 1 < mResidues.size(); ++i)
 	{
@@ -1575,9 +1578,6 @@ void DSSP_impl::calculateSecondaryStructure()
 				q1.push({ i, j });
 				near.emplace_back(i, j);
 			}
-
-			if (progress)
-				progress->consumed(1);
 		}
 	}
 
