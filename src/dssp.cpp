@@ -768,15 +768,14 @@ double CalculateHBondEnergy(residue &inDonor, residue &inAcceptor)
 
 // --------------------------------------------------------------------
 
-void CalculateHBondEnergies(std::vector<residue> &inResidues, queue_type &q1, cif::progress_bar *progress)
+void CalculateHBondEnergies(std::vector<residue> &inResidues, std::vector<std::tuple<uint32_t, uint32_t>> &q)
 {
-	for (;;)
+	std::unique_ptr<cif::progress_bar> progress;
+	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
+		progress.reset(new cif::progress_bar(q.size(), "calculate hbond energies"));
+
+	for (const auto &[i, j] : q)
 	{
-		const auto &[i, j] = q1.pop();
-
-		if (i == 0 and j == 0)
-			break;
-
 		auto &ri = inResidues[i];
 		auto &rj = inResidues[j];
 
@@ -1554,45 +1553,47 @@ void DSSP_impl::calculateSecondaryStructure()
 		mSSBonds.emplace_back(&*r1, &*r2);
 	}
 
-	// Calculate the HBond energies
+	// Prefetch the c-alpha positions. No, really, that might be the trick
 
-	queue_type q1, q2;
-	std::vector<std::tuple<uint32_t,uint32_t>> near;
+	std::vector<point> cAlphas;
+	cAlphas.reserve(mResidues.size());
+	for (auto &r : mResidues)
+		cAlphas.emplace_back(r.mCAlpha);
 
 	std::unique_ptr<cif::progress_bar> progress;
 	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
-		progress.reset(new cif::progress_bar((mResidues.size() * (mResidues.size() - 1) / 2), "calculate hbond energies"));
+		progress.reset(new cif::progress_bar(mResidues.size() - 1, "calculate distances"));
 
-	std::thread hbond_thread(std::bind(&CalculateHBondEnergies, std::ref(mResidues), std::ref(q1), progress.get()));
+	// Calculate the HBond energies
+	std::vector<std::tuple<uint32_t,uint32_t>> near;
 
 	for (uint32_t i = 0; i + 1 < mResidues.size(); ++i)
 	{
-		auto &ri = mResidues[i];
+		auto cai = cAlphas[i];
 
 		for (uint32_t j = i + 1; j < mResidues.size(); ++j)
 		{
-			auto &rj = mResidues[j];
+			auto caj = cAlphas[j];
 
-			if (distance_sq(ri.mCAlpha, rj.mCAlpha) < kMinimalCADistance * kMinimalCADistance)
-			{
-				q1.push({ i, j });
-				near.emplace_back(i, j);
-			}
+			if (distance_sq(cai, caj) > (kMinimalCADistance * kMinimalCADistance))
+				continue;
+
+			near.emplace_back(i, j);
 		}
+
+		if (progress)
+			progress->consumed(1);
 	}
 
-	q1.push({0, 0});
+	if (cif::VERBOSE > 0)
+		std::cerr << "Considering " << near.size() << " pairs of residues" << std::endl;
 
-	hbond_thread.join();
+	progress.reset(nullptr);
 
-	// std::thread bsheet_thread(std::bind(&CalculateBetaSheets, std::ref(mResidues), std::ref(mStats), std::ref(near)));
-
-	// CalculateHBondEnergies(mResidues);
+	CalculateHBondEnergies(mResidues, near);
 	CalculateBetaSheets(mResidues, mStats, near);
 	CalculateAlphaHelices(mResidues, mStats);
 	CalculatePPHelices(mResidues, mStats, m_min_poly_proline_stretch_length);
-
-	// bsheet_thread.join();
 
 	if (cif::VERBOSE > 1)
 	{

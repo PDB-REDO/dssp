@@ -379,15 +379,10 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	int lastSheet = -1;
 	for (const auto &[sheetNr, strand] : strands)
 	{
-		if (sheetNr == lastSheet)
-			continue;
-
-		auto id = cif::cif_id_for_number(sheetNr);
-
-		if (not struct_sheet.exists(cif::key("id") == id))
+		if (sheetNr != lastSheet)
 		{
 			struct_sheet.emplace({
-				{ "id", id },
+				{ "id", cif::cif_id_for_number(sheetNr) },
 				{ "number_strands",
 					std::count_if(strands.begin(), strands.end(), [nr = sheetNr](std::tuple<int, res_list> const &s)
 						{ return std::get<0>(s) == nr; })
