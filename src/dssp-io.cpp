@@ -886,14 +886,15 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 
 	auto &dssp_statistics = db["dssp_statistics"];
 
-	dssp_statistics.emplace({ { "entry_id", db.name() },
+	auto stats_i = dssp_statistics.emplace({ { "entry_id", db.name() },
 		{ "nr_of_residues", stats.count.residues },
 		{ "nr_of_chains", stats.count.chains },
 		{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
 		{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
-		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges },
-
-		{ "accessible_surface_of_protein", stats.accessible_surface } });
+		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges } });
+	
+	if (stats.accessible_surface > 0)
+		(*stats_i)["accessible_surface_of_protein"] = stats.accessible_surface;
 
 	auto &dssp_struct_hbonds = db["dssp_statistics_hbond"];
 
@@ -966,6 +967,8 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 
 void writeSummary(cif::datablock &db, const dssp &dssp)
 {
+	bool writeAccessibility = dssp.get_statistics().accessible_surface > 0;
+
 	// A approximation of the old format
 
 	auto &dssp_struct_summary = db["dssp_struct_summary"];
@@ -1064,12 +1067,13 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 
 			{ "sheet", res.sheet() ? cif::cif_id_for_number(res.sheet() - 1) : "." },
 
-			{ "accessibility", res.accessibility(), 1 },
-
 			{ "x_ca", cax, 1 },
 			{ "y_ca", cay, 1 },
 			{ "z_ca", caz, 1 },
 		};
+
+		if (writeAccessibility)
+			data.emplace_back("accessibility", res.accessibility(), 1);
 
 		if (res.tco().has_value())
 			data.emplace_back("TCO", *res.tco(), 3);
