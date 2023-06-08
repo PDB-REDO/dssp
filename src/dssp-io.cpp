@@ -396,26 +396,16 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	// Each residue resides in a single strand which is part of a single sheet
 	// this function returns the sequence number inside the sheet for the strand
 	// containing res
-	auto strandNrForResidue = [&strands, &sheetMap](dssp::residue_info const &res)
+	std::map<int,int> strandMap;
+	int strandNr = 0;
+
+	for (auto &&[sheet, strand] : strands)
 	{
-		for (const auto &[k, iSheet] : sheetMap)
-		{
-			int result = 0;
-			for (auto &&[sheet, strand] : strands)
-			{
-				if (sheet != iSheet)
-					continue;
+		for (auto &r : strand)
+			strandMap[r.nr()] = strandNr;
 
-				if (std::find(strand.begin(), strand.end(), res) != strand.end())
-					return result;
-
-				++result;
-			}
-		}
-
-		assert(false);
-		return -1;
-	};
+		++strandNr;
+	}
 
 	// This map is used to record the sense of a ladder, and can be used
 	// to detect ladders already seen.
@@ -426,7 +416,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 		if (res.type() != ss_type::Strand)
 			continue;
 
-		int s1 = strandNrForResidue(res);
+		int s1 = strandMap[res.nr()];
 
 		for (int i : { 0, 1 })
 		{
@@ -434,7 +424,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			if (not p or p.asym_id() != res.asym_id() or p.sheet() != res.sheet() or p.type() != ss_type::Strand)
 				continue;
 
-			int s2 = strandNrForResidue(p);
+			int s2 = strandMap[p.nr()];
 			// assert(s1 != s2);
 			if (s2 == s1)
 				continue;
@@ -767,8 +757,9 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			auto &beg = strand.front();
 			auto &end = strand.back();
 
-			struct_sheet_range.emplace({ { "sheet_id", cif::cif_id_for_number(sheet) },
-				{ "id", strandNrForResidue(strand.front()) + 1 },
+			struct_sheet_range.emplace({
+				{ "sheet_id", cif::cif_id_for_number(sheet) },
+				{ "id", strandMap[strand.front().nr()] + 1 },
 				{ "beg_label_comp_id", beg.compound_id() },
 				{ "beg_label_asym_id", beg.asym_id() },
 				{ "beg_label_seq_id", beg.seq_id() },
