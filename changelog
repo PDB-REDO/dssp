@@ -1,3 +1,6 @@
+Version 4.3.1.1
+- Check to see if data will fit in old format before starting calculations
+
 Version 4.3.1
 - Optimised for speed
 - Fix in sheet numbering (mmCIF output)

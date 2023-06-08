@@ -158,6 +158,20 @@ int d_main(int argc, const char *argv[])
 			fmt = "cif";
 	}
 
+	if (fmt == "dssp")
+	{
+		// See if the data will fit at all
+		auto &db = f.front();
+		for (const auto &[chain_id, seq_nr] : db["pdbx_poly_seq_scheme"].rows<std::string,int>("pdb_strand_id", "pdb_seq_num"))
+		{
+			if (chain_id.length() > 1 or seq_nr > 99999)
+			{
+				std::cerr << "The data in this file won't fit in the old DSSP format, please use the mmCIF format instead." << std::endl;
+				exit(2);
+			}
+		}
+	}
+
 	dssp dssp(f.front(), 1, pp_stretch, fmt == "dssp" or config.has("calculate-accessibility"));
 
 	if (not output.empty())

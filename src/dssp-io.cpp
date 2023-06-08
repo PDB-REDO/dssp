@@ -49,7 +49,7 @@ std::string ResidueToDSSPLine(const dssp::residue_info &info)
 	// auto& residue = info.residue();
 	auto &residue = info;
 
-	if (residue.asym_id().length() > 1)
+	if (residue.pdb_strand_id().length() > 1)
 		throw std::runtime_error("This file contains data that won't fit in the original DSSP format");
 
 	char code = residue.compound_letter();
