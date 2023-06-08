@@ -28,6 +28,7 @@
 #include "revision.hpp"
 
 #include <cif++/pdb/io.hpp>
+#include <cif++/dictionary_parser.hpp>
 
 #include <exception>
 #include <filesystem>
@@ -224,8 +225,6 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 
 void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 {
-	using ResidueInfo = dssp::residue_info;
-
 	auto &hb = db["dssp_struct_bridge_pairs"];
 
 	hb.add_column("id");
@@ -248,23 +247,16 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 
 	for (auto &res : dssp)
 	{
-		auto write_res = [&](const std::string &prefix, ResidueInfo const &r, double energy)
-		{
-			hb.back().assign({ { prefix + "label_comp_id", r.compound_id() },
-				{ prefix + "label_seq_id", r.seq_id() },
-				{ prefix + "label_asym_id", r.asym_id() },
-				// { prefix + "auth_comp_id", r.compound_id() },
-				{ prefix + "auth_seq_id", r.auth_seq_id() },
-				{ prefix + "auth_asym_id", r.auth_asym_id() },
-				{ prefix + "pdbx_PDB_ins_code", r.pdb_ins_code() } });
-
-			if (not prefix.empty())
-				hb.back().assign({ { prefix + "energy", energy, 1 } });
-		};
-
-		hb.emplace({ { "id", hb.get_unique_id("") } });
-
-		write_res("", res, 0);
+		cif::row_initializer data({
+			{ "id", hb.get_unique_id("") },
+			{ "label_comp_id", res.compound_id() },
+			{ "label_seq_id", res.seq_id() },
+			{ "label_asym_id", res.asym_id() },
+			// { "auth_comp_id", res.compound_id() },
+			{ "auth_seq_id", res.auth_seq_id() },
+			{ "auth_asym_id", res.auth_asym_id() },
+			{ "pdbx_PDB_ins_code", res.pdb_ins_code() }
+		});
 
 		for (int i : { 0, 1 })
 		{
@@ -272,11 +264,59 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 			const auto &&[donor, donorEnergy] = res.donor(i);
 
 			if (acceptor)
-				write_res(i ? "acceptor_2_" : "acceptor_1_", acceptor, acceptorEnergy);
+			{
+				if (i == 0)
+				{
+					data.emplace_back("acceptor_1_label_comp_id", acceptor.compound_id());
+					data.emplace_back("acceptor_1_label_seq_id", acceptor.seq_id());
+					data.emplace_back("acceptor_1_label_asym_id", acceptor.asym_id());
+					// data.emplace_back("acceptor_1_auth_comp_id", acceptor.compound_id());
+					data.emplace_back("acceptor_1_auth_seq_id", acceptor.auth_seq_id());
+					data.emplace_back("acceptor_1_auth_asym_id", acceptor.auth_asym_id());
+					data.emplace_back("acceptor_1_pdbx_PDB_ins_code", acceptor.pdb_ins_code());
+					data.emplace_back("acceptor_1_energy", acceptorEnergy, 1);
+				}
+				else
+				{
+					data.emplace_back("acceptor_2_label_comp_id", acceptor.compound_id());
+					data.emplace_back("acceptor_2_label_seq_id", acceptor.seq_id());
+					data.emplace_back("acceptor_2_label_asym_id", acceptor.asym_id());
+					// data.emplace_back("acceptor_2_auth_comp_id", acceptor.compound_id());
+					data.emplace_back("acceptor_2_auth_seq_id", acceptor.auth_seq_id());
+					data.emplace_back("acceptor_2_auth_asym_id", acceptor.auth_asym_id());
+					data.emplace_back("acceptor_2_pdbx_PDB_ins_code", acceptor.pdb_ins_code());
+					data.emplace_back("acceptor_2_energy", acceptorEnergy, 1);
+				}
+			}
 
 			if (donor)
-				write_res(i ? "donor_2_" : "donor_1_", donor, donorEnergy);
+			{
+				if (i == 0)
+				{
+					data.emplace_back("donor_1_label_comp_id", donor.compound_id());
+					data.emplace_back("donor_1_label_seq_id", donor.seq_id());
+					data.emplace_back("donor_1_label_asym_id", donor.asym_id());
+					// data.emplace_back("donor_1_auth_comp_id", donor.compound_id());
+					data.emplace_back("donor_1_auth_seq_id", donor.auth_seq_id());
+					data.emplace_back("donor_1_auth_asym_id", donor.auth_asym_id());
+					data.emplace_back("donor_1_pdbx_PDB_ins_code", donor.pdb_ins_code());
+					data.emplace_back("donor_1_energy", donorEnergy, 1);
+				}
+				else
+				{
+					data.emplace_back("donor_2_label_comp_id", donor.compound_id());
+					data.emplace_back("donor_2_label_seq_id", donor.seq_id());
+					data.emplace_back("donor_2_label_asym_id", donor.asym_id());
+					// data.emplace_back("donor_2_auth_comp_id", donor.compound_id());
+					data.emplace_back("donor_2_auth_seq_id", donor.auth_seq_id());
+					data.emplace_back("donor_2_auth_asym_id", donor.auth_asym_id());
+					data.emplace_back("donor_2_pdbx_PDB_ins_code", donor.pdb_ins_code());
+					data.emplace_back("donor_2_energy", donorEnergy, 1);
+				}
+			}
 		}
+
+		hb.emplace(std::move(data));
 	}
 }
 
@@ -319,7 +359,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 		if (not sheetMap.count(sheetID))
 			sheetMap[sheetID] = static_cast<int>(sheetMap.size());
 
-		strands.emplace_back(std::make_tuple(sheetMap[sheetID], res_list{ res }));
+		strands.emplace_back(sheetMap[sheetID], res_list{ res });
 	}
 
 	// sort the strands vector
@@ -341,9 +381,13 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	{
 		if (sheetNr != lastSheet)
 		{
-			struct_sheet.emplace({ { "id", cif::cif_id_for_number(sheetNr) },
-				{ "number_strands", std::count_if(strands.begin(), strands.end(), [nr = sheetNr](std::tuple<int, res_list> const &s)
-										{ return std::get<0>(s) == nr; }) } });
+			struct_sheet.emplace({
+				{ "id", cif::cif_id_for_number(sheetNr) },
+				{ "number_strands",
+					std::count_if(strands.begin(), strands.end(), [nr = sheetNr](std::tuple<int, res_list> const &s)
+						{ return std::get<0>(s) == nr; })
+				}
+			});
 
 			lastSheet = sheetNr;
 		}
@@ -352,26 +396,20 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	// Each residue resides in a single strand which is part of a single sheet
 	// this function returns the sequence number inside the sheet for the strand
 	// containing res
-	auto strandNrForResidue = [&strands, &sheetMap](dssp::residue_info const &res)
+	std::map<int,int> strandMap;
+	int strandNr = 0;
+
+	for (auto &&[sheet, strand] : strands)
 	{
-		for (const auto &[k, iSheet] : sheetMap)
+		for (auto &r : strand)
 		{
-			int result = 0;
-			for (auto &&[sheet, strand] : strands)
-			{
-				if (sheet != iSheet)
-					continue;
-
-				if (std::find(strand.begin(), strand.end(), res) != strand.end())
-					return result;
-
-				++result;
-			}
+			if (r.type() != ss_type::Strand)
+				continue;
+			strandMap[r.nr()] = strandNr;
 		}
 
-		assert(false);
-		return -1;
-	};
+		++strandNr;
+	}
 
 	// This map is used to record the sense of a ladder, and can be used
 	// to detect ladders already seen.
@@ -382,7 +420,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 		if (res.type() != ss_type::Strand)
 			continue;
 
-		int s1 = strandNrForResidue(res);
+		int s1 = strandMap[res.nr()];
 
 		for (int i : { 0, 1 })
 		{
@@ -390,7 +428,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			if (not p or p.asym_id() != res.asym_id() or p.sheet() != res.sheet() or p.type() != ss_type::Strand)
 				continue;
 
-			int s2 = strandNrForResidue(p);
+			int s2 = strandMap[p.nr()];
 			// assert(s1 != s2);
 			if (s2 == s1)
 				continue;
@@ -428,10 +466,9 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 		res_list strand1, strand2;
 
-		int strandIx = 0;
-		for (auto const &s : strands)
+		for (int strandIx = 0; static_cast<size_t>(strandIx) < strands.size(); ++strandIx)
 		{
-			const auto &[sSheet, strand] = s;
+			const auto &[sSheet, strand] = strands[strandIx];
 			if (sSheet != sheet)
 				continue;
 
@@ -442,8 +479,6 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 				strand2 = strand;
 				break;
 			}
-
-			++strandIx;
 		}
 
 		assert(not(strand1.empty() or strand2.empty()));
@@ -723,8 +758,9 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			auto &beg = strand.front();
 			auto &end = strand.back();
 
-			struct_sheet_range.emplace({ { "sheet_id", cif::cif_id_for_number(sheet) },
-				{ "id", strandNrForResidue(strand.front()) + 1 },
+			struct_sheet_range.emplace({
+				{ "sheet_id", cif::cif_id_for_number(sheet) },
+				{ "id", strandMap[strand.front().nr()] + 1 },
 				{ "beg_label_comp_id", beg.compound_id() },
 				{ "beg_label_asym_id", beg.asym_id() },
 				{ "beg_label_seq_id", beg.seq_id() },
@@ -850,14 +886,15 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 
 	auto &dssp_statistics = db["dssp_statistics"];
 
-	dssp_statistics.emplace({ { "entry_id", db.name() },
+	auto stats_i = dssp_statistics.emplace({ { "entry_id", db.name() },
 		{ "nr_of_residues", stats.count.residues },
 		{ "nr_of_chains", stats.count.chains },
 		{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
 		{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
-		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges },
-
-		{ "accessible_surface_of_protein", stats.accessible_surface } });
+		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges } });
+	
+	if (stats.accessible_surface > 0)
+		(*stats_i)["accessible_surface_of_protein"] = stats.accessible_surface;
 
 	auto &dssp_struct_hbonds = db["dssp_statistics_hbond"];
 
@@ -930,6 +967,8 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 
 void writeSummary(cif::datablock &db, const dssp &dssp)
 {
+	bool writeAccessibility = dssp.get_statistics().accessible_surface > 0;
+
 	// A approximation of the old format
 
 	auto &dssp_struct_summary = db["dssp_struct_summary"];
@@ -1028,12 +1067,13 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 
 			{ "sheet", res.sheet() ? cif::cif_id_for_number(res.sheet() - 1) : "." },
 
-			{ "accessibility", res.accessibility(), 1 },
-
 			{ "x_ca", cax, 1 },
 			{ "y_ca", cay, 1 },
 			{ "z_ca", caz, 1 },
 		};
+
+		if (writeAccessibility)
+			data.emplace_back("accessibility", res.accessibility(), 1);
 
 		if (res.tco().has_value())
 			data.emplace_back("TCO", *res.tco(), 3);
@@ -1067,6 +1107,14 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool writeExperimental, std::ostream &os)
 {
 	using namespace std::literals;
+
+	auto &validator = const_cast<cif::validator &>(*db.get_validator());
+	if (validator.get_validator_for_category("dssp_struct_summary") == nullptr)
+	{
+		auto dssp_extension = cif::load_resource("dssp-extension.dic");
+		if (dssp_extension)
+			cif::extend_dictionary(validator, *dssp_extension);
+	}
 
 	if (dssp.empty())
 	{

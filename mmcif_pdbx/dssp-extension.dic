@@ -173,7 +173,7 @@ save__dssp_struct_bridge_pairs.acceptor_1_label_asym_id
 ;
 	_item.name                  '_dssp_struct_bridge_pairs.acceptor_1_label_asym_id'
 	_item.category_id           dssp_struct_bridge_pairs
-	_item.mandatory_code        yes
+	_item.mandatory_code        no
 	_item_type.code             code
 	save_
 
@@ -250,7 +250,7 @@ save__dssp_struct_bridge_pairs.acceptor_2_label_asym_id
 ;
 	_item.name                  '_dssp_struct_bridge_pairs.acceptor_2_label_asym_id'
 	_item.category_id           dssp_struct_bridge_pairs
-	_item.mandatory_code        yes
+	_item.mandatory_code        no
 	_item_type.code             code
 	save_
 
@@ -327,7 +327,7 @@ save__dssp_struct_bridge_pairs.donor_1_label_asym_id
 ;
 	_item.name                  '_dssp_struct_bridge_pairs.donor_1_label_asym_id'
 	_item.category_id           dssp_struct_bridge_pairs
-	_item.mandatory_code        yes
+	_item.mandatory_code        no
 	_item_type.code             code
 	save_
 
@@ -404,7 +404,7 @@ save__dssp_struct_bridge_pairs.donor_2_label_asym_id
 ;
 	_item.name                  '_dssp_struct_bridge_pairs.donor_2_label_asym_id'
 	_item.category_id           dssp_struct_bridge_pairs
-	_item.mandatory_code        yes
+	_item.mandatory_code        no
 	_item_type.code             code
 	save_
 

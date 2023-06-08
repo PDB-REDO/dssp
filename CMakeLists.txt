@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(mkdssp VERSION 4.3 LANGUAGES CXX)
+project(mkdssp VERSION 4.3.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -105,7 +105,7 @@ find_package(Threads)
 
 if(NOT PDB_REDO_META)
 	find_package(libmcfp REQUIRED)
-	find_package(cifpp 5.0.8 REQUIRED)
+	find_package(cifpp 5.1.0 REQUIRED)
 
 	if(BUILD_WEBSERVER)
 		find_package(zeep REQUIRED)
@@ -135,7 +135,8 @@ target_link_libraries(mkdssp PRIVATE dssp cifpp::cifpp libmcfp::libmcfp dssp::ds
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
 		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
-		${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
+		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
+		${PROJECT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic)
 endif()
 
 if(BUILD_WEBSERVER)

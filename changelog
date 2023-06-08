@@ -1,3 +1,7 @@
+Version 4.3.1
+- Optimised for speed
+- Fix in sheet numbering (mmCIF output)
+
 Version 4.3
 - Write new output by default
 - Fix some issues with this new output, typo e.g.
