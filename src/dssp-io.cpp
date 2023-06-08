@@ -402,7 +402,11 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	for (auto &&[sheet, strand] : strands)
 	{
 		for (auto &r : strand)
+		{
+			if (r.type() != ss_type::Strand)
+				continue;
 			strandMap[r.nr()] = strandNr;
+		}
 
 		++strandNr;
 	}
@@ -462,10 +466,9 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 		res_list strand1, strand2;
 
-		int strandIx = 0;
-		for (auto const &s : strands)
+		for (int strandIx = 0; static_cast<size_t>(strandIx) < strands.size(); ++strandIx)
 		{
-			const auto &[sSheet, strand] = s;
+			const auto &[sSheet, strand] = strands[strandIx];
 			if (sSheet != sheet)
 				continue;
 
@@ -476,8 +479,6 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 				strand2 = strand;
 				break;
 			}
-
-			++strandIx;
 		}
 
 		assert(not(strand1.empty() or strand2.empty()));
