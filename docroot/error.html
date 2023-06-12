@@ -1,0 +1,41 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:z2="http://www.hekkelman.com/libzeep/m2" lang="nl">
+
+<head z2:replace="~{head::head(~{::title},~{::head/script})}">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+	<title>PDB-REDO - Error</title>
+</head>
+
+<body class="site">
+	<nav z2:replace="~{menu :: navbar('token')}" />
+
+	<div class="container site-content">
+
+		<div class="container-fluid mt-5">
+			<div class="alert alert-danger" role="alert">
+				<span z2:if="${error.nr}" class="error-nr" z2:text="${error.nr}"></span>
+				<span class="error-head-text" z2:text="${error.head}"></span>
+			</div>
+		</div>
+
+		<div class="container-fluid mt-5">
+			<p class="error-main-text" z2:text="${error.description}"></p>
+			<p z2:if="${error.message}" z2:text="${error.message}"></p>
+		</div>
+
+		<div class="container-fluid mt-5">
+			<ul class="error-info">
+				<li z2:if="${error.request.method}">Method: <em z2:text="${error.request.method}"></em></li>
+				<li z2:if="${error.request.uri}">URI: <em z2:text="${error.request.uri}"></em></li>
+				<li z2:if="${error.request.username}">Username: <em z2:text="${error.request.username}"></em></li>
+			</ul>
+		</div>
+	</div>
+
+	<footer z2:replace="~{footer::content}" />
+</body>
+
+</html>

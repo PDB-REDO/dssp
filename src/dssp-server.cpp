@@ -51,6 +51,7 @@ class dssp_html_controller : public zeep::http::html_controller
 		map_get("", "index");
 		map_get("about", "about");
 		map_get("download", "download");
+		map_get("license", "license");
 	}
 };
 

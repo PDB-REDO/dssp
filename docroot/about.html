@@ -15,7 +15,7 @@
 	<nav z2:replace="~{menu :: navbar('about')}" />
 
 	<div class="container site-content">
-				
+
 		<article>
 			<h2>References</h2>
 
@@ -25,24 +25,28 @@
 					<tr>
 						<td><a href="https://doi.org/10.1093/nar/gkq1105" target="_BLANK">Current version</a></td>
 						<td>Joosten RP, te Beek TAH, Krieger E, Hekkelman ML, Hooft RWW, Schneider R, Sander C, Vriend
-						    A series of PDB related databases for everyday needs. Nuc. Acids Res. 2010; 39:D411-D419.</td>
+							A series of PDB related databases for everyday needs. Nuc. Acids Res. 2010; 39:D411-D419.
+						</td>
 					</tr>
 					<tr>
 						<td><a href="https://doi.org/10.1002/bip.360221211" target="_BLANK">Original algorithm</a></td>
-						<td>Kabsch W, Sander C. Dictionary of protein secondary structure: pattern recognition of hydrogen-bonded and geometrical features.
+						<td>Kabsch W, Sander C. Dictionary of protein secondary structure: pattern recognition of
+							hydrogen-bonded and geometrical features.
 							Biopolymers 1983; 22:2577-2637.
 						</td>
 					</tr>
 				</table>
 			</div>
 		</article>
-		
+
 		<article>
 
 			<h2>Using DSSP data</h2>
-			
-			<p>DSSP provides an elaborate description of the secondary structure elements in a protein structure, including backbone hydrogen bonding 
-			and the topology of &beta;-sheets. The most popular feature is the per-residue assignment of secondary structure with a single character code:
+
+			<p>DSSP provides an elaborate description of the secondary structure elements in a protein structure,
+				including backbone hydrogen bonding
+				and the topology of &beta;-sheets. The most popular feature is the per-residue assignment of secondary
+				structure with a single character code:
 			</p>
 
 			<ul>
@@ -56,20 +60,26 @@
 				<li>S = bend</li>
 
 			</ul>
-   
-			<p>The full DSSP output is provided in two formats. The legacy DSSP format was origianlly designed for structures that were in 
-			PDB-formatted models. Now, 40 years later, the PDB format has become obsolete as it cannot capture the large structure models that 
-			modern structural biology methods can provide. The mmCIF format is the data format of choice for structural biology as it has no 
-			size limitations for structure models and it can hold extensive annotations and metadata. DSSP now writes its data straight to these 
-			mmCIF files by default. The legacy DSSP format can still be written but only for structure models that fit.</p>
 
-		</article>	
+			<p>The full DSSP output is provided in two formats. The legacy DSSP format was origianlly designed for
+				structures that were in
+				PDB-formatted models. Now, 40 years later, the PDB format has become obsolete as it cannot capture the
+				large structure models that
+				modern structural biology methods can provide. The mmCIF format is the data format of choice for
+				structural biology as it has no
+				size limitations for structure models and it can hold extensive annotations and metadata. DSSP now
+				writes its data straight to these
+				mmCIF files by default. The legacy DSSP format can still be written but only for structure models that
+				fit.</p>
 
-                <article>
+		</article>
+
+		<article>
 			<a id="DSSP"></a>
 			<h2>DSSP format</h2>
-			<p>The output from DSSP contains secondary structure assignments and other information. Extract from 3kew.dssp (header):</p>
-			<pre>
+			<p>The output from DSSP contains secondary structure assignments and other information. Extract from
+				3kew.dssp (header):</p>
+			<pre><![CDATA[
 ==== Secondary Structure Definition by the program DSSP, NKI version 4.3                           ==== DATE=2023-06-08        .
 REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637                                                              .
 HEADER    TRANSFERASE                             26-OCT-09   3KEW                                                             .
@@ -96,111 +106,139 @@ AUTHOR    Y.Patskovsky; R.Toro; M.Gilmore; S.Miller; J.M.Sauder; S.C.Almo; S.K.B
   0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  1  1  0  0  0  0  0  0  0  2  0  0  0  0  0    RESIDUES PER ALPHA HELIX         .
   0  2  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0    PARALLEL BRIDGES PER LADDER      .
   4  0  4  8  2  6  0  2  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0    ANTIPARALLEL BRIDGES PER LADDER  .
-  2  2  2  0  0  2  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0    LADDERS PER SHEET                .
+  2  2  2  0  0  2  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0    LADDERS PER SHEET                .]]>
 </pre>
 
-			<p>The first few lines are taken from the input model file, then some general statistics about the model and hydrogen bonding 
-			are given. The histograms describe the distribution of sizes of secondary structure elements. For instance, this structure has 
-			three helices, one short one consisting of 4 residues and two longer ones of 16 and 17 residues. Note that beta sheets are described
-			as a collection of ladders, rather than strands. Ladders can be seen as two strands together with the hydrogen bonds as the rungs 
-			of the ladder. More formal definitions are given in the Kabsch and Sander paper.</p>
+			<p>The first few lines are taken from the input model file, then some general statistics about the model and
+				hydrogen bonding
+				are given. The histograms describe the distribution of sizes of secondary structure elements. For
+				instance, this structure has
+				three helices, one short one consisting of 4 residues and two longer ones of 16 and 17 residues. Note
+				that beta sheets are described
+				as a collection of ladders, rather than strands. Ladders can be seen as two strands together with the
+				hydrogen bonds as the rungs
+				of the ladder. More formal definitions are given in the Kabsch and Sander paper.</p>
 
 
-			<p>The model statistics are followed by a detailed per-residue description. Extract from 3kew.dssp (continued):</p>
-<pre>
-....;....1....;....2....;....3....;....4....;....5....;....6....;....7..
-    .-- sequential resnumber, including chain breaks as extra residues
-    |    .-- original resname, not necessarily sequential, may contain letters for insertion codes
-    |    | .-- one-letter chain ID
-    |    | | .-- amino acid sequence in one letter code
-    |    | | |  .-- secondary structure summary based on columns 19-38
-    |    | | |  |.-- PPII (kappa) helix
-    |    | | |  ||.-- 3-10 helix
-    |    | | |  |||.-- alpha helix
-    |    | | |  ||||.-- pi helix
-    |    | | |  |||||.-- geometrical bend
-    |    | | |  ||||||.-- chirality
-    |    | | |  |||||||.-- beta bridge label
-    |    | | |  ||||||||.-- beta bridge label
-    |    | | |  |||||||||   .-- beta bridge partner resnum
-    |    | | |  |||||||||   |   .-- beta bridge partner resnum
-    |    | | |  |||||||||   |   |.-- beta sheet label
-    |    | | |  |||||||||   |   ||   .-- solvent accessibility
-    |    | | |  |||||||||   |   ||   |
-  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA
-    1    1 A L              0   0  119      0, 0.0     2,-0.3     0, 0.0    33,-0.2   0.000 360.0 360.0 360.0 168.8    8.7    6.9   63.0
-    2    2 A T  E     -a   34   0A  66     31,-2.0    33,-2.1     1,-0.1     2,-0.7  -0.456 360.0-169.6 -87.8 130.5    7.7    8.8   59.8
-    3    3 A K  E >   -a   35   0A  66     -2,-0.3     3,-1.2    31,-0.2     4,-0.2  -0.850   8.5-179.0-111.3  94.7    7.6    7.5   56.2
-    4    4 A L  G >> S+     0   0   23     31,-2.5     4,-2.9    -2,-0.7     3,-2.0   0.786  71.6  72.4 -65.6 -32.5    7.1   10.6   54.1
-    5    5 A Y  G 34 S+     0   0    2     30,-0.8    -1,-0.3     1,-0.3    31,-0.1   0.709 101.0  46.1 -56.9 -26.7    7.0    8.7   50.7
-    6    6 A Y  G <4 S+     0   0   39     -3,-1.2    -1,-0.3     2,-0.1    -2,-0.2   0.439 115.4  47.1 -93.5  -4.1    3.5    7.4   51.7
-    7    7 A E  T <4 S-     0   0  138     -3,-2.0     2,-0.3     1,-0.2    -2,-0.2   0.825 135.2  -0.3 -99.6 -48.8    2.4   10.9   52.8
-    8    8 A D    ><  -     0   0   57     -4,-2.9     3,-1.4     3,-0.1    -1,-0.2  -0.852  61.5-167.8-144.3 106.0    3.6   13.0   49.9
-</pre>			
+			<p>The model statistics are followed by a detailed per-residue description. Extract from 3kew.dssp
+				(continued):</p>
+			<pre><![CDATA[....;....1....;....2....;....3....;....4....;....5....;....6....;....7..
+  .-- sequential resnumber, including chain breaks as extra residues
+  |    .-- original resname, not necessarily sequential, may contain letters for insertion codes
+  |    | .-- one-letter chain ID
+  |    | | .-- amino acid sequence in one letter code
+  |    | | |  .-- secondary structure summary based on columns 19-38
+  |    | | |  |.-- PPII (kappa) helix
+  |    | | |  ||.-- 3-10 helix
+  |    | | |  |||.-- alpha helix
+  |    | | |  ||||.-- pi helix
+  |    | | |  |||||.-- geometrical bend
+  |    | | |  ||||||.-- chirality
+  |    | | |  |||||||.-- beta bridge label
+  |    | | |  ||||||||.-- beta bridge label
+  |    | | |  |||||||||   .-- beta bridge partner resnum
+  |    | | |  |||||||||   |   .-- beta bridge partner resnum
+  |    | | |  |||||||||   |   |.-- beta sheet label
+  |    | | |  |||||||||   |   ||   .-- solvent accessibility
+  |    | | |  |||||||||   |   ||   |
+#  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA
+  1    1 A L              0   0  119      0, 0.0     2,-0.3     0, 0.0    33,-0.2   0.000 360.0 360.0 360.0 168.8    8.7    6.9   63.0
+  2    2 A T  E     -a   34   0A  66     31,-2.0    33,-2.1     1,-0.1     2,-0.7  -0.456 360.0-169.6 -87.8 130.5    7.7    8.8   59.8
+  3    3 A K  E >   -a   35   0A  66     -2,-0.3     3,-1.2    31,-0.2     4,-0.2  -0.850   8.5-179.0-111.3  94.7    7.6    7.5   56.2
+  4    4 A L  G >> S+     0   0   23     31,-2.5     4,-2.9    -2,-0.7     3,-2.0   0.786  71.6  72.4 -65.6 -32.5    7.1   10.6   54.1
+  5    5 A Y  G 34 S+     0   0    2     30,-0.8    -1,-0.3     1,-0.3    31,-0.1   0.709 101.0  46.1 -56.9 -26.7    7.0    8.7   50.7
+  6    6 A Y  G <4 S+     0   0   39     -3,-1.2    -1,-0.3     2,-0.1    -2,-0.2   0.439 115.4  47.1 -93.5  -4.1    3.5    7.4   51.7
+  7    7 A E  T <4 S-     0   0  138     -3,-2.0     2,-0.3     1,-0.2    -2,-0.2   0.825 135.2  -0.3 -99.6 -48.8    2.4   10.9   52.8
+  8    8 A D    ><  -     0   0   57     -4,-2.9     3,-1.4     3,-0.1    -1,-0.2  -0.852  61.5-167.8-144.3 106.0    3.6   13.0   49.9]]>
+</pre>
 
-    			<p>Below is a brief description of the data columns. More details are described in the Kabsch and Sander paper.</p>
+			<p>Below is a brief description of the data columns. More details are described in the Kabsch and Sander
+				paper.</p>
 
-    			<h3>RESIDUE</h3>
-			<p>Two columns of residue numbers. First column is DSSP's sequential residue number, starting at the first residue actually in the model set 
-			and including chain breaks; this number is used to refer to residues throughout. The second column gives the numbering as is used in the 
-			structure model 'residue number','insertion code' and 'chain identifier'; these are given for reference only.</p>
+			<h3>RESIDUE</h3>
+			<p>Two columns of residue numbers. First column is DSSP's sequential residue number, starting at the first
+				residue actually in the model set
+				and including chain breaks; this number is used to refer to residues throughout. The second column gives
+				the numbering as is used in the
+				structure model 'residue number','insertion code' and 'chain identifier'; these are given for reference
+				only.</p>
 
-   			<h3>AA</h3>
-			<p>One letter amino acid code, non standard residues are marked as <em>X</em>. CYS in an SS-bridge are marked by a lower case letter. So when cysteines 
-			are bridged, then the first bridged cysteine in the sequence and its partner elsewhere in the sequence are marked <em>a</em>. The next bridged cysteine, 
-			that is not yet marked, and its partner are both marked <em>b</em>, etcetera. Unbridged cysteines remain marked as <em>C</em>.</p>
+			<h3>AA</h3>
+			<p>One letter amino acid code, non standard residues are marked as <em>X</em>. CYS in an SS-bridge are
+				marked by a lower case letter. So when cysteines
+				are bridged, then the first bridged cysteine in the sequence and its partner elsewhere in the sequence
+				are marked <em>a</em>. The next bridged cysteine,
+				that is not yet marked, and its partner are both marked <em>b</em>, etcetera. Unbridged cysteines remain
+				marked as <em>C</em>.</p>
 
-   			<h3>S (first column in STRUCTURE block)</h3>
-			<p>The one-letter summary of secondary structure, intended to approximate crystallographers' intuition, based on columns 19-38, which are the principal
-			result of DSSP analysis of the atomic coordinates. More details in the Kabsch and Sander paper.</p>
+			<h3>S (first column in STRUCTURE block)</h3>
+			<p>The one-letter summary of secondary structure, intended to approximate crystallographers' intuition,
+				based on columns 19-38, which are the principal
+				result of DSSP analysis of the atomic coordinates. More details in the Kabsch and Sander paper.</p>
 
-   			<h3>BP1 and BP2</h3>
-			<p>Residue numbers of the first and (if available) second beta bridge partner. The letter marked the B-sheet that contains the bridges.</p> 
+			<h3>BP1 and BP2</h3>
+			<p>Residue numbers of the first and (if available) second beta bridge partner. The letter marked the B-sheet
+				that contains the bridges.</p>
 
-   
+
 			<h3>ACC</h3>
-			<p>Water exposed surface in Angstrom**2. <em>Note:</em>The values for solvent exposure may not mean what you think:
-                        	<ul>
-					<li>Effects leading to larger than expected values: solvent exposure calculation ignores unusual residues, like ACE, or residues with incomplete backbone. 
-					it also ignores HETATOMS, like a heme or metal ligands. Also, side chains may not have all atoms explicitly modeled.</li>
-					<li>Effects leading to smaller than expected values: in complexes, e.g. a dimer, solvent exposure is for the entire assembly, not for the monomer. 
-					Also, atom OXT of c-terminal residues is treated like a side chain atom if it is listed as part of the last residue.</li>
-					<li>Unknown or non-standard residues are named X on output and are not checked for the expected number of sidechain atoms.</li>
-					<li>All explicit water molecules, like other hetatoms, are ignored.</li>
-				</ul>
-			</p>	
+			<p>Water exposed surface in Angstrom**2. <em>Note:</em>The values for solvent exposure may not mean what you
+				think:
+			<ul>
+				<li>Effects leading to larger than expected values: solvent exposure calculation ignores unusual
+					residues, like ACE, or residues with incomplete backbone.
+					it also ignores HETATOMS, like a heme or metal ligands. Also, side chains may not have all atoms
+					explicitly modeled.</li>
+				<li>Effects leading to smaller than expected values: in complexes, e.g. a dimer, solvent exposure is for
+					the entire assembly, not for the monomer.
+					Also, atom OXT of c-terminal residues is treated like a side chain atom if it is listed as part of
+					the last residue.</li>
+				<li>Unknown or non-standard residues are named X on output and are not checked for the expected number
+					of sidechain atoms.</li>
+				<li>All explicit water molecules, like other hetatoms, are ignored.</li>
+			</ul>
+			</p>
 
-   			<h3>N-H-->O etc.</h3>
-			<p>Hydrogen bonds; e.g. -3,-1.4 means that this residue (i) has its HN atom H-bonded to O of residue i-3 with an electrostatic H-bond energy of -1.4 kcal/mol. 
-			There are two columns for each type of H-bond, to allow for bifurcated H-bonds. <em>Note:</em>The marked H-bonds are the best and second best candidate. The second best 
-			and even the best (in rare occasions) may be unrealistically por H-bonds.</p>
+			<h3>N-H--&gt;O etc.</h3>
+			<p>Hydrogen bonds; e.g. -3,-1.4 means that this residue (i) has its HN atom H-bonded to O of residue i-3
+				with an electrostatic H-bond energy of -1.4 kcal/mol.
+				There are two columns for each type of H-bond, to allow for bifurcated H-bonds. <em>Note:</em>The marked
+				H-bonds are the best and second best candidate. The second best
+				and even the best (in rare occasions) may be unrealistically por H-bonds.</p>
 
 			<h3>TCO</h3>
-			<p>The cosine of angle between C=O of residue i and C=O of residue i-1. For &alpha;-helices, TCO is near +1, for &beta;-sheets TCO is near -1. 
-			These values are descriptive and not used for structure definition.</p>
+			<p>The cosine of angle between C=O of residue i and C=O of residue i-1. For &alpha;-helices, TCO is near +1,
+				for &beta;-sheets TCO is near -1.
+				These values are descriptive and not used for structure definition.</p>
 
 			<h3>KAPPA</h3>
-			<p>Virtual bond angle (bend angle) defined by the three C&alpha; atoms of residues i-2, i, and i+2. Used to define bends (structure code <em>S</em>).</p>
+			<p>Virtual bond angle (bend angle) defined by the three C&alpha; atoms of residues i-2, i, and i+2. Used to
+				define bends (structure code <em>S</em>).</p>
 
-   			<h3>ALPHA</h3>
-			<p>Virtual torsion angle (dihedral angle) defined by the four C&alpha; atoms of residues i-1, i, i+1, and i+2. Used to define chirality (structure code <em>+</em> or <em>-</em>).
+			<h3>ALPHA</h3>
+			<p>Virtual torsion angle (dihedral angle) defined by the four C&alpha; atoms of residues i-1, i, i+1, and
+				i+2. Used to define chirality (structure code <em>+</em> or <em>-</em>).</p>
 
-   			<h3>PHI and  PSI</h3>
+			<h3>PHI and PSI</h3>
 			<p>The peptide backbone torsion angles as described in the IUPAC standard</p>
 
-   			<h3>X-CA, Y-CA, and Z-CA</h3> 
+			<h3>X-CA, Y-CA, and Z-CA</h3>
 			<p>Just a copy of the C&alpha; atom coordinates in the structure model</p>
-		</article>	
+		</article>
 
 		<article>
-                        <a id="mmCIF"></a>
+			<a id="mmCIF"></a>
 			<h2>DSSP data in mmCIF files</h2>
 
-			<p>The mmCIF-formatted DSSP output caries the same information as the DSSP format but in a more scalable way and with a formal description caputered in 
-			an mmCIF dictionary. It is designed to be machine readable. Developers who create software to read these annotations can use our 
-			<a href="https://github.com/PDB-REDO/dssp/blob/trunk/mmcif_pdbx/dssp-extension.dic" target="_BLANK">extension to the mmCIF dictionary</a> on GitHub.
-			<em>Note:</em> For sake of speed the solvent accessibility is not calculated by default when using mmCIF output. The command-line switch 
-			<code>--calculate-accessibility</code> can be used to switch this feature on.
+			<p>The mmCIF-formatted DSSP output caries the same information as the DSSP format but in a more scalable way
+				and with a formal description caputered in
+				an mmCIF dictionary. It is designed to be machine readable. Developers who create software to read these
+				annotations can use our
+				<a href="https://github.com/PDB-REDO/dssp/blob/trunk/mmcif_pdbx/dssp-extension.dic"
+					target="_BLANK">extension to the mmCIF dictionary</a> on GitHub.
+				<em>Note:</em> For sake of speed the solvent accessibility is not calculated by default when using mmCIF
+				output. The command-line switch
+				<code>--calculate-accessibility</code> can be used to switch this feature on.
 			</p>
 		</article>
 
