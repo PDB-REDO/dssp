@@ -1104,7 +1104,7 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 	}
 }
 
-void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool writeExperimental, std::ostream &os)
+void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool writeExperimental)
 {
 	using namespace std::literals;
 
@@ -1244,6 +1244,4 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 		{ "version", kVersionNumber },
 		{ "date", kBuildDate },
 		{ "classification", "model annotation" } });
-
-	db.write(os);
 }

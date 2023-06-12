@@ -29,6 +29,8 @@
 #include "dssp.hpp"
 #include "queue.hpp"
 
+#include "dssp-io.hpp"
+
 #include <deque>
 #include <iomanip>
 #include <numeric>
@@ -2242,3 +2244,17 @@ std::string dssp::get_pdb_header_line(pdb_record_type pdb_record) const
 			return {};
 	}
 }
+
+// --------------------------------------------------------------------
+
+void dssp::write_legacy_output(std::ostream& os) const
+{
+	writeDSSP(*this, os);
+}
+
+void dssp::annotate(cif::datablock &db, bool writeOther, bool writeDSSPCategories) const
+{
+	annotateDSSP(db, *this, writeOther, writeDSSPCategories);
+}
+
+

@@ -246,6 +246,14 @@ class dssp
 
 	bool empty() const { return begin() == end(); }
 
+	// --------------------------------------------------------------------
+	// Writing out the data, either in legacy format...
+
+	void write_legacy_output(std::ostream& os) const;
+
+	// ... or as annotation in the cif::datablock
+	void annotate(cif::datablock &db, bool writeOther, bool writeDSSPCategories) const;
+
 	// convenience method, when creating old style DSSP files
 
 	enum class pdb_record_type

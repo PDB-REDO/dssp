@@ -37,8 +37,6 @@
 #include <cif++.hpp>
 
 #include "dssp.hpp"
-
-#include "dssp-io.hpp"
 #include "revision.hpp"
 
 namespace fs = std::filesystem;
@@ -185,16 +183,22 @@ int d_main(int argc, const char *argv[])
 		}
 
 		if (fmt == "dssp")
-			writeDSSP(dssp, out);
+			dssp.write_legacy_output(out);
 		else
-			annotateDSSP(f.front(), dssp, writeOther, not config.has("no-dssp-categories"), out);
+		{
+			dssp.annotate(f.front(), writeOther, not config.has("no-dssp-categories"));
+			out << f.front();
+		}
 	}
 	else
 	{
 		if (fmt == "dssp")
-			writeDSSP(dssp, std::cout);
+			dssp.write_legacy_output(std::cout);
 		else
-			annotateDSSP(f.front(), dssp, writeOther, not config.has("no-dssp-categories"), std::cout);
+		{
+			dssp.annotate(f.front(), writeOther, not config.has("no-dssp-categories"));
+			std::cout << f.front();
+		}
 	}
 
 	return 0;
