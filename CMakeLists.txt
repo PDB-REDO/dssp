@@ -118,7 +118,7 @@ add_library(dssp
 
 add_library(dssp::dssp ALIAS dssp)
 
-target_link_libraries(dssp PRIVATE cifpp::cifpp)
+target_link_libraries(dssp PUBLIC cifpp::cifpp)
 
 target_include_directories(dssp
 	PUBLIC
@@ -128,7 +128,7 @@ target_include_directories(dssp
 
 add_executable(mkdssp ${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
 
-target_link_libraries(mkdssp PRIVATE dssp cifpp::cifpp libmcfp::libmcfp dssp::dssp)
+target_link_libraries(mkdssp PRIVATE libmcfp::libmcfp dssp::dssp)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
