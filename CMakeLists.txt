@@ -215,9 +215,13 @@ install(TARGETS ${PROJECT_NAME}
 find_program(PANDOC pandoc)
 
 if(PANDOC)
+	file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/pandoc-md.sh
+		CONTENT "${PANDOC} ${PROJECT_SOURCE_DIR}/doc/mkdssp.1 -t markdown | sed -e \"s/\\\\\\' \\\\\\' (space)/  ' ' (space)/\" > ${PROJECT_SOURCE_DIR}/doc/mkdssp.md"
+		FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
+
 	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.md
 		DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
-		COMMAND ${PANDOC} -o mkdssp.md mkdssp.1
+		COMMAND "${PROJECT_BINARY_DIR}/pandoc-md.sh"
 		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
 		VERBATIM)
 

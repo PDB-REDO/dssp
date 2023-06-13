@@ -92,7 +92,7 @@ calculated for H-bonds.\
          P         HELX\_LH\_PP\_P   Helix\_PPII
          T          TURN\_TY1\_P        Turn
          S              BEND            Bend
-   \' \' (space)        OTHER           Loop
+     ' ' (space)        OTHER           Loop
   --------------- ----------------- -------------
 
 BUGS
