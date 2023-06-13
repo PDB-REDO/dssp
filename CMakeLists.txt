@@ -212,6 +212,37 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 # manual
+find_program(PANDOC pandoc)
+
+if(PANDOC)
+	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.md
+		DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
+		COMMAND ${PANDOC} -o mkdssp.md mkdssp.1
+		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
+		VERBATIM)
+
+	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.html
+		DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
+		COMMAND ${PANDOC} -o mkdssp.html mkdssp.1
+		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
+		VERBATIM)
+
+	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.pdf
+		DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
+		COMMAND ${PANDOC} -o mkdssp.pdf mkdssp.1 -t html
+		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
+		VERBATIM)
+
+	add_custom_target(doc_files DEPENDS
+		${PROJECT_SOURCE_DIR}/doc/mkdssp.html
+		${PROJECT_SOURCE_DIR}/doc/mkdssp.pdf
+		${PROJECT_SOURCE_DIR}/doc/mkdssp.md)
+	
+	add_dependencies(mkdssp doc_files)
+else()
+	message(STATUS "Could not find pandoc, cannot recreate documentation files")
+endif()
+
 if(UNIX)
 	install(FILES doc/mkdssp.1
 		DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)

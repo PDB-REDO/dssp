@@ -1,3 +1,8 @@
+Version 4.3.2
+- Packaging (split out the web server again)
+- Added markdown doc file, all doc files are now created from mkdssp.1
+  using pandoc, if that is installed.
+
 Version 4.3.1.1
 - Check to see if data will fit in old format before starting calculations
 

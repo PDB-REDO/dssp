@@ -1,121 +1,98 @@
-Content-type: text/html; charset=UTF-8
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<HTML><HEAD><TITLE>Man page of mkdssp</TITLE>
-</HEAD><BODY>
-<H1>mkdssp</H1>
-Section: User Commands (1)<BR>Updated: 2021-08-31<BR><A HREF="#index">Index</A>
-<A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
-
-
-
-
-<A NAME="lbAB">&nbsp;</A>
-<H2>NAME</H2>
-
-mkdssp - Assign secondary structure to proteins
-<A NAME="lbAC">&nbsp;</A>
-<H2>SYNOPSIS</H2>
-
-mkdssp [OPTION] input [output]
-<A NAME="lbAD">&nbsp;</A>
-<H2>DESCRIPTION</H2>
-
-The DSSP program was designed by Wolfgang Kabsch and Chris Sander to
-standardize secondary structure assignment. DSSP is a database of
-secondary structure assignments (and much more) for all protein entries
-in the Protein Data Bank (PDB). mkdssp is the program that calculates
-DSSP entries from PDB entries. mkdssp does <B>not</B> predict secondary structure.
-<P>
-The original DSSP program wrote output in a fixed format, this version
-by default writes annotated mmCIF files, storing the secondary structure
-information in the _struct_conf category.
-<P>
-Since version 4.0 the mkdssp program also assigns PPII helices.
-<A NAME="lbAE">&nbsp;</A>
-<H2>OPTIONS</H2>
-
-The input file can be either mmCIF or PDB format and the file may be
-gzip compressed. Note that input files must be formatted correctly.
-E.g. PDB files must have a CRYST1 record. More info:
-<A HREF="https://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1">https://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1</A>
-<P>
-The output is optional, if omitted the output is written to <I>stdout</I>. If
-the name of the output file ends with either <I>.gz</I> or <I>.bz2</I> the
-output is compressed accordingly.
-<DL COMPACT>
-<DT><B>--output-format</B>=[dssp|mmcif]<DD>
-If an output file is specified, the extension of the filename is used to
-choose to output format, but if it is unclear, mmcif is the default. Use
-this option to force output in either the old fixed column DSSP format or
-the new annotated mmCIF format.
-<DT><B>--min-pp-stretch</B><DD>
-This option can be used to define the minimal number of residues with PHI/PSI
-angles within the range required to assing a PP helix.
-<DT><B>--write-other</B><DD>
-By default the new format does not write the structure information for OTHER.
-Use this flag to change that.
-</DL>
-<A NAME="lbAF">&nbsp;</A>
-<H2>DETAILS</H2>
-
-The DSSP algorithm assings secondary structure based on the energy calculated
-for H-bonds.
-<BR>
-
-<B>Table&nbsp;1.&nbsp;Secondary&nbsp;Structures&nbsp;recognized</B>
-
-<TABLE BORDER>
-<TR VALIGN=top><TD ALIGN=center><B>DSSP Code</B></TD><TD ALIGN=center><B>mmCIF Code</B></TD><TD ALIGN=center><B>Description</B><BR></TD></TR>
-<TR VALIGN=top><TD>H</TD><TD>HELX_RH_AL_P</TD><TD>Alphahelix<BR></TD></TR>
-<TR VALIGN=top><TD>B</TD><TD>STRN</TD><TD>Betabridge<BR></TD></TR>
-<TR VALIGN=top><TD>E</TD><TD>STRN</TD><TD>Strand<BR></TD></TR>
-<TR VALIGN=top><TD>G</TD><TD>HELX_RH_3T_P</TD><TD>Helix_3<BR></TD></TR>
-<TR VALIGN=top><TD>I</TD><TD>HELX_RH_PI_P</TD><TD>Helix_5<BR></TD></TR>
-<TR VALIGN=top><TD>P</TD><TD>HELX_LH_PP_P</TD><TD>Helix_PPII<BR></TD></TR>
-<TR VALIGN=top><TD>T</TD><TD>TURN_TY1_P</TD><TD>Turn<BR></TD></TR>
-<TR VALIGN=top><TD>S</TD><TD>BEND</TD><TD>Bend<BR></TD></TR>
-<TR VALIGN=top><TD>
-' ' (space)
-</TD><TD>OTHER</TD><TD>Loop<BR></TD></TR>
-</TABLE>
-
-<A NAME="lbAG">&nbsp;</A>
-<H2>BUGS</H2>
-
-The mmCIF format currently lacks a lot of information that was available
-in the old format like information about the bridge pairs or the span
-of the various helices recognized. Also the accessibility information
-is left out.
-<P>
-If you think this information should be part of the output, please contact
-the author.
-<A NAME="lbAH">&nbsp;</A>
-<H2>AUTHOR</H2>
-
-Written by Maarten L. Hekkelman &lt;<A HREF="mailto:maarten@hekkelman.com">maarten@hekkelman.com</A>&gt;
-<A NAME="lbAI">&nbsp;</A>
-<H2>REPORTING BUGS</H2>
-
-Report bugs at <A HREF="https://github.com/PDB-REDO/dssp/issues">https://github.com/PDB-REDO/dssp/issues</A>
-<P>
-
-<HR>
-<A NAME="index">&nbsp;</A><H2>Index</H2>
-<DL>
-<DT><A HREF="#lbAB">NAME</A><DD>
-<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
-<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
-<DT><A HREF="#lbAE">OPTIONS</A><DD>
-<DT><A HREF="#lbAF">DETAILS</A><DD>
-<DT><A HREF="#lbAG">BUGS</A><DD>
-<DT><A HREF="#lbAH">AUTHOR</A><DD>
-<DT><A HREF="#lbAI">REPORTING BUGS</A><DD>
-</DL>
-<HR>
-This document was created by
-<A HREF="/cgi-bin/man/man2html">man2html</A>,
-using the manual pages.<BR>
-Time: 13:56:55 GMT, August 31, 2021
-</BODY>
-</HTML>
+<h1>NAME</h1>
+<p>mkdssp - Assign secondary structure to proteins</p>
+<h1>SYNOPSIS</h1>
+<p>mkdssp [OPTION] input [output]</p>
+<h1>DESCRIPTION</h1>
+<p>The DSSP program was designed by Wolfgang Kabsch and Chris Sander to standardize secondary structure assignment. DSSP is a database of secondary structure assignments (and much more) for all protein entries in the Protein Data Bank (PDB). mkdssp is the program that calculates DSSP entries from PDB entries. mkdssp does <strong>not</strong> predict secondary structure.</p>
+<p>The original DSSP program wrote output in a fixed format, this version by default writes annotated mmCIF files, storing the secondary structure information in the _struct_conf category.</p>
+<p>Since version 4.0 the mkdssp program also assigns PPII helices.</p>
+<h1>OPTIONS</h1>
+<p>The input file can be either mmCIF or PDB format and the file may be gzip compressed. Note that input files must be formatted correctly. E.g. PDB files must have a CRYST1 record. More info: https://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1</p>
+<p>The output is optional, if omitted the output is written to <em>stdout</em>. If the name of the output file ends with either <em>.gz</em> or <em>.bz2</em> the output is compressed accordingly.</p>
+<dl>
+<dt><strong>--output-format</strong>=[dssp|mmcif]</dt>
+<dd><p>If an output file is specified, the extension of the filename is used to choose to output format, but if it is unclear, mmcif is the default. Use this option to force output in either the old fixed column DSSP format or the new annotated mmCIF format.</p>
+</dd>
+<dt><strong>--no-dssp-categories</strong></dt>
+<dd><p>When writing mmCIF files, suppress the output of all dssp_ categories.</p>
+</dd>
+<dt><strong>--min-pp-stretch</strong></dt>
+<dd><p>This option can be used to define the minimal number of residues with PHI/PSI angles within the range required to assing a PP helix.</p>
+</dd>
+<dt><strong>--write-other</strong></dt>
+<dd><p>By default the new format does not write the structure information for OTHER. Use this flag to change that.</p>
+</dd>
+<dt><strong>--components</strong></dt>
+<dd><p>The knowledge of compounds is loaded from the CCD file <em>components.cif</em> that should have been installed by <em>libcifpp</em>. You can override that file by using this option.</p>
+</dd>
+<dt><strong>--extra-compounds</strong></dt>
+<dd><p>As an addition to the standard <em>components.cif</em> file, you can add more files using this option. Files should be either in CCD format or should be CCP4 restraints files.</p>
+</dd>
+<dt><strong>--mmcif-dictionary</strong></dt>
+<dd><p>The default mmCIF dictionary file is installed by the <em>libcifpp</em> library but you can override it using this option.</p>
+</dd>
+</dl>
+<h1>DETAILS</h1>
+<p>The DSSP algorithm assings secondary structure based on the energy calculated for H-bonds.<br />
+<strong>Table 1. Secondary Structures recognized</strong></p>
+<table>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">DSSP Code</td>
+<td style="text-align: center;">mmCIF Code</td>
+<td style="text-align: center;">Description</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">H</td>
+<td style="text-align: center;">HELX_RH_AL_P</td>
+<td style="text-align: center;">Alphahelix</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">B</td>
+<td style="text-align: center;">STRN</td>
+<td style="text-align: center;">Betabridge</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">E</td>
+<td style="text-align: center;">STRN</td>
+<td style="text-align: center;">Strand</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">G</td>
+<td style="text-align: center;">HELX_RH_3T_P</td>
+<td style="text-align: center;">Helix_3</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">I</td>
+<td style="text-align: center;">HELX_RH_PI_P</td>
+<td style="text-align: center;">Helix_5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">P</td>
+<td style="text-align: center;">HELX_LH_PP_P</td>
+<td style="text-align: center;">Helix_PPII</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">T</td>
+<td style="text-align: center;">TURN_TY1_P</td>
+<td style="text-align: center;">Turn</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">S</td>
+<td style="text-align: center;">BEND</td>
+<td style="text-align: center;">Bend</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">' ' (space)</td>
+<td style="text-align: center;">OTHER</td>
+<td style="text-align: center;">Loop</td>
+</tr>
+</tbody>
+</table>
+<h1>BUGS</h1>
+<p>The mmCIF format currently lacks a lot of information that was available in the old format like information about the bridge pairs or the span of the various helices recognized. Also the accessibility information is left out.</p>
+<p>If you think this information should be part of the output, please contact the author.</p>
+<h1>AUTHOR</h1>
+<p>Written by Maarten L. Hekkelman &lt;maarten@hekkelman.com&gt;</p>
+<h1>REPORTING BUGS</h1>
+<p>Report bugs at https://github.com/PDB-REDO/dssp/issues</p>
