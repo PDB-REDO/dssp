@@ -4,18 +4,18 @@ DSSP 4.3
 This is a rewrite of DSSP, now offering full mmCIF support. The difference
 with previous releases of DSSP is that it now writes out an annotated mmCIF
 file by default, storing the secondary structure information in the
-_struct_conf category.
+`_struct_conf` category.
 
 Another new feature in this version of DSSP is that it now defines
 Poly-Proline helices as well.
 
-The DSSP program was designed by Wolfgang Kabsch and Chris Sander to
+The DSSP program was designed by _Wolfgang Kabsch_ and _Chris Sander_ to
 standardize secondary structure assignment. DSSP is a database of secondary
 structure assignments (and much more) for all protein entries in the Protein
 Data Bank (PDB). DSSP is also the program that calculates DSSP entries from
 PDB entries.
 
-DSSP does not predict secondary structure.
+DSSP does **not** predict secondary structure.
 
 Requirements
 ------------
@@ -45,4 +45,4 @@ cmake --install build
 Usage
 -----
 
-See [manual page](doc/mkdssp.pdf) for more info.
+See [manual page](doc/mkdssp.md) for more info. Or even better, see the [DSSP website](https://pdb-redo.eu/dssp).
