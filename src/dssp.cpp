@@ -421,6 +421,9 @@ struct dssp::residue
 	void SetSheet(uint32_t inSheet) { mSheet = inSheet; }
 	uint32_t GetSheet() const { return mSheet; }
 
+	void SetStrand(uint32_t inStrand) { mStrand = inStrand; }
+	uint32_t GetStrand() const { return mStrand; }
+
 	bool IsBend() const { return mBend; }
 	void SetBend(bool inBend) { mBend = inBend; }
 
@@ -548,6 +551,7 @@ struct dssp::residue
 	HBond mHBondDonor[2] = {}, mHBondAcceptor[2] = {};
 	bridge_partner mBetaPartner[2] = {};
 	uint32_t mSheet = 0;
+	uint32_t mStrand = 0;	// Added to ease the writing of mmCIF's struct_sheet and friends
 	helix_position_type mHelixFlags[4] = { helix_position_type::None, helix_position_type::None, helix_position_type::None, helix_position_type::None }; //
 	bool mBend = false;
 	chain_break_type mChainBreak = chain_break_type::None;
@@ -1097,6 +1101,86 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, st
 			if (inResidues[i].GetSecondaryStructure() != structure_type::Strand)
 				inResidues[i].SetSecondaryStructure(ss);
 			inResidues[i].SetSheet(bridge.sheet);
+		}
+	}
+
+	// Construct the 'strands'
+	// For mmCIF output, this is needed and since we now have the information available
+	// it is best to do the calculation here.
+
+	// strands are ranges of residues of length > 1 that form beta bridges in a sheet.
+
+	for (uint32_t iSheet = 1; iSheet < sheet; ++iSheet)
+	{
+		std::vector<std::tuple<uint32_t,uint32_t>> strands;
+		for (auto &bridge : bridges)
+		{
+			if (bridge.sheet != iSheet)
+				continue;
+
+			for (auto &range : { bridge.i, bridge.j})
+			{
+				auto imin = range.front();
+				auto imax = range.back();
+
+				if (imin == imax)
+					continue;
+
+				if (imin > imax)
+					std::swap(imin, imax);
+
+				auto ii = find_if(strands.begin(), strands.end(), [a = imin, b = imax] (std::tuple<uint32_t,uint32_t> &t)
+				{
+					auto &&[start, end] = t;
+
+					bool result = false;
+					if (start <= b and end >= a)
+					{
+						result = true;
+						if (start > a)
+							start = a;
+						if (end < b)
+							end = b;
+					}
+
+					return result;
+				});
+
+				if (ii == strands.end())
+					strands.emplace_back(imin, imax);
+			}
+		}
+
+		std::sort(strands.begin(), strands.end());
+
+		// collapse ranges that overlap
+		if (strands.size() > 1)
+		{
+			auto si = strands.begin();
+			while (std::next(si) != strands.end())
+			{
+				auto &&[afirst, alast] = *si;
+				auto &&[bfirst, blast] = *(std::next(si));
+
+				if (alast >= bfirst)
+				{
+					bfirst = afirst;
+					si = strands.erase(si);
+					continue;
+				}
+
+				++si;
+			}
+		}
+
+		for (size_t i = 0; i < strands.size(); ++i)
+		{
+			const auto &[first, last] = strands[i];
+			for (auto nr = first; nr <= last; ++nr)
+			{
+				assert(inResidues[nr].mStrand == 0);
+				inResidues[nr].SetStrand(i + 1);
+			}
 		}
 	}
 }
@@ -2136,6 +2220,11 @@ std::tuple<dssp::residue_info, int, bool> dssp::residue_info::bridge_partner(int
 int dssp::residue_info::sheet() const
 {
 	return m_impl->GetSheet();
+}
+
+int dssp::residue_info::strand() const
+{
+	return m_impl->GetStrand();
 }
 
 std::tuple<dssp::residue_info, double> dssp::residue_info::acceptor(int i) const
