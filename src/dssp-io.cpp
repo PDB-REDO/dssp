@@ -340,7 +340,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 	for (auto &res : dssp)
 	{
-		if (res.type() != dssp::structure_type::Strand)
+		if (res.type() != dssp::structure_type::Strand and res.type() != dssp::structure_type::Betabridge)
 			continue;
 
 		strands[{res.sheet(), res.strand()}].emplace_back(res);
@@ -377,7 +377,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			if (strand.front().sheet() != sheetNr)
 				continue;
 			
-			std::string strandID = "strand_" + cif::cif_id_for_number(strand.front().strand() - 1);
+			std::string strandID = cif::cif_id_for_number(strand.front().strand() - 1);
 
 			std::sort(strand.begin(), strand.end(), [](dssp::residue_info const &a, dssp::residue_info const &b)
 				{ return a.nr() < b.nr(); });
@@ -409,7 +409,8 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 				for (int i : { 0, 1 })
 				{
 					const auto &[bp, ladder, parallel] = res.bridge_partner(i);
-					if (not bp or bp.type() != dssp::structure_type::Strand)
+					// if (not bp or bp.type() != dssp::structure_type::Strand)
+					if (not bp)
 						continue;
 					
 					auto s1 = res.strand();
@@ -431,13 +432,13 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			
 			bool parallel = parallel_test > 0;
 
-			std::string strandID_1 = "strand_" + cif::cif_id_for_number(s1 - 1);
-			std::string strandID_2 = "strand_" + cif::cif_id_for_number(s2 - 1);
+			std::string strandID_1 = cif::cif_id_for_number(s1 - 1);
+			std::string strandID_2 = cif::cif_id_for_number(s2 - 1);
 
 			struct_sheet_order.emplace({
 				{ "sheet_id", sheetID },
-				{ "range_id_1", "strand_" + strandID_1 },
-				{ "range_id_2", "strand_" + strandID_2 },
+				{ "range_id_1", strandID_1 },
+				{ "range_id_2", strandID_2 },
 				{ "sense", parallel > 0 ? "parallel" : "anti-parallel" }
 			});
 
@@ -748,14 +749,21 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 	// Write out the DSSP ladders
 	struct ladder_info
 	{
-		ladder_info(const std::string &label, bool parallel, const dssp::residue_info &a, const dssp::residue_info &b)
-			: label(label)
+		ladder_info(int label, int sheet, bool parallel, const dssp::residue_info &a, const dssp::residue_info &b)
+			: ladder(label)
+			, sheet(sheet)
 			, parallel(parallel)
 			, pairs({ { a, b } })
 		{
 		}
 
-		std::string label;
+		bool operator<(const ladder_info &rhs) const
+		{
+			return ladder < rhs.ladder;
+		}
+
+		int ladder;
+		int sheet;
 		bool parallel;
 		std::vector<std::pair<dssp::residue_info, dssp::residue_info>> pairs;
 	};
@@ -771,12 +779,10 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 			if (not p)
 				continue;
 
-			auto label = cif::cif_id_for_number(ladder);
-
 			bool is_new = true;
 			for (auto &l : ladders)
 			{
-				if (l.label != label)
+				if (l.ladder != ladder)
 					continue;
 
 				assert(l.parallel == parallel);
@@ -796,9 +802,11 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 			if (not is_new)
 				continue;
 
-			ladders.emplace_back(label, parallel, res, p);
+			ladders.emplace_back(ladder, res.sheet() - 1, parallel, res, p);
 		}
 	}
+
+	std::sort(ladders.begin(), ladders.end());
 
 	auto &dssp_struct_ladder = db["dssp_struct_ladder"];
 
@@ -807,7 +815,11 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 		const auto &[beg1, beg2] = l.pairs.front();
 		const auto &[end1, end2] = l.pairs.back();
 
-		dssp_struct_ladder.emplace({ { "id", l.label },
+		dssp_struct_ladder.emplace({
+			{ "id", cif::cif_id_for_number(l.ladder) },
+			{ "sheet_id", cif::cif_id_for_number(l.sheet) },
+			{ "range_1", cif::cif_id_for_number(beg1.strand() - 1) },
+			{ "range_2", cif::cif_id_for_number(beg2.strand() - 1) },
 			{ "type", l.parallel ? "parallel" : "anti-parallel" },
 
 			{ "beg_1_label_comp_id", beg1.compound_id() },
@@ -939,7 +951,7 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 
 	// prime the category with the field labels we need, this is to ensure proper order in writing out the data.
 
-	for (auto label : { "entry_id", "label_comp_id", "label_asym_id", "label_seq_id", "secondary_structure", "ss_bridge", "helix_3_10", "helix_alpha", "helix_pi", "helix_pp", "bend", "chirality", "ladder_1", "ladder_2", "sheet", "accessibility", "TCO", "kappa", "alpha", "phi", "psi", "x_ca", "y_ca", "z_ca"})
+	for (auto label : { "entry_id", "label_comp_id", "label_asym_id", "label_seq_id", "secondary_structure", "ss_bridge", "helix_3_10", "helix_alpha", "helix_pi", "helix_pp", "bend", "chirality", "sheet", "strand", "ladder_1", "ladder_2", "accessibility", "TCO", "kappa", "alpha", "phi", "psi", "x_ca", "y_ca", "z_ca"})
 		dssp_struct_summary.add_column(label);
 
 	for (auto res : dssp)
@@ -1026,10 +1038,10 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 			{ "bend", bend },
 			{ "chirality", chirality },
 
+			{ "sheet", res.sheet() ? cif::cif_id_for_number(res.sheet() - 1) : "." },
+			{ "strand", res.strand() ? cif::cif_id_for_number(res.strand() - 1) : "." },
 			{ "ladder_1", ladders[0] },
 			{ "ladder_2", ladders[1] },
-
-			{ "sheet", res.sheet() ? cif::cif_id_for_number(res.sheet() - 1) : "." },
 
 			{ "x_ca", cax, 1 },
 			{ "y_ca", cay, 1 },
