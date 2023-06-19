@@ -226,3 +226,18 @@ BOOST_AUTO_TEST_CASE(dssp_2)
 		BOOST_CHECK_EQUAL((char)ri.type(), secstr.front());
 	}
 }
+
+// --------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(dssp_3)
+{
+	cif::file f(gTestDir / "1cbs.cif.gz");
+
+	BOOST_ASSERT(f.is_valid());
+
+	dssp dssp(f.front(), 1, 3, true);
+
+	dssp.annotate(f.front(), true, true);
+
+	BOOST_TEST(f.is_valid());
+}

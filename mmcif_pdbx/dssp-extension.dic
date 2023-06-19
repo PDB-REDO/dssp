@@ -477,6 +477,9 @@ save_dssp_struct_ladder
 ;
 ;
 	_dssp_struct_ladder.id                        A      
+	_dssp_struct_ladder.sheet_id                  A
+	_dssp_struct_ladder.range_1                   A
+	_dssp_struct_ladder.range_2                   B
 	_dssp_struct_ladder.type                      anti-parallel        
 	_dssp_struct_ladder.beg_1_label_comp_id       GLY                       
 	_dssp_struct_ladder.beg_1_label_asym_id       A                       
@@ -513,6 +516,39 @@ save__dssp_struct_ladder.id
 	_item.description
 ;	The value of _dssp_struct_ladder.id must uniquely identify a record in the
     dssp_struct_ladder list.
+;
+	_item.name               '_dssp_struct_ladder.id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.sheet_id
+	_item.description
+;	This data item is a pointer to _struct_sheet.id in the
+	STRUCT_SHEET category.
+;
+	_item.name               '_dssp_struct_ladder.id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.range_id_1
+	_item.description
+;   This data item is a pointer to _struct_sheet_range.id in
+    the STRUCT_SHEET_RANGE category.
+;
+	_item.name               '_dssp_struct_ladder.id'
+	_item.category_id        dssp_struct_ladder
+	_item.mandatory_code     yes
+	_item_type.code          code
+	save_
+
+save__dssp_struct_ladder.range_id_2
+	_item.description
+;   This data item is a pointer to _struct_sheet_range.id in
+    the STRUCT_SHEET_RANGE category.
 ;
 	_item.name               '_dssp_struct_ladder.id'
 	_item.category_id        dssp_struct_ladder
@@ -1466,9 +1502,10 @@ save_dssp_struct_summary
 	_dssp_struct_summary.helix_pp               .     
 	_dssp_struct_summary.bend                   S 
 	_dssp_struct_summary.chirality              +      
+	_dssp_struct_summary.sheet                  .  
+	_dssp_struct_summary.strand                 .
 	_dssp_struct_summary.ladder_1               .     
 	_dssp_struct_summary.ladder_2               .     
-	_dssp_struct_summary.sheet                  .  
 	_dssp_struct_summary.accessibility         23.1           
 	_dssp_struct_summary.TCO                    0.940
 	_dssp_struct_summary.kappa                  73.9  
@@ -1655,6 +1692,28 @@ save__dssp_struct_summary.chirality
 	                         '-'
 	save_
 
+save__dssp_struct_summary.sheet
+	_item.description
+;   This data item is a pointer to _struct_sheet.id in
+    the STRUCT_SHEET category.
+;
+	_item.name             '_dssp_struct_summary.sheet'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	save_
+
+save__dssp_struct_summary.strand
+	_item.description
+;   This data item is a pointer to _struct_sheet_range.id in
+    the STRUCT_SHEET_RANGE category.
+;
+	_item.name             '_dssp_struct_summary.sheet'
+	_item.category         dssp_struct_summary
+	_item.mandatory_code   no
+	_item_type.code        code
+	save_
+
 save__dssp_struct_summary.ladder_1
 	_item.description
 ;	Label for the first beta bridge of which this residue is part.
@@ -1670,16 +1729,6 @@ save__dssp_struct_summary.ladder_2
 ;	Label for the second beta bridge of which this residue is part.
 ;
 	_item.name             '_dssp_struct_summary.ladder_2'
-	_item.category         dssp_struct_summary
-	_item.mandatory_code   no
-	_item_type.code        code
-	save_
-
-save__dssp_struct_summary.sheet
-	_item.description
-;	Label for the sheet of which this residue is part.
-;
-	_item.name             '_dssp_struct_summary.sheet'
 	_item.category         dssp_struct_summary
 	_item.mandatory_code   no
 	_item_type.code        code

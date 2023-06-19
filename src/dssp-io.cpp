@@ -818,8 +818,8 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 		dssp_struct_ladder.emplace({
 			{ "id", cif::cif_id_for_number(l.ladder) },
 			{ "sheet_id", cif::cif_id_for_number(l.sheet) },
-			{ "range_1", cif::cif_id_for_number(beg1.strand() - 1) },
-			{ "range_2", cif::cif_id_for_number(beg2.strand() - 1) },
+			{ "range_id_1", cif::cif_id_for_number(beg1.strand() - 1) },
+			{ "range_id_2", cif::cif_id_for_number(beg2.strand() - 1) },
 			{ "type", l.parallel ? "parallel" : "anti-parallel" },
 
 			{ "beg_1_label_comp_id", beg1.compound_id() },
@@ -951,7 +951,10 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 
 	// prime the category with the field labels we need, this is to ensure proper order in writing out the data.
 
-	for (auto label : { "entry_id", "label_comp_id", "label_asym_id", "label_seq_id", "secondary_structure", "ss_bridge", "helix_3_10", "helix_alpha", "helix_pi", "helix_pp", "bend", "chirality", "sheet", "strand", "ladder_1", "ladder_2", "accessibility", "TCO", "kappa", "alpha", "phi", "psi", "x_ca", "y_ca", "z_ca"})
+	for (auto label : { "entry_id", "label_comp_id", "label_asym_id", "label_seq_id", "secondary_structure",
+			"ss_bridge", "helix_3_10", "helix_alpha", "helix_pi", "helix_pp", "bend", "chirality", "sheet",
+			"strand", "ladder_1", "ladder_2", "accessibility", "TCO", "kappa", "alpha", "phi", "psi",
+			"x_ca", "y_ca", "z_ca"})
 		dssp_struct_summary.add_column(label);
 
 	for (auto res : dssp)
