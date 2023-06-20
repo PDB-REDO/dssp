@@ -27,7 +27,6 @@
 // Calculate DSSP-like secondary structure information
 
 #include "dssp.hpp"
-#include "queue.hpp"
 
 #include "dssp-io.hpp"
 
@@ -42,8 +41,6 @@ using structure_type = dssp::structure_type;
 using helix_type = dssp::helix_type;
 using helix_position_type = dssp::helix_position_type;
 using chain_break_type = dssp::chain_break_type;
-
-using queue_type = blocking_queue<std::tuple<uint32_t,uint32_t>>;
 
 // --------------------------------------------------------------------
 
