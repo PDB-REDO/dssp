@@ -158,7 +158,11 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 	std::time_t today = system_clock::to_time_t(system_clock::now());
 	std::tm *tm = std::gmtime(&today);
 
-	os << "==== Secondary Structure Definition by the program DSSP, NKI version 4.3                           ==== DATE=" << std::put_time(tm, "%F") << "        ." << std::endl
+	std::string version = kVersionNumber;
+	if (version.length() < 10)
+		version.insert(version.end(), 10 - version.length(), ' ');
+
+	os << "==== Secondary Structure Definition by the program DSSP, NKI version " << version << "                    ==== DATE=" << std::put_time(tm, "%F") << "        ." << std::endl
 	   << "REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637                                                              ." << std::endl
 	   << dssp.get_pdb_header_line(dssp::pdb_record_type::HEADER) << '.' << std::endl
 	   << dssp.get_pdb_header_line(dssp::pdb_record_type::COMPND) << '.' << std::endl
