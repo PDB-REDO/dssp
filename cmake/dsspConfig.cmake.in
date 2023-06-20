@@ -5,6 +5,4 @@ find_dependency(cifpp REQUIRED)
 
 INCLUDE("${CMAKE_CURRENT_LIST_DIR}/dsspTargets.cmake")
 
-set_and_check(DSSP_SHARE_DIR "@PACKAGE_DSSP_DATA_DIR@")
-
 check_required_components(dssp)
