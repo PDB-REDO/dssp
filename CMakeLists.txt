@@ -165,11 +165,13 @@ install(
 )
 
 set(CONFIG_TEMPLATE_FILE ${PROJECT_SOURCE_DIR}/cmake/dsspConfig.cmake.in)
+set(DSSP_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/libcifpp")
 
 configure_package_config_file(
 	${CONFIG_TEMPLATE_FILE}
 	${CMAKE_CURRENT_BINARY_DIR}/dssp/dsspConfig.cmake
 	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/dssp
+	PATH_VARS DSSP_DATA_DIR
 )
 
 install(FILES
@@ -211,9 +213,7 @@ install(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
-set(DSSP_EXTENSIONS_DIC "${CMAKE_CURRENT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic")
-
-install(FILES ${DSSP_EXTENSIONS_DIC} DESTINATION ${CIFPP_SHARE_DIR})
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic" DESTINATION ${DSSP_DATA_DIR})
 
 # manual
 find_program(PANDOC pandoc)
