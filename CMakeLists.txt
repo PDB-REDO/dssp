@@ -211,6 +211,8 @@ install(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic" DESTINATION ${CIFPP_SHARE_DIR})
+
 # manual
 find_program(PANDOC pandoc)
 
