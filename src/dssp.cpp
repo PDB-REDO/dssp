@@ -1508,7 +1508,10 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 					nextNext.mCAlpha,
 					cur.mCAlpha);
 				float skap = std::sqrt(1 - ckap * ckap);
-				cur.mKappa = std::atan2(skap, ckap) * static_cast<float>(180 / kPI);
+
+				auto kappa = std::atan2(skap, ckap) * static_cast<float>(180 / kPI);
+				if (not std::isnan(kappa))
+					cur.mKappa = kappa;
 			}
 		}
 
