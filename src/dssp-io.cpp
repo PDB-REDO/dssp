@@ -858,10 +858,6 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 					{ "end_auth_comp_id", re.compound_id() },
 					{ "end_auth_asym_id", re.auth_asym_id() },
 					{ "end_auth_seq_id", re.auth_seq_id() }
-
-					// { "pdbx_PDB_helix_class", vS(39, 40) },
-				    // { "details", vS(41, 70) },
-				    // { "pdbx_PDB_helix_length", vI(72, 76) }
 				});
 
 				st = t;
