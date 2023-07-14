@@ -46,3 +46,25 @@ Usage
 -----
 
 See [manual page](doc/mkdssp.md) for more info. Or even better, see the [DSSP website](https://pdb-redo.eu/dssp).
+
+Docker
+------
+
+Build the image yourself: 
+
+```bash
+git clone https://github.com/PDB-REDO/dssp.git
+docker build -t dssp .
+```
+
+Or pull from Docker Hub:
+
+```bash
+docker pull stephenturner/dssp && docker tag stephenturner/dssp dssp
+```
+
+Usage:
+
+```bash
+docker run --rm dssp
+```
