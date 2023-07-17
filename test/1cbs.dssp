@@ -1,4 +1,4 @@
-==== Secondary Structure Definition by the program DSSP, NKI version 4.0                           ==== DATE=2021-08-25        .
+==== Secondary Structure Definition by the program DSSP, NKI version 4.4.0                         ==== DATE=2021-08-25        .
 REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637                                                              .
 HEADER    RETINOIC-ACID TRANSPORT                 28-SEP-94   1CBS                                                             .
 COMPND    MOL_ID: 1; MOLECULE: CELLULAR RETINOIC ACID BINDING PROTEIN TYPE II; CHAIN: A; ENGINEERED: YES                       .

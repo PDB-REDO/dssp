@@ -27,7 +27,6 @@
 // Calculate DSSP-like secondary structure information
 
 #include "dssp.hpp"
-#include "queue.hpp"
 
 #include "dssp-io.hpp"
 
@@ -42,8 +41,6 @@ using structure_type = dssp::structure_type;
 using helix_type = dssp::helix_type;
 using helix_position_type = dssp::helix_position_type;
 using chain_break_type = dssp::chain_break_type;
-
-using queue_type = blocking_queue<std::tuple<uint32_t,uint32_t>>;
 
 // --------------------------------------------------------------------
 
@@ -421,6 +418,9 @@ struct dssp::residue
 	void SetSheet(uint32_t inSheet) { mSheet = inSheet; }
 	uint32_t GetSheet() const { return mSheet; }
 
+	void SetStrand(uint32_t inStrand) { mStrand = inStrand; }
+	uint32_t GetStrand() const { return mStrand; }
+
 	bool IsBend() const { return mBend; }
 	void SetBend(bool inBend) { mBend = inBend; }
 
@@ -548,6 +548,7 @@ struct dssp::residue
 	HBond mHBondDonor[2] = {}, mHBondAcceptor[2] = {};
 	bridge_partner mBetaPartner[2] = {};
 	uint32_t mSheet = 0;
+	uint32_t mStrand = 0;	// Added to ease the writing of mmCIF's struct_sheet and friends
 	helix_position_type mHelixFlags[4] = { helix_position_type::None, helix_position_type::None, helix_position_type::None, helix_position_type::None }; //
 	bool mBend = false;
 	chain_break_type mChainBreak = chain_break_type::None;
@@ -1099,6 +1100,26 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, st
 			inResidues[i].SetSheet(bridge.sheet);
 		}
 	}
+
+	// Create 'strands'. A strand is a range of residues without a gap in between
+	// that belong to the same sheet.
+
+	int strand = 0;
+	for (uint32_t iSheet = 1; iSheet < sheet; ++iSheet)
+	{
+		int lastNr = -1;
+		for (auto &res : inResidues)
+		{
+			if (res.mSheet != iSheet)
+				continue;
+			
+			if (lastNr + 1 < res.mNumber)
+				++strand;
+			
+			res.mStrand = strand;
+			lastNr = res.mNumber;
+		}
+	}
 }
 
 // --------------------------------------------------------------------
@@ -1487,7 +1508,10 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 					nextNext.mCAlpha,
 					cur.mCAlpha);
 				float skap = std::sqrt(1 - ckap * ckap);
-				cur.mKappa = std::atan2(skap, ckap) * static_cast<float>(180 / kPI);
+
+				auto kappa = std::atan2(skap, ckap) * static_cast<float>(180 / kPI);
+				if (not std::isnan(kappa))
+					cur.mKappa = kappa;
 			}
 		}
 
@@ -2136,6 +2160,11 @@ std::tuple<dssp::residue_info, int, bool> dssp::residue_info::bridge_partner(int
 int dssp::residue_info::sheet() const
 {
 	return m_impl->GetSheet();
+}
+
+int dssp::residue_info::strand() const
+{
+	return m_impl->GetStrand();
 }
 
 std::tuple<dssp::residue_info, double> dssp::residue_info::acceptor(int i) const

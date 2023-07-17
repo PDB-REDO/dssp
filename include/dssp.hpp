@@ -172,6 +172,7 @@ class dssp
 		std::tuple<residue_info, int, bool> bridge_partner(int i) const;
 
 		int sheet() const;
+		int strand() const;
 
 		/// \brief return resinfo and the energy of the bond
 		std::tuple<residue_info, double> acceptor(int i) const;

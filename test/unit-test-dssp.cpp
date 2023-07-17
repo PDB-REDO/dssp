@@ -32,6 +32,8 @@
 #include "dssp.hpp"
 #include "dssp-io.hpp"
 
+#include <cif++/dictionary_parser.hpp>
+
 namespace fs = std::filesystem;
 
 // --------------------------------------------------------------------
@@ -97,7 +99,7 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 	std::string line_t, line_r;
 	BOOST_CHECK(std::getline(test, line_t) and std::getline(reference, line_r));
 
-	const char *kHeaderLineStart = "==== Secondary Structure Definition by the program DSSP, NKI version 4.3                           ====";
+	const char *kHeaderLineStart = "==== Secondary Structure Definition by the program DSSP, NKI version 4.4.0                         ====";
 	BOOST_CHECK(line_t.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
 	// BOOST_CHECK(line_r.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
 
@@ -225,4 +227,19 @@ BOOST_AUTO_TEST_CASE(dssp_2)
 		BOOST_CHECK_EQUAL(ri.seq_id(), seqID);
 		BOOST_CHECK_EQUAL((char)ri.type(), secstr.front());
 	}
+}
+
+// --------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(dssp_3)
+{
+	cif::file f(gTestDir / "1cbs.cif.gz");
+
+	BOOST_ASSERT(f.is_valid());
+
+	dssp dssp(f.front(), 1, 3, true);
+
+	dssp.annotate(f.front(), true, true);
+
+	BOOST_TEST(f.is_valid());
 }
