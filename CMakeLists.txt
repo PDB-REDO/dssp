@@ -128,7 +128,7 @@ target_include_directories(dssp
 
 add_executable(mkdssp ${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
 
-target_link_libraries(mkdssp PRIVATE dssp cifpp::cifpp libmcfp::libmcfp dssp::dssp)
+target_link_libraries(mkdssp PRIVATE libmcfp::libmcfp dssp::dssp)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
