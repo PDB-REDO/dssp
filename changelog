@@ -2,6 +2,7 @@ Version 4.4.0
 - Packaging (split out the web server again)
 - Added markdown doc file, all doc files are now created from mkdssp.1
   using pandoc, if that is installed.
+- small changes in output category item names (range_1 renamed to range_id_1)
 
 Version 4.3.1.1
 - Check to see if data will fit in old format before starting calculations

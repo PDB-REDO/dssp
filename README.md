@@ -1,4 +1,4 @@
-DSSP 4.3
+DSSP 4.4
 ========
 
 This is a rewrite of DSSP, now offering full mmCIF support. The difference
