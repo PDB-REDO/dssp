@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(mkdssp VERSION 4.3.2 LANGUAGES CXX)
+project(mkdssp VERSION 4.4.0 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -211,6 +211,10 @@ install(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
+set(CIFPP_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/libcifpp")
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic"
+        DESTINATION ${CIFPP_DATA_DIR})
+
 # manual
 find_program(PANDOC pandoc)
 
@@ -265,7 +269,9 @@ if(ENABLE_TESTING)
 	add_executable(unit-test-dssp ${PROJECT_SOURCE_DIR}/test/unit-test-dssp.cpp ${PROJECT_SOURCE_DIR}/src/dssp-io.cpp)
 
 	if(USE_RSRC)
-		mrc_target_resources(unit-test-dssp ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic)
+		mrc_target_resources(unit-test-dssp
+			${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic
+			${CMAKE_CURRENT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic)
 	endif()
 
 	target_include_directories(unit-test-dssp PRIVATE
