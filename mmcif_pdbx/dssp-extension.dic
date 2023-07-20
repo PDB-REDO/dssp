@@ -478,8 +478,8 @@ save_dssp_struct_ladder
 ;
 	_dssp_struct_ladder.id                        A      
 	_dssp_struct_ladder.sheet_id                  A
-	_dssp_struct_ladder.range_id_1                   A
-	_dssp_struct_ladder.range_id_2                   B
+	_dssp_struct_ladder.range_id_1                A
+	_dssp_struct_ladder.range_id_2                B
 	_dssp_struct_ladder.type                      anti-parallel        
 	_dssp_struct_ladder.beg_1_label_comp_id       GLY                       
 	_dssp_struct_ladder.beg_1_label_asym_id       A                       
