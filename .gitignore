@@ -1,14 +1,6 @@
-.vscode
-rsrc/version.txt
-version-info*.txt
-mkdssp
+.vscode/
 .vs/
-build
+build/
 .gdb_history
 **/*.dssp
 src/revision.hpp
-out/
-node_modules
-docroot/fonts
-docroot/scripts
-docroot/css
