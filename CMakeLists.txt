@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(mkdssp VERSION 4.4.0 LANGUAGES CXX)
+project(mkdssp VERSION 4.4.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -52,7 +52,7 @@ endif()
 
 # Optionally build a version to be installed inside CCP4
 option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
-option(BUILD_WEBSERVER "Add code to run dssp as a web service" OFF)
+option(GENERATE_DOCUMENTATION "Generate the documentation files using pandoc" OFF)
 
 if(BUILD_FOR_CCP4)
 	if("$ENV{CCP4}" STREQUAL "" OR NOT EXISTS $ENV{CCP4})
@@ -215,40 +215,42 @@ set(CIFPP_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/libcifpp")
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic"
         DESTINATION ${CIFPP_DATA_DIR})
 
-# manual
-find_program(PANDOC pandoc)
+if(GENERATE_DOCUMENTATION)
+	# manual
+	find_program(PANDOC pandoc)
 
-if(PANDOC)
-	file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/pandoc-md.sh
-		CONTENT "${PANDOC} ${PROJECT_SOURCE_DIR}/doc/mkdssp.1 -t markdown | sed -e \"s/\\\\\\' \\\\\\' (space)/  ' ' (space)/\" > ${PROJECT_SOURCE_DIR}/doc/mkdssp.md"
-		FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
+	if(PANDOC)
+		file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/pandoc-md.sh
+			CONTENT "${PANDOC} ${PROJECT_SOURCE_DIR}/doc/mkdssp.1 -t markdown | sed -e \"s/\\\\\\' \\\\\\' (space)/  ' ' (space)/\" > ${PROJECT_SOURCE_DIR}/doc/mkdssp.md"
+			FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
 
-	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.md
-		DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
-		COMMAND "${PROJECT_BINARY_DIR}/pandoc-md.sh"
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
-		VERBATIM)
+		add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.md
+			DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
+			COMMAND "${PROJECT_BINARY_DIR}/pandoc-md.sh"
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
+			VERBATIM)
 
-	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.html
-		DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
-		COMMAND ${PANDOC} -o mkdssp.html mkdssp.1
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
-		VERBATIM)
+		add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.html
+			DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
+			COMMAND ${PANDOC} -o mkdssp.html mkdssp.1
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
+			VERBATIM)
 
-	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.pdf
-		DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
-		COMMAND ${PANDOC} -o mkdssp.pdf mkdssp.1 -t html
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
-		VERBATIM)
+		add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.pdf
+			DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
+			COMMAND ${PANDOC} -o mkdssp.pdf mkdssp.1 -t html
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
+			VERBATIM)
 
-	add_custom_target(doc_files DEPENDS
-		${PROJECT_SOURCE_DIR}/doc/mkdssp.html
-		${PROJECT_SOURCE_DIR}/doc/mkdssp.pdf
-		${PROJECT_SOURCE_DIR}/doc/mkdssp.md)
-	
-	add_dependencies(mkdssp doc_files)
-else()
-	message(STATUS "Could not find pandoc, cannot recreate documentation files")
+		add_custom_target(doc_files DEPENDS
+			${PROJECT_SOURCE_DIR}/doc/mkdssp.html
+			${PROJECT_SOURCE_DIR}/doc/mkdssp.pdf
+			${PROJECT_SOURCE_DIR}/doc/mkdssp.md)
+		
+		add_dependencies(mkdssp doc_files)
+	else()
+		message(STATUS "Could not find pandoc, cannot recreate documentation files")
+	endif()
 endif()
 
 if(UNIX)
