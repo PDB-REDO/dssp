@@ -1,3 +1,6 @@
+Version 4.4.2
+- Fix unit test
+
 Version 4.4.1
 - Generate documentation only when requested
 
