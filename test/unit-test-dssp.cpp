@@ -30,7 +30,7 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "dssp.hpp"
-#include "dssp-io.hpp"
+#include "../libdssp/src/dssp-io.hpp"
 #include "revision.hpp"
 
 #include <cif++/dictionary_parser.hpp>
