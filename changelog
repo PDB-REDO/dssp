@@ -1,3 +1,8 @@
+Version 4.4.3
+- Split the code in a sub project for libdssp and the main
+  code for the executable.
+- New version string code.
+
 Version 4.4.2
 - Fix unit test
 
