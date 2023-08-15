@@ -343,20 +343,29 @@ class version_info : public version_info_base
   public:
 	using implementation_type = T;
 
-  protected:
-	version_info()
+	struct register_object
 	{
-		auto &s_head = head();
-		static instance s_next{
-			implementation_type::name(),
-			implementation_type::version(),
-			implementation_type::build_number(),
-			implementation_type::git_tag(),
-			implementation_type::revision_date(),
-			s_head };
-		s_head = &s_next;
-	}
+		register_object()
+		{
+			auto &s_head = version_info_base::head();
+			static instance s_next{
+				implementation_type::name(),
+				implementation_type::version(),
+				implementation_type::build_number(),
+				implementation_type::git_tag(),
+				implementation_type::revision_date(),
+				s_head };
+			s_head = &s_next;
+		}
+	};
+
+	template<register_object&> struct referrence_object;
+
+	static register_object s_registered_object;
+	static referrence_object<s_registered_object> s_referrenced_object;
 };
+
+template<typename T> typename version_info<T>::register_object version_info<T>::s_registered_object;
 
 inline void write_version_string(std::ostream &os, bool verbose)
 {
@@ -373,7 +382,7 @@ class version_info_@IDENT_PREFIX@impl : public version_info<version_info_@IDENT_
 	static constexpr int build_number() { return k@VAR_PREFIX@BuildNumber; }
 	static constexpr const char *git_tag() { return k@VAR_PREFIX@RevisionGitTag; }
 	static constexpr const char *revision_date() { return k@VAR_PREFIX@RevisionDate; }
-} s_@IDENT_PREFIX@instance;
+};
 ]])
 	configure_file("${VERSION_STRING_DATA}/${file_name}.in" "${dir}/${file_name}" @ONLY)
 endfunction()
