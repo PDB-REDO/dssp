@@ -105,7 +105,7 @@ find_package(Threads)
 
 if(NOT PDB_REDO_META)
 	find_package(libmcfp REQUIRED)
-	find_package(cifpp 5.1.0 REQUIRED)
+	find_package(cifpp 5.2.0 REQUIRED)
 endif()
 
 add_subdirectory(libdssp)
