@@ -34,7 +34,6 @@ include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CMakePackageConfigHelpers)
-include(Dart)
 include(FindFilesystem)
 include(GenerateExportHeader)
 
