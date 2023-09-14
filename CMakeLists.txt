@@ -36,6 +36,7 @@ include(CheckLibraryExists)
 include(CMakePackageConfigHelpers)
 include(FindFilesystem)
 include(GenerateExportHeader)
+include(CTest)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
@@ -174,7 +175,7 @@ if(EXISTS "${CCP4}/html")
 endif()
 
 # test
-if(ENABLE_TESTING)
+if(BUILD_TESTING)
 	# We still depend on boost for the testing headers-only library
 	find_package(Boost REQUIRED)
 
