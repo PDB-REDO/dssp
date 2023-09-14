@@ -51,7 +51,7 @@ endif()
 
 # Optionally build a version to be installed inside CCP4
 option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
-option(GENERATE_DOCUMENTATION "Generate the documentation files using pandoc" OFF)
+option(BUILD_DOCUMENTATION "Generate the documentation files using pandoc" OFF)
 
 if(BUILD_FOR_CCP4)
 	if("$ENV{CCP4}" STREQUAL "" OR NOT EXISTS $ENV{CCP4})
@@ -125,7 +125,7 @@ install(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
-if(GENERATE_DOCUMENTATION)
+if(BUILD_DOCUMENTATION)
 	# manual
 	find_program(PANDOC pandoc)
 
