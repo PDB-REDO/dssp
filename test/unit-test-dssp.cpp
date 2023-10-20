@@ -66,7 +66,7 @@ bool init_unit_test()
 	{
 		gTestDir = boost::unit_test::framework::master_test_suite().argv[1];
 
-		cif::add_data_directory(gTestDir / ".." / "rsrc");
+		cif::add_data_directory(gTestDir / ".." / "libdssp" / "mmcif_pdbx");
 	}
 
 	// // do this now, avoids the need for installing
