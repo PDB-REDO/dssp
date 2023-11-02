@@ -29,7 +29,7 @@ class version_info_base
 		{
 			for (auto lib = registered_libraries(); lib != nullptr; lib = lib->m_next)
 			{
-				os << '-' << std::endl;
+				os << "-\n";
 				lib->write(os, verbose);
 			}
 		}
@@ -55,15 +55,15 @@ class version_info_base
 
 	void write(std::ostream &os, bool verbose)
 	{
-		os << m_name << " version " << m_version << std::endl;
+		os << m_name << " version " << m_version << '\n';
 
 		if (verbose)
 		{
 			if (m_build_number != 0)
 			{
-				os << "build: " << m_build_number << ' ' << m_revision_date << std::endl;
+				os << "build: " << m_build_number << ' ' << m_revision_date << '\n';
 				if (m_git_tag[0] != 0)
-					os << "git tag: " << m_git_tag << std::endl;
+					os << "git tag: " << m_git_tag << '\n';
 			}
 		}
 	}
@@ -100,24 +100,7 @@ class version_info : public version_info_base
 		: version_info_base(name, version, build_number, git_tag, revision_date, is_main)
 	{
 	}
-
-	struct register_object
-	{
-		register_object()
-		{
-			static implementation_type s_instance;
-		}
-	};
-
-	template <register_object &>
-	struct reference_object;
-
-	static register_object s_registered_object;
-	static reference_object<s_registered_object> s_referenced_object;
 };
-
-template <typename T>
-typename version_info<T>::register_object version_info<T>::s_registered_object;
 
 } // namespace version_info_v1_1
 
@@ -128,11 +111,11 @@ inline void write_version_string(std::ostream &os, bool verbose)
 
 #endif
 
-class version_info_@IDENT_PREFIX@impl : public version_info_v1_1::version_info<version_info_@IDENT_PREFIX@impl>
+const class version_info_@IDENT_PREFIX@impl : public version_info_v1_1::version_info<version_info_@IDENT_PREFIX@impl>
 {
   public:
 	version_info_@IDENT_PREFIX@impl()
 		: version_info(k@VAR_PREFIX@ProjectName, k@VAR_PREFIX@VersionNumber, k@VAR_PREFIX@BuildNumber, k@VAR_PREFIX@RevisionGitTag, k@VAR_PREFIX@RevisionDate, @BOOL_IS_MAIN@)
 	{
 	}
-};
+} s_version_info_@IDENT_PREFIX@instance;

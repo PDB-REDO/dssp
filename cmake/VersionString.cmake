@@ -237,7 +237,11 @@ function(write_version_header dir)
 
 		if(res EQUAL 0)
 			set(REVISION_STRING "${out}")
+		else()
+			message(STATUS "Git hash not found, does this project has a 'build' tag?")
 		endif()
+	else()
+		message(STATUS "Git hash not found")
 	endif()
 
 	# Check the revision string, if it matches we fill in the required info

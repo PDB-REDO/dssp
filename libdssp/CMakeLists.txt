@@ -35,7 +35,6 @@ include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CMakePackageConfigHelpers)
 include(FindFilesystem)
-include(GenerateExportHeader)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
@@ -69,6 +68,7 @@ endif()
 if(MSVC)
 	# make msvc standards compliant...
 	add_compile_options(/permissive-)
+	add_link_options(/NODEFAULTLIB:library)
 
 	macro(get_WIN32_WINNT version)
 		if(WIN32 AND CMAKE_SYSTEM_VERSION)
@@ -83,6 +83,9 @@ if(MSVC)
 	get_WIN32_WINNT(ver)
 	add_definitions(-D_WIN32_WINNT=${ver})
 endif()
+
+# We do not want to write an export file for all our symbols...
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Create a revision file, containing the current git version info
 include(VersionString)
@@ -111,6 +114,8 @@ add_library(dssp::dssp ALIAS dssp)
 
 target_link_libraries(dssp PUBLIC cifpp::cifpp)
 
+set_target_properties(dssp PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 target_include_directories(dssp
 	PUBLIC
 	"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
@@ -127,7 +132,7 @@ install(TARGETS dssp
 
 if(MSVC AND BUILD_SHARED_LIBS)
 	install(
-		FILES $<TARGET_PDB_FILE:${PROJECT_NAME}>
+		FILES $<TARGET_PDB_FILE:dssp>
 		DESTINATION ${CMAKE_INSTALL_LIBDIR}
 		OPTIONAL)
 endif()
