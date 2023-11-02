@@ -1,3 +1,6 @@
+Version 4.4.5
+- Changes required for building on Windows
+
 Version 4.4.4
 - Fix unit test
 
