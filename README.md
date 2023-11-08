@@ -24,23 +24,24 @@ The tools are based on [libcif++](https://github.com/PDB-REDO/libcifpp)
 and the code is written in modern C++ so you need a compiler capable
 of handling C++17 code.
 
-You also need [libmcfp](https://github.com/mhekkel/libmcfp.git)
-
 Building
 --------
 
-Make sure you install [libcif++](https://github.com/PDB-REDO/libcifpp) and [libmcfp](https://github.com/mhekkel/libmcfp.git) first before building.
+You can use the special branch `dssp-builder` to build dssp including all the
+dependencies:
 
-After that, building should be as easy as typing:
 
-```bash
-git clone https://github.com/PDB-REDO/dssp.git
+```console
+git clone https://github.com/PDB-REDO/dssp.git -b dssp-builder
 cd dssp
-mkdir build
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/.local
 cmake --build build
-cmake --install build
 ```
+
+That will build the mkdssp executable in your $HOME/.local directory.
+
+But you can of course also build the classic way using the `trunk` branch in
+which case you will have to have all dependencies installed first.
 
 Usage
 -----
