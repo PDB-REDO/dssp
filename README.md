@@ -36,6 +36,7 @@ git clone https://github.com/PDB-REDO/dssp.git -b dssp-builder
 cd dssp
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/.local
 cmake --build build
+cmake --install build
 ```
 
 That will build the mkdssp executable in your $HOME/.local directory.
