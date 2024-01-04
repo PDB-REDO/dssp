@@ -33,7 +33,7 @@ Make sure you install [libcif++](https://github.com/PDB-REDO/libcifpp) and [libm
 
 After that, building should be as easy as typing:
 
-```bash
+```console
 git clone https://github.com/PDB-REDO/dssp.git
 cd dssp
 mkdir build
@@ -46,3 +46,32 @@ Usage
 -----
 
 See [manual page](doc/mkdssp.md) for more info. Or even better, see the [DSSP website](https://pdb-redo.eu/dssp).
+
+Docker
+------
+
+Build the image yourself:
+
+```console
+git clone https://github.com/PDB-REDO/dssp.git
+cd dssp
+sudo docker build -t dssp .
+```
+
+Or pull from Docker Hub:
+
+```console
+sudo docker pull stephenturner/dssp && docker tag stephenturner/dssp dssp
+```
+
+Usage:
+
+```console
+sudo docker run --rm dssp
+```
+
+To run dssp on the file `/srv/data/pdb/pdb/cb/pdb1cbs.ent.gz`:
+
+```console
+sudo docker run --rm -it -v /srv/data/pdb/pdb:/tmp/pdb dssp /tmp/pdb/cb/pdb1cbs.ent.gz
+```
