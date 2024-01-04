@@ -27,7 +27,7 @@
 #include "dssp-io.hpp"
 #include "revision.hpp"
 
-#include <cif++/pdb/io.hpp>
+#include <cif++/pdb.hpp>
 #include <cif++/dictionary_parser.hpp>
 
 #include <exception>
