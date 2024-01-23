@@ -1,3 +1,6 @@
+Version 4.4.4
+- Update dependency on libcifpp to version 7
+
 Version 4.4.3
 - Split the code in a sub project for libdssp and the main
   code for the executable.

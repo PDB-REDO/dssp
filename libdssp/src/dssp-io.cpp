@@ -230,13 +230,13 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 {
 	auto &hb = db["dssp_struct_bridge_pairs"];
 
-	hb.add_column("id");
-	hb.add_column("label_comp_id");
-	hb.add_column("label_seq_id");
-	hb.add_column("label_asym_id");
-	hb.add_column("auth_seq_id");
-	hb.add_column("auth_asym_id");
-	hb.add_column("pdbx_PDB_ins_code");
+	hb.add_item("id");
+	hb.add_item("label_comp_id");
+	hb.add_item("label_seq_id");
+	hb.add_item("label_asym_id");
+	hb.add_item("auth_seq_id");
+	hb.add_item("auth_asym_id");
+	hb.add_item("pdbx_PDB_ins_code");
 
 	// force right order
 	for (std::string da : { "acceptor_", "donor_" })
@@ -244,7 +244,7 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 		for (std::string i : { "1_", "2_" })
 		{
 			for (std::string n : { "label_comp_id", "label_seq_id", "label_asym_id", "auth_seq_id", "auth_asym_id", "pdbx_PDB_ins_code", "energy" })
-				hb.add_column(da + i + n);
+				hb.add_item(da + i + n);
 		}
 	}
 
@@ -615,7 +615,7 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 			"ss_bridge", "helix_3_10", "helix_alpha", "helix_pi", "helix_pp", "bend", "chirality", "sheet",
 			"strand", "ladder_1", "ladder_2", "accessibility", "TCO", "kappa", "alpha", "phi", "psi",
 			"x_ca", "y_ca", "z_ca"})
-		dssp_struct_summary.add_column(label);
+		dssp_struct_summary.add_item(label);
 
 	for (auto res : dssp)
 	{
