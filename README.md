@@ -34,6 +34,7 @@ dependencies:
 ```console
 git clone https://github.com/PDB-REDO/dssp.git -b dssp-builder
 cd dssp
+git fetch
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/.local
 cmake --build build
 cmake --install build
