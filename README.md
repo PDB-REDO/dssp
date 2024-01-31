@@ -27,23 +27,21 @@ of handling C++17 code.
 Building
 --------
 
-You can use the special branch `dssp-builder` to build dssp including all the
-dependencies:
+First make sure the following dependencies are installed:
 
+* [zlib](https://github.com/madler/zlib) A compression library. You can also use your package manager to install this, on Debian/Ubuntu this is done using `apt-get install zlib1g-dev`
+* [libmcfp](https://github.com/mhekkel/libmcfp.git) A library for parsing command line arguments
+* [libcif++](https://github.com/pdb-redo/libcifpp.git) A library for reading and writing PBDx files.
+
+When these are installed, you can then execute the following commands to build and install dssp:
 
 ```console
-git clone https://github.com/PDB-REDO/dssp.git -b dssp-builder
+git clone https://github.com/pdb-redo/dssp.git
 cd dssp
-git fetch
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/.local
+cmake -S . -B build
 cmake --build build
 cmake --install build
 ```
-
-That will build the mkdssp executable in your $HOME/.local directory.
-
-But you can of course also build the classic way using the `trunk` branch in
-which case you will have to have all dependencies installed first.
 
 Usage
 -----
