@@ -55,39 +55,10 @@ configure_package_config_file(
 
 install(FILES
 	"${CMAKE_CURRENT_BINARY_DIR}/dssp/dsspConfig.cmake"
-	"${CMAKE_CURRENT_BINARY_DIR}/dssp/dsspConfigVersion.cmake"
 	DESTINATION lib/cmake/dssp
 	COMPONENT Devel
 )
 
-# set(dssp_MAJOR_VERSION ${CMAKE_PROJECT_VERSION_MAJOR})
-# set_target_properties(dssp PROPERTIES
-# 	VERSION ${PROJECT_VERSION}
-# 	SOVERSION ${dssp_MAJOR_VERSION}
-# 	INTERFACE_dssp_MAJOR_VERSION ${dssp_MAJOR_VERSION})
-
-# set_property(TARGET dssp APPEND PROPERTY
-# 	COMPATIBLE_INTERFACE_STRING dssp_MAJOR_VERSION
-# )
-
-# write_basic_package_version_file(
-# 	"${CMAKE_CURRENT_BINARY_DIR}/dssp/dsspConfigVersion.cmake"
-# 	VERSION ${PROJECT_VERSION}
-# 	COMPATIBILITY AnyNewerVersion
-# )
-
-# # pkgconfig support
-# set(prefix ${CMAKE_INSTALL_PREFIX})
-# set(exec_prefix ${CMAKE_INSTALL_PREFIX})
-# set(libdir ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
-# set(includedir ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
-
-# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/libdssp.pc.in
-# 	${CMAKE_CURRENT_BINARY_DIR}/libdssp.pc.in @ONLY)
-# file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libdssp.pc
-# 	INPUT ${CMAKE_CURRENT_BINARY_DIR}/libdssp.pc.in)
-# install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libdssp.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-
-set(CIFPP_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/libcifpp")
+set(CIFPP_DATA_DIR share/libcifpp)
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic"
         DESTINATION ${CIFPP_DATA_DIR})

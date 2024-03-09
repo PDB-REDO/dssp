@@ -29,21 +29,14 @@ project(mkdssp VERSION 4.4.4 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include(GNUInstallDirs)
-include(CheckFunctionExists)
-include(CheckIncludeFiles)
-include(CheckLibraryExists)
-include(CMakePackageConfigHelpers)
+# include(GNUInstallDirs)
+# include(CheckFunctionExists)
+# include(CheckIncludeFiles)
+# include(CheckLibraryExists)
+# include(CMakePackageConfigHelpers)
 include(FetchContent)
-include(FindFilesystem)
-include(GenerateExportHeader)
+# include(GenerateExportHeader)
 include(CTest)
-
-set(CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-find_package(Filesystem REQUIRED)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
@@ -95,7 +88,7 @@ endif()
 
 # Create a revision file, containing the current git version info
 include(VersionString)
-write_version_header("${PROJECT_SOURCE_DIR}/src")
+write_version_header("${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Optionally use mrc to create resources
 find_package(Mrc QUIET)
@@ -119,7 +112,7 @@ if(NOT PDB_REDO_META)
 		libmcfp
 		${EXLC}
 		GIT_REPOSITORY https://github.com/mhekkel/libmcfp
-		GIT_TAG v1.2.4)
+		GIT_TAG v1.3.1)
 
 	FetchContent_MakeAvailable(libmcfp)
 
@@ -140,7 +133,7 @@ endif()
 
 add_subdirectory(libdssp)
 
-add_executable(mkdssp ${PROJECT_SOURCE_DIR}/src/mkdssp.cpp)
+add_executable(mkdssp ${CMAKE_CURRENT_SOURCE_DIR}/src/mkdssp.cpp)
 
 target_link_libraries(mkdssp PRIVATE libmcfp::libmcfp dssp::dssp)
 
@@ -148,12 +141,12 @@ if(USE_RSRC)
 	mrc_target_resources(mkdssp
 		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
 		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
-		${PROJECT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
+		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
 endif()
 
 # Install rules
 install(TARGETS ${PROJECT_NAME}
-	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+	RUNTIME DESTINATION bin
 )
 
 if(BUILD_DOCUMENTATION)
@@ -162,7 +155,7 @@ endif()
 
 if(UNIX)
 	install(FILES doc/mkdssp.1
-		DESTINATION ${CMAKE_INSTALL_DATADIR}/man/man1)
+		DESTINATION share/man/man1)
 endif()
 
 if(EXISTS "${CCP4}/html")
