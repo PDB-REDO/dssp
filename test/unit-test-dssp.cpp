@@ -74,9 +74,13 @@ int main(int argc, char *argv[])
 	using namespace Catch::Clara;
 #endif
 
+	std::filesystem::path rsrc_dir;
+
 	auto cli = session.cli()                                // Get Catch2's command line parser
 	           | Opt(gTestDir, "data-dir")                  // bind variable to a new option, with a hint string
 	                 ["-D"]["--data-dir"]                   // the option names it will respond to
+	           | Opt(rsrc_dir, "rsrc-dir")                  // bind variable to a new option, with a hint string
+	                 ["-D"]["--rsrc-dir"]                   // the option names it will respond to
 	           ("The directory containing the data files"); // description string for the help output
 
 	// Now pass the new composite back to Catch2 so it uses that
@@ -86,6 +90,9 @@ int main(int argc, char *argv[])
 	int returnCode = session.applyCommandLine(argc, argv);
 	if (returnCode != 0) // Indicates a command line error
 		return returnCode;
+
+	if (not rsrc_dir.empty() and std::filesystem::exists(rsrc_dir))
+		cif::add_data_directory(rsrc_dir);
 
 	return session.run();
 }

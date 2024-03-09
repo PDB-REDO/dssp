@@ -85,6 +85,12 @@ if(MSVC)
 
 	get_WIN32_WINNT(ver)
 	add_definitions(-D_WIN32_WINNT=${ver})
+
+	if(BUILD_SHARED_LIBS)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+	else()
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	endif()
 endif()
 
 # Create a revision file, containing the current git version info
@@ -124,7 +130,8 @@ if(NOT PDB_REDO_META)
 			cifpp
 			${EXLC}
 			GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-			GIT_TAG v7.0.1)
+			GIT_TAG 92bd52d
+		)
 
 		FetchContent_MakeAvailable(cifpp)
 	endif()
