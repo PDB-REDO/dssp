@@ -37,6 +37,7 @@ include(CMakePackageConfigHelpers)
 include(FetchContent)
 include(FindFilesystem)
 include(GenerateExportHeader)
+include(CTest)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)

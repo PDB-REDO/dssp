@@ -41,11 +41,17 @@ jobs:
       run: >
         brew install catch2
 
+    - name: Install dependencies Window
+      if: matrix.os == 'windows-latest'
+      run: ./tools/depends.cmd
+      shell: cmd
+
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=Release
+        -DBUILD_TESTING=ON
         -S ${{ github.workspace }}
         
     - name: Build
