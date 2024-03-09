@@ -58,6 +58,8 @@ jobs:
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
     - name: Test
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}/test
-      run: ctest --build-config Release --output-on-failure
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ctest --build-config Release --output-on-failure -R dssp
+      env:
+        LIBCIFPP_DATA_DIR: ${{ steps.strings.outputs.build-output-dir }}/_deps/cifpp-src/rsrc
 
