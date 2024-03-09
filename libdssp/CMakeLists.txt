@@ -2,7 +2,7 @@
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # The DSSP code is in a separate library, optionally to be used by others
-add_library(dssp STATIC)
+add_library(dssp)
 add_library(dssp::dssp ALIAS dssp)
 
 target_sources(dssp
