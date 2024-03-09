@@ -59,5 +59,5 @@ jobs:
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --build-config Release --output-on-failure
+      run: ctest --build-config Release --output-on-failure --label-regex unit-test-dssp
 
