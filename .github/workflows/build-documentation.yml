@@ -1,0 +1,65 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: publish docs
+
+on:
+  push:
+    branches: [ "trunk" ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Install dependencies Ubuntu
+      run: sudo apt-get update && sudo apt-get install cmake doxygen
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip' # caching pip dependencies
+    - run: pip install -r docs/requirements.txt
+
+    - name: Configure CMake
+      run: cmake -S . -B build -DBUILD_DOCUMENTATION=ON -DBUILD_TESTING=OFF
+
+    - name: Run Sphinx
+      run: |
+        cmake --build build --target Sphinx-mcfp
+        ls -l ${{ steps.strings.outputs.build-output-dir }}
+        ls -l ${{ steps.strings.outputs.build-output-dir }}/docs/sphinx
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: ${{ steps.strings.outputs.build-output-dir }}/docs/sphinx
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    needs: docs
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2

@@ -1,10 +1,17 @@
-# We're using the older version 2 of Catch2
-FetchContent_Declare(
-	Catch2
-	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-	GIT_TAG v2.13.9)
+find_package(Catch2 QUIET)
 
-FetchContent_MakeAvailable(Catch2)
+if(NOT Catch2_FOUND)
+	include(FetchContent)
+
+	FetchContent_Declare(
+		Catch2
+		GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+		GIT_TAG v2.13.9)
+
+	FetchContent_MakeAvailable(Catch2)
+
+	set(Catch2_VERSION "2.13.9")
+endif()
 
 add_executable(unit-test-dssp ${CMAKE_CURRENT_SOURCE_DIR}/unit-test-dssp.cpp ${PROJECT_SOURCE_DIR}/libdssp/src/dssp-io.cpp)
 
@@ -26,6 +33,10 @@ if(MSVC)
 	target_compile_options(unit-test-dssp PRIVATE /EHsc)
 endif()
 
-target_compile_definitions(unit-test-dssp PUBLIC CATCH22=1)
+if(${Catch2_VERSION} VERSION_GREATER_EQUAL 3.0.0)
+	target_compile_definitions(unit-test-dssp PUBLIC CATCH22=0)
+else()
+	target_compile_definitions(unit-test-dssp PUBLIC CATCH22=1)
+endif()
 
 add_test(NAME unit-test-dssp COMMAND $<TARGET_FILE:unit-test-dssp> --data-dir ${CMAKE_CURRENT_SOURCE_DIR})
