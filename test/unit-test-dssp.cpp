@@ -26,12 +26,17 @@
 
 #include <stdexcept>
 
-#define BOOST_TEST_ALTERNATIVE_INIT_API
-#include <boost/test/included/unit_test.hpp>
+#define CATCH_CONFIG_RUNNER
 
-#include "dssp.hpp"
+#if CATCH22
+# include <catch2/catch.hpp>
+#else
+# include <catch2/catch_all.hpp>
+#endif
+
 #include "../libdssp/src/dssp-io.hpp"
-#include "revision.hpp"
+#include "dssp.hpp"
+#include "../src/revision.hpp"
 
 #include <cif++/dictionary_parser.hpp>
 
@@ -55,37 +60,44 @@ cif::file operator""_cf(const char *text, size_t length)
 
 // --------------------------------------------------------------------
 
-fs::path gTestDir = fs::current_path();
+std::filesystem::path gTestDir = std::filesystem::current_path();
 
-bool init_unit_test()
+int main(int argc, char *argv[])
 {
-	cif::VERBOSE = 1;
+	Catch::Session session; // There must be exactly one instance
 
-	// not a test, just initialize test dir
-	if (boost::unit_test::framework::master_test_suite().argc == 2)
-	{
-		gTestDir = boost::unit_test::framework::master_test_suite().argv[1];
+	// Build a new parser on top of Catch2's
+#if CATCH22
+	using namespace Catch::clara;
+#else
+	// Build a new parser on top of Catch2's
+	using namespace Catch::Clara;
+#endif
 
-		cif::add_data_directory(gTestDir / ".." / "rsrc");
-	}
+	auto cli = session.cli()                                // Get Catch2's command line parser
+	           | Opt(gTestDir, "data-dir")                  // bind variable to a new option, with a hint string
+	                 ["-D"]["--data-dir"]                   // the option names it will respond to
+	           ("The directory containing the data files"); // description string for the help output
 
-	// // do this now, avoids the need for installing
-	// cif::add_file_resource("mmcif_pdbx.dic", gTestDir / ".." / "rsrc" / "mmcif_pdbx.dic");
+	// Now pass the new composite back to Catch2 so it uses that
+	session.cli(cli);
 
-	// // initialize CCD location
-	// cif::add_file_resource("components.cif", gTestDir / ".." / "data" / "ccd-subset.cif");
+	// Let Catch2 (using Clara) parse the command line
+	int returnCode = session.applyCommandLine(argc, argv);
+	if (returnCode != 0) // Indicates a command line error
+		return returnCode;
 
-	return true;
+	return session.run();
 }
 
 // --------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(ut_dssp)
+TEST_CASE("ut_dssp")
 {
 	using namespace std::literals;
 
 	cif::file f(gTestDir / "1cbs.cif.gz");
-	BOOST_ASSERT(f.is_valid());
+	REQUIRE(f.is_valid());
 
 	dssp dssp(f.front(), 1, 3, true);
 
@@ -95,23 +107,23 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 
 	std::ifstream reference(gTestDir / "1cbs.dssp");
 
-	BOOST_CHECK(reference.is_open());
+	CHECK(reference.is_open());
 
 	std::string line_t, line_r;
-	BOOST_CHECK(std::getline(test, line_t) and std::getline(reference, line_r));
+	CHECK((std::getline(test, line_t) and std::getline(reference, line_r)));
 
-	char kHeaderLineStart[] = "==== Secondary Structure Definition by the program DSSP, NKI version 4.4.0                         ====";
+	char kHeaderLineStart[] = "==== Secondary Structure Definition by the program DSSP, NKI version 4.4.5                         ====";
 	memcpy(kHeaderLineStart + 69, kVersionNumber, strlen(kVersionNumber));
 
-	BOOST_CHECK(line_t.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
-	// BOOST_CHECK(line_r.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
+	CHECK(line_t.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
+	// CHECK(line_r.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);
 
 	for (int line_nr = 2;; ++line_nr)
 	{
 		bool done_t = not std::getline(test, line_t);
 		bool done_r = not std::getline(reference, line_r);
 
-		BOOST_CHECK_EQUAL(done_r, done_t);
+		CHECK(done_r == done_t);
 		if (done_r)
 			break;
 
@@ -122,48 +134,47 @@ BOOST_AUTO_TEST_CASE(ut_dssp)
 
 		if (line_t != line_r)
 		{
-			BOOST_CHECK(line_t == line_r);
+			CHECK(line_t == line_r);
 			break;
 		}
 	}
 
-	BOOST_CHECK(test.eof());
-	BOOST_CHECK(reference.eof());
+	CHECK(test.eof());
+	CHECK(reference.eof());
 }
 
-BOOST_AUTO_TEST_CASE(ut_mmcif_2)
+TEST_CASE("ut_mmcif_2")
 {
 	using namespace std::literals;
 	using namespace cif::literals;
 
 	cif::file f(gTestDir / "1cbs.cif.gz");
-	BOOST_ASSERT(f.is_valid());
+	REQUIRE(f.is_valid());
 
 	dssp dssp(f.front(), 1, 3, true);
 
 	std::stringstream test;
 
 	dssp.annotate(f.front(), true, false);
-	test << f.front();
 
 	cif::file rf(gTestDir / "1cbs-dssp.cif");
 
-	// structure.datablock()["software"].erase("name"_key == "dssp");
-	// rs.datablock()["software"].erase("name"_key == "dssp");
+	f.front()["software"].erase("name"_key == "dssp");
+	rf.front()["software"].erase("name"_key == "dssp");
 
 	// generate some output on different files:
-	cif::VERBOSE = 2;
+	// cif::VERBOSE = 2;
 
-	// BOOST_CHECK(f.front() == rf.front());
+	CHECK(f.front() == rf.front());
 }
 
 // --------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(dssp_1)
+TEST_CASE("dssp_1")
 {
 	cif::file f(gTestDir / "1cbs.cif.gz");
 
-	BOOST_ASSERT(f.is_valid());
+	REQUIRE(f.is_valid());
 
 	std::ifstream t(gTestDir / "1cbs-dssp-test.tsv");
 
@@ -178,7 +189,7 @@ BOOST_AUTO_TEST_CASE(dssp_1)
 
 		auto fld = cif::split(line, "\t");
 
-		BOOST_CHECK_EQUAL(fld.size(), 3);
+		CHECK(fld.size() == 3);
 		if (fld.size() != 3)
 			continue;
 
@@ -189,19 +200,19 @@ BOOST_AUTO_TEST_CASE(dssp_1)
 		if (secstr == "_")
 			secstr = " ";
 
-		BOOST_CHECK_EQUAL(residue.asym_id(), asymID);
-		BOOST_CHECK_EQUAL(residue.seq_id(), seqID);
-		BOOST_CHECK_EQUAL((char)residue.type(), secstr.front());
+		CHECK(residue.asym_id() == asymID);
+		CHECK(residue.seq_id() == seqID);
+		CHECK((char)residue.type() == secstr.front());
 	}
 }
 
 // --------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(dssp_2)
+TEST_CASE("dssp_2")
 {
 	cif::file f(gTestDir / "1cbs.cif.gz");
 
-	BOOST_ASSERT(f.is_valid());
+	REQUIRE(f.is_valid());
 
 	dssp dssp(f.front(), 1, 3, true);
 
@@ -212,7 +223,7 @@ BOOST_AUTO_TEST_CASE(dssp_2)
 	{
 		auto fld = cif::split(line, "\t");
 
-		BOOST_CHECK_EQUAL(fld.size(), 3);
+		CHECK(fld.size() == 3);
 		if (fld.size() != 3)
 			continue;
 
@@ -225,24 +236,24 @@ BOOST_AUTO_TEST_CASE(dssp_2)
 
 		dssp::key_type key{ asymID, seqID };
 		auto ri = dssp[key];
-		
-		BOOST_CHECK_EQUAL(ri.asym_id(), asymID);
-		BOOST_CHECK_EQUAL(ri.seq_id(), seqID);
-		BOOST_CHECK_EQUAL((char)ri.type(), secstr.front());
+
+		CHECK(ri.asym_id() == asymID);
+		CHECK(ri.seq_id() == seqID);
+		CHECK((char)ri.type() == secstr.front());
 	}
 }
 
 // --------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(dssp_3)
+TEST_CASE("dssp_3")
 {
 	cif::file f(gTestDir / "1cbs.cif.gz");
 
-	BOOST_ASSERT(f.is_valid());
+	REQUIRE(f.is_valid());
 
 	dssp dssp(f.front(), 1, 3, true);
 
 	dssp.annotate(f.front(), true, true);
 
-	BOOST_TEST(f.is_valid());
+	CHECK(f.is_valid());
 }

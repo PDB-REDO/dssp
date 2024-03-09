@@ -3,37 +3,68 @@
 <h1>SYNOPSIS</h1>
 <p>mkdssp [OPTION] input [output]</p>
 <h1>DESCRIPTION</h1>
-<p>The DSSP program was designed by Wolfgang Kabsch and Chris Sander to standardize secondary structure assignment. DSSP is a database of secondary structure assignments (and much more) for all protein entries in the Protein Data Bank (PDB). mkdssp is the program that calculates DSSP entries from PDB entries. mkdssp does <strong>not</strong> predict secondary structure.</p>
-<p>The original DSSP program wrote output in a fixed format, this version by default writes annotated mmCIF files, storing the secondary structure information in the _struct_conf category.</p>
+<p>The DSSP program was designed by Wolfgang Kabsch and Chris Sander to
+standardize secondary structure assignment. DSSP is a database of
+secondary structure assignments (and much more) for all protein entries
+in the Protein Data Bank (PDB). mkdssp is the program that calculates
+DSSP entries from PDB entries. mkdssp does <strong>not</strong> predict
+secondary structure.</p>
+<p>The original DSSP program wrote output in a fixed format, this
+version by default writes annotated mmCIF files, storing the secondary
+structure information in the _struct_conf category.</p>
 <p>Since version 4.0 the mkdssp program also assigns PPII helices.</p>
 <h1>OPTIONS</h1>
-<p>The input file can be either mmCIF or PDB format and the file may be gzip compressed. Note that input files must be formatted correctly. E.g. PDB files must have a CRYST1 record. More info: https://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1</p>
-<p>The output is optional, if omitted the output is written to <em>stdout</em>. If the name of the output file ends with either <em>.gz</em> or <em>.bz2</em> the output is compressed accordingly.</p>
+<p>The input file can be either mmCIF or PDB format and the file may be
+gzip compressed. Note that input files must be formatted correctly. E.g.
+PDB files must have a CRYST1 record. More info:
+https://www.wwpdb.org/documentation/file-format-content/format33/sect8.html#CRYST1</p>
+<p>The output is optional, if omitted the output is written to
+<em>stdout</em>. If the name of the output file ends with either
+<em>.gz</em> or <em>.bz2</em> the output is compressed accordingly.</p>
 <dl>
 <dt><strong>--output-format</strong>=[dssp|mmcif]</dt>
-<dd><p>If an output file is specified, the extension of the filename is used to choose to output format, but if it is unclear, mmcif is the default. Use this option to force output in either the old fixed column DSSP format or the new annotated mmCIF format.</p>
+<dd>
+<p>If an output file is specified, the extension of the filename is used
+to choose to output format, but if it is unclear, mmcif is the default.
+Use this option to force output in either the old fixed column DSSP
+format or the new annotated mmCIF format.</p>
 </dd>
 <dt><strong>--no-dssp-categories</strong></dt>
-<dd><p>When writing mmCIF files, suppress the output of all dssp_ categories.</p>
+<dd>
+<p>When writing mmCIF files, suppress the output of all dssp_
+categories.</p>
 </dd>
 <dt><strong>--min-pp-stretch</strong></dt>
-<dd><p>This option can be used to define the minimal number of residues with PHI/PSI angles within the range required to assing a PP helix.</p>
+<dd>
+<p>This option can be used to define the minimal number of residues with
+PHI/PSI angles within the range required to assing a PP helix.</p>
 </dd>
 <dt><strong>--write-other</strong></dt>
-<dd><p>By default the new format does not write the structure information for OTHER. Use this flag to change that.</p>
+<dd>
+<p>By default the new format does not write the structure information
+for OTHER. Use this flag to change that.</p>
 </dd>
 <dt><strong>--components</strong></dt>
-<dd><p>The knowledge of compounds is loaded from the CCD file <em>components.cif</em> that should have been installed by <em>libcifpp</em>. You can override that file by using this option.</p>
+<dd>
+<p>The knowledge of compounds is loaded from the CCD file
+<em>components.cif</em> that should have been installed by
+<em>libcifpp</em>. You can override that file by using this option.</p>
 </dd>
 <dt><strong>--extra-compounds</strong></dt>
-<dd><p>As an addition to the standard <em>components.cif</em> file, you can add more files using this option. Files should be either in CCD format or should be CCP4 restraints files.</p>
+<dd>
+<p>As an addition to the standard <em>components.cif</em> file, you can
+add more files using this option. Files should be either in CCD format
+or should be CCP4 restraints files.</p>
 </dd>
 <dt><strong>--mmcif-dictionary</strong></dt>
-<dd><p>The default mmCIF dictionary file is installed by the <em>libcifpp</em> library but you can override it using this option.</p>
+<dd>
+<p>The default mmCIF dictionary file is installed by the
+<em>libcifpp</em> library but you can override it using this option.</p>
 </dd>
 </dl>
 <h1>DETAILS</h1>
-<p>The DSSP algorithm assings secondary structure based on the energy calculated for H-bonds.<br />
+<p>The DSSP algorithm assings secondary structure based on the energy
+calculated for H-bonds.<br />
 <strong>Table 1. Secondary Structures recognized</strong></p>
 <table>
 <tbody>
@@ -90,8 +121,12 @@
 </tbody>
 </table>
 <h1>BUGS</h1>
-<p>The mmCIF format currently lacks a lot of information that was available in the old format like information about the bridge pairs or the span of the various helices recognized. Also the accessibility information is left out.</p>
-<p>If you think this information should be part of the output, please contact the author.</p>
+<p>The mmCIF format currently lacks a lot of information that was
+available in the old format like information about the bridge pairs or
+the span of the various helices recognized. Also the accessibility
+information is left out.</p>
+<p>If you think this information should be part of the output, please
+contact the author.</p>
 <h1>AUTHOR</h1>
 <p>Written by Maarten L. Hekkelman &lt;maarten@hekkelman.com&gt;</p>
 <h1>REPORTING BUGS</h1>

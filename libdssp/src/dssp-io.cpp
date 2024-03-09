@@ -157,7 +157,7 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 	std::time_t today = system_clock::to_time_t(system_clock::now());
 	std::tm *tm = std::gmtime(&today);
 
-	std::string version = klibdsspVersionNumber;
+	std::string version = kVersionNumber;
 	if (version.length() < 10)
 		version.insert(version.end(), 10 - version.length(), ' ');
 
@@ -877,8 +877,8 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 	software.emplace({
 		{ "pdbx_ordinal", software.get_unique_id("") },
 		{ "name", "dssp" },
-		{ "version", klibdsspVersionNumber },
-		{ "date", klibdsspRevisionDate },
+		{ "version", kVersionNumber },
+		{ "date", kRevisionDate },
 		{ "classification", "model annotation" }
 	});
 }

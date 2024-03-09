@@ -34,7 +34,7 @@ include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CMakePackageConfigHelpers)
-include(Dart)
+include(FetchContent)
 include(FindFilesystem)
 include(GenerateExportHeader)
 
@@ -104,8 +104,30 @@ set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
 if(NOT PDB_REDO_META)
-	find_package(libmcfp REQUIRED)
-	find_package(cifpp 7 REQUIRED)
+	if(CMAKE_VERSION GREATER_EQUAL 3.28)
+		set(EXLC "EXCLUDE_FROM_ALL")
+	endif()
+
+	FetchContent_Declare(
+		libmcfp
+		${EXLC}
+		GIT_REPOSITORY https://github.com/mhekkel/libmcfp
+		GIT_TAG v1.2.4)
+
+	FetchContent_MakeAvailable(libmcfp)
+
+	if (NOT cifpp_FOUND)
+		set(CIFPP_DOWNLOAD_CCD OFF)
+
+		FetchContent_Declare(
+			cifpp
+			${EXLC}
+			GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
+			GIT_TAG v7.0.1)
+
+		FetchContent_MakeAvailable(cifpp)
+	endif()
+
 endif()
 
 add_subdirectory(libdssp)
@@ -126,42 +148,8 @@ install(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
-if(GENERATE_DOCUMENTATION)
-	# manual
-	find_program(PANDOC pandoc)
-
-	if(PANDOC)
-		file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/pandoc-md.sh
-			CONTENT "${PANDOC} ${PROJECT_SOURCE_DIR}/doc/mkdssp.1 -t markdown | sed -e \"s/\\\\\\' \\\\\\' (space)/  ' ' (space)/\" > ${PROJECT_SOURCE_DIR}/doc/mkdssp.md"
-			FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
-
-		add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.md
-			DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
-			COMMAND "${PROJECT_BINARY_DIR}/pandoc-md.sh"
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
-			VERBATIM)
-
-		add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.html
-			DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
-			COMMAND ${PANDOC} -o mkdssp.html mkdssp.1
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
-			VERBATIM)
-
-		add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/doc/mkdssp.pdf
-			DEPENDS ${PROJECT_SOURCE_DIR}/doc/mkdssp.1
-			COMMAND ${PANDOC} -o mkdssp.pdf mkdssp.1 -t html
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
-			VERBATIM)
-
-		add_custom_target(doc_files DEPENDS
-			${PROJECT_SOURCE_DIR}/doc/mkdssp.html
-			${PROJECT_SOURCE_DIR}/doc/mkdssp.pdf
-			${PROJECT_SOURCE_DIR}/doc/mkdssp.md)
-		
-		add_dependencies(mkdssp doc_files)
-	else()
-		message(STATUS "Could not find pandoc, cannot recreate documentation files")
-	endif()
+if(BUILD_DOCUMENTATION)
+	add_subdirectory(doc)
 endif()
 
 if(UNIX)
@@ -175,33 +163,8 @@ if(EXISTS "${CCP4}/html")
 endif()
 
 # test
-if(ENABLE_TESTING)
-	# We still depend on boost for the testing headers-only library
-	find_package(Boost REQUIRED)
-
-	add_executable(unit-test-dssp ${PROJECT_SOURCE_DIR}/test/unit-test-dssp.cpp ${PROJECT_SOURCE_DIR}/libdssp/src/dssp-io.cpp)
-
-	if(USE_RSRC)
-		mrc_target_resources(unit-test-dssp
-			${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic
-			${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
-	endif()
-
-	target_include_directories(unit-test-dssp PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/src
-		${CMAKE_CURRENT_SOURCE_DIR}/include
-	)
-
-	target_link_libraries(unit-test-dssp PRIVATE dssp cifpp::cifpp Boost::boost)
-
-	if(MSVC)
-		# Specify unwind semantics so that MSVC knowns how to handle exceptions
-		target_compile_options(unit-test-dssp PRIVATE /EHsc)
-	endif()
-
-	enable_testing()
-
-	add_test(NAME unit-test-dssp COMMAND $<TARGET_FILE:unit-test-dssp> -- ${PROJECT_SOURCE_DIR}/test)
+if(BUILD_TESTING)
+	add_subdirectory(test)
 endif()
 
 include(InstallRequiredSystemLibraries)
