@@ -40,5 +40,5 @@ else()
 endif()
 
 add_test(NAME unit-test-dssp COMMAND $<TARGET_FILE:unit-test-dssp>
-	--data-dir ${CMAKE_CURRENT_SOURCE_DIR}/test
+	--data-dir ${CMAKE_CURRENT_SOURCE_DIR}
 	--rsrc-dir ${CMAKE_CURRENT_BINARY_DIR}/_deps/cifpp-src/rsrc)
