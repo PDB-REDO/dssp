@@ -1,3 +1,6 @@
+[![github CI](https://github.com/pdb-redo/dssp/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/pdb-redo/dssp/actions)
+[![GitHub License](https://img.shields.io/github/license/pdb-redo/dssp)](https://github.com/pdb-redo/dssp/LICENSE)
+
 DSSP 4.4
 ========
 
