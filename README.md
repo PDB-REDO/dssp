@@ -32,8 +32,7 @@ automatically. So in theory, building is as simple as:
 ```console
 git clone https://github.com/PDB-REDO/dssp.git
 cd dssp
-mkdir build
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build
 cmake --build build
 cmake --install build
 ```

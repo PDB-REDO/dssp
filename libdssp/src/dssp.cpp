@@ -35,6 +35,10 @@
 #include <numeric>
 #include <thread>
 
+#ifdef near
+#undef near
+#endif
+
 using residue = dssp::residue;
 using statistics = dssp::statistics;
 using structure_type = dssp::structure_type;

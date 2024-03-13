@@ -1,5 +1,11 @@
-Version 4.4.4
+Version 4.4.6
 - Update dependency on libcifpp to version 7
+
+Version 4.4.5
+- Changes required for building on Windows
+
+Version 4.4.4
+- Fix unit test
 
 Version 4.4.3
 - Split the code in a sub project for libdssp and the main

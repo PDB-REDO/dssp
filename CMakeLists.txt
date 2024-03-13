@@ -41,7 +41,7 @@ endif()
 
 # Optionally build a version to be installed inside CCP4
 option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
-option(GENERATE_DOCUMENTATION "Generate the documentation files using pandoc" OFF)
+option(BUILD_DOCUMENTATION "Generate the documentation files using pandoc" OFF)
 
 if(BUILD_FOR_CCP4)
 	if("$ENV{CCP4}" STREQUAL "" OR NOT EXISTS $ENV{CCP4})
@@ -60,6 +60,7 @@ endif()
 if(MSVC)
 	# make msvc standards compliant...
 	add_compile_options(/permissive-)
+	add_link_options(/NODEFAULTLIB:library)
 
 	macro(get_WIN32_WINNT version)
 		if(WIN32 AND CMAKE_SYSTEM_VERSION)
