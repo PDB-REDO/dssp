@@ -129,8 +129,6 @@ int d_main(int argc, const char *argv[])
 
 	try
 	{
-		auto &cf = cif::validator_factory::instance();
-
 		cif::gzio::ifstream in(config.operands().front());
 		if (not in.is_open())
 		{
@@ -138,11 +136,18 @@ int d_main(int argc, const char *argv[])
 			exit(1);
 		}
 
-		f.load(in);
-		f.front().set_validator(&cf.get("mmcif_pdbx.dic"));
+		if (cif::VERBOSE > 0)
+			std::cerr << "Loading file...";
 
-		if (f.empty() or f.front().get("pdbx_poly_seq_scheme") == nullptr)
-			throw std::runtime_error("Missing pdbx_poly_seq_scheme, will attempt to recover...");
+		f.load(in);
+
+		if (cif::VERBOSE > 0)
+			std::cerr << " fixup file...";
+
+		cif::pdb::fixup_pdbx(f);
+
+		if (cif::VERBOSE > 0)
+			std::cerr << " done\n";
 	}
 	catch (const std::exception &e)
 	{
