@@ -124,13 +124,13 @@ CPMFindPackage(
 
 # CPMFindPackage does not pass on variables set with set_and_check
 # Working around this here
-find_package(cifpp 8.0.1 QUIET)
+find_package(cifpp 9 QUIET)
 
 if(NOT cifpp_FOUND)
 	CPMAddPackage(
 		NAME cifpp
 		GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-		GIT_TAG v8.0.1
+		GIT_TAG v9.0.0
 		EXCLUDE_FROM_ALL YES)
 endif()
 

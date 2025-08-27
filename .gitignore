@@ -6,3 +6,4 @@ build/
 src/revision.hpp
 libdssp/src/revision.hpp
 python-module/mkdssp.so
+.cache/
