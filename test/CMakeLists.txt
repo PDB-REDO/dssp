@@ -1,7 +1,7 @@
 CPMFindPackage(
 	NAME Catch2 3
 	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-	GIT_TAG v3.7.1
+	GIT_TAG v3.4.0
 	EXCLUDE_FROM_ALL YES)
 
 add_executable(unit-test-dssp ${CMAKE_CURRENT_SOURCE_DIR}/unit-test-dssp.cpp ${PROJECT_SOURCE_DIR}/libdssp/src/dssp-io.cpp)

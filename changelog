@@ -1,3 +1,6 @@
+Version 4.5.6
+- Using libcifpp version 9.0.0
+
 Version 4.5.5
 - Clean up old DSSP data before writing new
 - Regression: check for pdbx_poly_seq_scheme and if missing
