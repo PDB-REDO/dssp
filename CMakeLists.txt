@@ -116,6 +116,12 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
+# Find fmt library for cifpp
+find_package(fmt QUIET)
+if(NOT fmt_FOUND)
+        message(WARNING "fmt library not found - cifpp may fail to link")
+endif()
+
 CPMFindPackage(
 	NAME mcfp
 	GIT_REPOSITORY https://github.com/mhekkel/libmcfp
