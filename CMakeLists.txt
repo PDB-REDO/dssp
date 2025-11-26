@@ -24,8 +24,10 @@
 
 cmake_minimum_required(VERSION 3.23)
 
-# set the project name
-project(mkdssp VERSION 4.5.5 LANGUAGES CXX)
+file(READ libdssp/VERSION VER_FILE_CONTENT)
+string(STRIP ${VER_FILE_CONTENT} VER_FILE_CONTENT)
+
+project(mkdssp VERSION ${VER_FILE_CONTENT} LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
