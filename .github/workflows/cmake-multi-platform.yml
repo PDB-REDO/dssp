@@ -25,7 +25,7 @@ jobs:
             cpp_compiler: clang++
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set reusable strings
       id: strings
@@ -51,6 +51,25 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: ./tools/depends.cmd
       shell: cmd
+
+    - name: Checkout libcifpp
+      uses: actions/checkout@v4
+      with:
+        repository: pdb-redo/libcifpp
+        path: libcifpp
+
+    - name: Build libcifpp
+      run: |
+        cmake -B ${{github.workspace}}/libcifpp/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -S ${{github.workspace}}/libcifpp -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF
+        cmake --build ${{github.workspace}}/libcifpp/build
+
+    - name: Install libcifpp
+      if: matrix.os != 'windows-latest'
+      run: sudo cmake --install ${{github.workspace}}/libcifpp/build
+
+    - name: Install libcifpp (Windows)
+      if: matrix.os == 'windows-latest'
+      run: cmake --install ${{github.workspace}}/libcifpp/build
 
     - name: Configure CMake
       run: >
