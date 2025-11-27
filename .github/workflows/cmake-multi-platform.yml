@@ -56,32 +56,32 @@ jobs:
       run: ./tools/depends.cmd
       shell: cmd
 
-    - name: Checkout libcifpp
-      uses: actions/checkout@v4
-      with:
-        repository: pdb-redo/libcifpp
-        path: libcifpp
+    # - name: Checkout libcifpp
+    #   uses: actions/checkout@v4
+    #   with:
+    #     repository: pdb-redo/libcifpp
+    #     path: libcifpp
 
-    - name: Configure libcifpp
-      run: >
-        cmake
-        -B ${{github.workspace}}/libcifpp/build
-        -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-        -S ${{github.workspace}}/libcifpp
-        -DBUILD_DOCUMENTATION=OFF 
-        -DBUILD_TESTING=OFF
-        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/local
+    # - name: Configure libcifpp
+    #   run: >
+    #     cmake
+    #     -B ${{github.workspace}}/libcifpp/build
+    #     -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+    #     -S ${{github.workspace}}/libcifpp
+    #     -DBUILD_DOCUMENTATION=OFF 
+    #     -DBUILD_TESTING=OFF
+    #     -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/local
 
-    - name: Build libcifpp
-      run: cmake --build ${{github.workspace}}/libcifpp/build --config ${{env.BUILD_TYPE}}
+    # - name: Build libcifpp
+    #   run: cmake --build ${{github.workspace}}/libcifpp/build --config ${{env.BUILD_TYPE}}
 
-    - name: Install libcifpp
-      if: matrix.os == 'windows-latest'
-      run: cmake --install ${{github.workspace}}/libcifpp/build --config ${{env.BUILD_TYPE}}
+    # - name: Install libcifpp
+    #   if: matrix.os == 'windows-latest'
+    #   run: cmake --install ${{github.workspace}}/libcifpp/build --config ${{env.BUILD_TYPE}}
 
-    - name: Install libcifpp
-      if: matrix.os != 'windows-latest'
-      run: sudo cmake --install ${{github.workspace}}/libcifpp/build --config ${{env.BUILD_TYPE}}
+    # - name: Install libcifpp
+    #   if: matrix.os != 'windows-latest'
+    #   run: sudo cmake --install ${{github.workspace}}/libcifpp/build --config ${{env.BUILD_TYPE}}
 
     - name: Configure CMake
       run: >

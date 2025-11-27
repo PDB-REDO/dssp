@@ -129,7 +129,7 @@ find_package(cifpp 9.0.5 QUIET)
 
 if(NOT (cifpp_FOUND OR TARGET cifpp))
 	# message(FATAL_ERROR "Could not find libcifpp. Please make sure you install libcifpp first, code can be found at https://github.com/PDB-REDO/libcifpp")
-	CPMAddPackage("https://github.com/PDB-REDO/libcifpp")
+	CPMAddPackage("gh:github.com/PDB-REDO/libcifpp#7a9d94b")
 endif()
 
 if(TARGET cifpp)
