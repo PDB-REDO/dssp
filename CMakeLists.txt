@@ -122,16 +122,11 @@ CPMFindPackage(
 	GIT_TAG v1.4.2
 	EXCLUDE_FROM_ALL YES)
 
-# CPMFindPackage does not pass on variables set with set_and_check
-# Working around this here
-find_package(cifpp 9 QUIET)
+# No longer using CPM for libcifpp. It is now simply required to install it first.
+find_package(cifpp 9.0.5 QUIET)
 
-if(NOT cifpp_FOUND)
-	CPMAddPackage(
-		NAME cifpp
-		GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-		GIT_TAG v9.0.0
-		EXCLUDE_FROM_ALL YES)
+if(NOT (cifpp_FOUND OR TARGET cifpp))
+	message(FATAL_ERROR "Could not find libcifpp. Please make sure you install libcifpp first, code can be found at https://github.com/PDB-REDO/libcifpp")
 endif()
 
 if(TARGET cifpp)
