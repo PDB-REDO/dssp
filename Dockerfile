@@ -5,7 +5,7 @@ RUN apt-get update && \
     apt-get install -yq tzdata && \
     ln -fs /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
-    apt install -y build-essential cmake zlib1g-dev git libeigen3-dev
+    apt install -y build-essential cmake zlib1g-dev git libeigen3-dev libpcre2-dev
 
 WORKDIR /build
 

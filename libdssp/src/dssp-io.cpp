@@ -524,7 +524,7 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 		{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
 		{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
 		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges },
-		{ "accessible_surface_of_protein", surface_accessibility } });
+		{ "accessible_surface_of_protein", surface_accessibility, 2 } });
 
 	auto &dssp_struct_hbonds = db["dssp_statistics_hbond"];
 

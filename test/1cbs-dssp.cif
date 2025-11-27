@@ -7,7 +7,7 @@ _audit_conform.dict_name
 _audit_conform.dict_version 
 _audit_conform.dict_location 
 mmcif_pdbx.dic     5.279 http://mmcif.pdb.org/dictionaries/ascii/mmcif_pdbx.dic 
-dssp-extension.dic 1.1   https://pdb-redo.eu/dssp/dssp-extension.dic           
+dssp-extension.dic 1.1.1 https://pdb-redo.eu/dssp/dssp-extension.dic 
 # 
 _struct_biol.id   1 
 # 
