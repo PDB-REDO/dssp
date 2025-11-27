@@ -58,17 +58,20 @@ jobs:
         repository: pdb-redo/libcifpp
         path: libcifpp
 
+    - name: Configure libcifpp
+      run: >
+        cmake
+        -B ${{github.workspace}}/libcifpp/build
+        -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        -S ${{github.workspace}}/libcifpp
+        -DBUILD_DOCUMENTATION=OFF 
+        -DBUILD_TESTING=OFF
+        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/local
+
     - name: Build libcifpp
-      run: |
-        cmake -B ${{github.workspace}}/libcifpp/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -S ${{github.workspace}}/libcifpp -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF
-        cmake --build ${{github.workspace}}/libcifpp/build
+      run: cmake --build ${{github.workspace}}/libcifpp/build
 
     - name: Install libcifpp
-      if: matrix.os != 'windows-latest'
-      run: sudo cmake --install ${{github.workspace}}/libcifpp/build
-
-    - name: Install libcifpp (Windows)
-      if: matrix.os == 'windows-latest'
       run: cmake --install ${{github.workspace}}/libcifpp/build
 
     - name: Configure CMake
@@ -79,6 +82,7 @@ jobs:
         -DBUILD_TESTING=ON
         -DBUILD_PYTHON_MODULE=ON
         -S ${{ github.workspace }}
+        -DCMAKE_PREFIX_PATH=${{github.workspace}}/local
         
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
