@@ -30,8 +30,11 @@
 
 #include "dssp-io.hpp"
 
+#include <algorithm>
 #include <deque>
 #include <iomanip>
+#include <memory>
+#include <numbers>
 #include <numeric>
 #include <thread>
 
@@ -49,7 +52,7 @@ using chain_break_type = dssp::chain_break_type;
 // --------------------------------------------------------------------
 
 const double
-	kPI = 3.141592653589793238462643383279502884;
+	kPI = std::numbers::pi;
 
 struct point
 {
@@ -263,7 +266,6 @@ struct dssp::residue
 		: mPDBStrandID(pdb_strand_id)
 		, mPDBSeqNum(pdb_seq_num)
 		, mPDBInsCode(pdb_ins_code)
-		, mChainBreak(chain_break_type::None)
 		, m_model_nr(model_nr)
 	{
 		// update the box containing all atoms
@@ -393,7 +395,7 @@ struct dssp::residue
 			auto pc = mPrev->mC;
 			auto po = mPrev->mO;
 
-			float CODistance = static_cast<float>(distance(pc, po));
+			auto CODistance = static_cast<float>(distance(pc, po));
 
 			mH.mX += (pc.mX - po.mX) / CODistance;
 			mH.mY += (pc.mY - po.mY) / CODistance;
@@ -402,7 +404,7 @@ struct dssp::residue
 	}
 
 	void SetSecondaryStructure(structure_type inSS) { mSecondaryStructure = inSS; }
-	structure_type GetSecondaryStructure() const { return mSecondaryStructure; }
+	[[nodiscard]] structure_type GetSecondaryStructure() const { return mSecondaryStructure; }
 
 	void SetBetaPartner(uint32_t n, residue &inResidue, uint32_t inLadder, bool inParallel)
 	{
@@ -413,38 +415,38 @@ struct dssp::residue
 		mBetaPartner[n].parallel = inParallel;
 	}
 
-	bridge_partner GetBetaPartner(uint32_t n) const
+	[[nodiscard]] bridge_partner GetBetaPartner(uint32_t n) const
 	{
 		assert(n == 0 or n == 1);
 		return mBetaPartner[n];
 	}
 
 	void SetSheet(uint32_t inSheet) { mSheet = inSheet; }
-	uint32_t GetSheet() const { return mSheet; }
+	[[nodiscard]] uint32_t GetSheet() const { return mSheet; }
 
 	void SetStrand(uint32_t inStrand) { mStrand = inStrand; }
-	uint32_t GetStrand() const { return mStrand; }
+	[[nodiscard]] uint32_t GetStrand() const { return mStrand; }
 
-	bool IsBend() const { return mBend; }
+	[[nodiscard]] bool IsBend() const { return mBend; }
 	void SetBend(bool inBend) { mBend = inBend; }
 
-	helix_position_type GetHelixFlag(helix_type helixType) const
+	[[nodiscard]] helix_position_type GetHelixFlag(helix_type helixType) const
 	{
-		size_t stride = static_cast<size_t>(helixType);
+		auto stride = static_cast<size_t>(helixType);
 		assert(stride < 4);
 		return mHelixFlags[stride];
 	}
 
-	bool IsHelixStart(helix_type helixType) const
+	[[nodiscard]] bool IsHelixStart(helix_type helixType) const
 	{
-		size_t stride = static_cast<size_t>(helixType);
+		auto stride = static_cast<size_t>(helixType);
 		assert(stride < 4);
 		return mHelixFlags[stride] == helix_position_type::Start or mHelixFlags[stride] == helix_position_type::StartAndEnd;
 	}
 
 	void SetHelixFlag(helix_type helixType, helix_position_type inHelixFlag)
 	{
-		size_t stride = static_cast<size_t>(helixType);
+		auto stride = static_cast<size_t>(helixType);
 		assert(stride < 4);
 		mHelixFlags[stride] = inHelixFlag;
 	}
@@ -456,7 +458,7 @@ struct dssp::residue
 		mSSBridgeNr = inBridgeNr;
 	}
 
-	uint8_t GetSSBridgeNr() const
+	[[nodiscard]] uint8_t GetSSBridgeNr() const
 	{
 		if (mType != kCysteine)
 			throw std::runtime_error("Only cysteine residues can form sulphur bridges");
@@ -466,7 +468,7 @@ struct dssp::residue
 	float CalculateSurface(const std::vector<residue> &inResidues);
 	float CalculateSurface(const point &inAtom, float inRadius, const std::vector<residue *> &inNeighbours);
 
-	bool AtomIntersectsBox(const point &atom, float inRadius) const
+	[[nodiscard]] bool AtomIntersectsBox(const point &atom, float inRadius) const
 	{
 		return atom.mX + inRadius >= mBox[0].mX and
 		       atom.mX - inRadius <= mBox[1].mX and
@@ -572,9 +574,9 @@ class accumulator
 		double radius;
 		double distance;
 
-		bool operator<(const candidate &rhs) const
+		auto operator<=>(const candidate &rhs) const
 		{
-			return distance < rhs.distance;
+			return distance <=> rhs.distance;
 		}
 	};
 
@@ -593,13 +595,13 @@ class accumulator
 			candidate c = { b - a, r * r, distance };
 
 			m_x.push_back(c);
-			push_heap(m_x.begin(), m_x.end());
+			std::ranges::push_heap(m_x, std::less<>());
 		}
 	}
 
 	void sort()
 	{
-		sort_heap(m_x.begin(), m_x.end());
+		std::ranges::sort_heap(m_x, std::less<>());
 	}
 
 	std::vector<candidate> m_x;
@@ -611,9 +613,9 @@ class MSurfaceDots
   public:
 	static MSurfaceDots &Instance();
 
-	size_t size() const { return mPoints.size(); }
+	[[nodiscard]] size_t size() const { return mPoints.size(); }
 	const point &operator[](size_t inIx) const { return mPoints[inIx]; }
-	double weight() const { return mWeight; }
+	[[nodiscard]] double weight() const { return mWeight; }
 
   private:
 	MSurfaceDots(int32_t inN);
@@ -634,14 +636,14 @@ MSurfaceDots::MSurfaceDots(int32_t N)
 {
 	auto P = 2 * N + 1;
 
-	const float kGoldenRatio = (1 + std::sqrt(5.0f)) / 2;
+	const float kGoldenRatio = std::numbers::phi_v<float>;
 
 	mWeight = (4 * kPI) / P;
 
 	for (auto i = -N; i <= N; ++i)
 	{
 		float lat = std::asin((2.0f * i) / P);
-		float lon = static_cast<float>(std::fmod(i, kGoldenRatio) * 2 * kPI / kGoldenRatio);
+		auto lon = static_cast<float>(std::fmod(i, kGoldenRatio) * 2 * kPI / kGoldenRatio);
 
 		mPoints.emplace_back(point{ std::sin(lon) * std::cos(lat), std::cos(lon) * std::cos(lat), std::sin(lat) });
 	}
@@ -778,8 +780,8 @@ double CalculateHBondEnergy(residue &inDonor, residue &inAcceptor)
 void CalculateHBondEnergies(std::vector<residue> &inResidues, std::vector<std::tuple<uint32_t, uint32_t>> &q)
 {
 	std::unique_ptr<cif::progress_bar> progress;
-	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
-		progress.reset(new cif::progress_bar(q.size(), "calculate hbond energies"));
+	if (cif::VERBOSE >= 0)
+		progress = std::make_unique<cif::progress_bar>(q.size(), "calculate hbond energies");
 
 	for (const auto &[i, j] : q)
 	{
@@ -873,8 +875,8 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, st
 	// 	std::cerr << "calculating beta sheets" << std::endl;
 
 	std::unique_ptr<cif::progress_bar> progress;
-	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
-		progress.reset(new cif::progress_bar(q.size(), "calculate beta sheets"));
+	if (cif::VERBOSE >= 0)
+		progress = std::make_unique<cif::progress_bar>(q.size(), "calculate beta sheets");
 
 	// Calculate Bridges
 	std::vector<bridge> bridges;
@@ -929,7 +931,7 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, st
 	}
 
 	// extend ladders
-	std::sort(bridges.begin(), bridges.end());
+	std::ranges::sort(bridges, std::less<>());
 
 	for (uint32_t i = 0; i < bridges.size(); ++i)
 	{
@@ -1069,7 +1071,7 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, st
 		{
 			stats.count.H_bonds_in_parallel_bridges += bridge.i.back() - bridge.i.front() + 2;
 
-			std::deque<uint32_t>::iterator j = bridge.j.begin();
+			auto j = bridge.j.begin();
 			for (uint32_t i : bridge.i)
 				inResidues[i].SetBetaPartner(betai, inResidues[*j++], bridge.ladder, true);
 
@@ -1081,7 +1083,7 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, st
 		{
 			stats.count.H_bonds_in_antiparallel_bridges += bridge.i.back() - bridge.i.front() + 2;
 
-			std::deque<uint32_t>::reverse_iterator j = bridge.j.rbegin();
+			auto j = bridge.j.rbegin();
 			for (uint32_t i : bridge.i)
 				inResidues[i].SetBetaPartner(betai, inResidues[*j++], bridge.ladder, false);
 
@@ -1390,7 +1392,7 @@ struct DSSP_impl
 
 	auto findRes(const std::string &asymID, int seqID)
 	{
-		return std::find_if(mResidues.begin(), mResidues.end(), [&](auto &r)
+		return std::ranges::find_if(mResidues, [&](auto &r)
 			{ return r.mAsymID == asymID and r.mSeqID == seqID; });
 	}
 
@@ -1454,9 +1456,8 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 	for (auto &residue : mResidues)
 		residue.finish();
 
-	mResidues.erase(std::remove_if(mResidues.begin(), mResidues.end(), [](const dssp::residue &r)
-						{ return not r.mComplete; }),
-		mResidues.end());
+	std::erase_if(mResidues, [](const dssp::residue &r)
+		{ return not r.mComplete; });
 	mStats.count.chains = 1;
 
 	chain_break_type brk = chain_break_type::NewChain;
@@ -1592,8 +1593,8 @@ void DSSP_impl::calculateSecondaryStructure()
 		cAlphas.emplace_back(r.mCAlpha);
 
 	std::unique_ptr<cif::progress_bar> progress;
-	if (cif::VERBOSE == 0 or cif::VERBOSE == 1)
-		progress.reset(new cif::progress_bar((mResidues.size() * (mResidues.size() - 1)) / 2, "calculate distances"));
+	if (cif::VERBOSE >= 0)
+		progress = std::make_unique<cif::progress_bar>((mResidues.size() * (mResidues.size() - 1)) / 2, "calculate distances");
 
 	// Calculate the HBond energies
 	std::vector<std::tuple<uint32_t, uint32_t>> near;
@@ -1646,7 +1647,7 @@ void DSSP_impl::calculateSecondaryStructure()
 			auto id = r.mAsymID + ':' + std::to_string(r.mSeqID) + '/' + r.mCompoundID;
 
 			std::cerr << id << std::string(12 - id.length(), ' ')
-					  << char(r.mSecondaryStructure) << ' '
+					  << static_cast<char>(r.mSecondaryStructure) << ' '
 					  << helix
 					  << std::endl;
 		}
@@ -1784,8 +1785,8 @@ std::string DSSP_impl::GetPDBHEADERLine()
 	char header[] =
 		"HEADER    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxDDDDDDDDD   IIII";
 
-	std::copy(keywords.begin(), keywords.end(), header + 10);
-	std::copy(date.begin(), date.end(), header + 50);
+	std::ranges::copy(keywords, header + 10);
+	std::ranges::copy(date, header + 50);
 
 	std::string id = mDB.name();
 	if (id.length() < 4)
@@ -1793,7 +1794,7 @@ std::string DSSP_impl::GetPDBHEADERLine()
 	else if (id.length() > 4)
 		id.erase(id.begin() + 4, id.end());
 
-	std::copy(id.begin(), id.end(), header + 62);
+	std::ranges::copy(id, header + 62);
 
 	return FixStringLength(header);
 }
@@ -1809,45 +1810,45 @@ std::string DSSP_impl::GetPDBCOMPNDLine()
 
 	for (auto r : mDB["entity"].find("type"_key == "polymer"))
 	{
-		std::string entityID = r["id"].as<std::string>();
+		auto entityID = r["id"].as<std::string>();
 
 		++molID;
 		cmpnd.push_back("MOL_ID: " + std::to_string(molID));
 
-		std::string molecule = r["pdbx_description"].as<std::string>();
+		auto molecule = r["pdbx_description"].as<std::string>();
 		cmpnd.push_back("MOLECULE: " + molecule);
 
 		auto poly = mDB["entity_poly"].find("entity_id"_key == entityID);
 		if (not poly.empty())
 		{
-			std::string chains = poly.front()["pdbx_strand_id"].as<std::string>();
+			auto chains = poly.front()["pdbx_strand_id"].as<std::string>();
 			cif::replace_all(chains, ",", ", ");
 			cmpnd.push_back("CHAIN: " + chains);
 		}
 
-		std::string fragment = r["pdbx_fragment"].as<std::string>();
+		auto fragment = r["pdbx_fragment"].as<std::string>();
 		if (not fragment.empty())
 			cmpnd.push_back("FRAGMENT: " + fragment);
 
 		for (auto sr : mDB["entity_name_com"].find("entity_id"_key == entityID))
 		{
-			std::string syn = sr["name"].as<std::string>();
+			auto syn = sr["name"].as<std::string>();
 			if (not syn.empty())
 				cmpnd.push_back("SYNONYM: " + syn);
 		}
 
-		std::string mutation = r["pdbx_mutation"].as<std::string>();
+		auto mutation = r["pdbx_mutation"].as<std::string>();
 		if (not mutation.empty())
 			cmpnd.push_back("MUTATION: " + mutation);
 
-		std::string ec = r["pdbx_ec"].as<std::string>();
+		auto ec = r["pdbx_ec"].as<std::string>();
 		if (not ec.empty())
 			cmpnd.push_back("EC: " + ec);
 
 		if (r["src_method"] == "man" or r["src_method"] == "syn")
-			cmpnd.push_back("ENGINEERED: YES");
+			cmpnd.emplace_back("ENGINEERED: YES");
 
-		std::string details = r["details"].as<std::string>();
+		auto details = r["details"].as<std::string>();
 		if (not details.empty())
 			cmpnd.push_back("OTHER_DETAILS: " + details);
 	}
@@ -1869,13 +1870,13 @@ std::string DSSP_impl::GetPDBSOURCELine()
 		if (r["type"] != "polymer")
 			continue;
 
-		std::string entityID = r["id"].as<std::string>();
+		auto entityID = r["id"].as<std::string>();
 
 		++molID;
 		source.push_back("MOL_ID: " + std::to_string(molID));
 
 		if (r["src_method"] == "syn")
-			source.push_back("SYNTHETIC: YES");
+			source.emplace_back("SYNTHETIC: YES");
 
 		auto &gen = mDB["entity_src_gen"];
 		const std::pair<const char *, const char *> kGenSourceMapping[] = {
@@ -1905,7 +1906,7 @@ std::string DSSP_impl::GetPDBSOURCELine()
 				std::string cname, sname;
 				tie(cname, sname) = m;
 
-				std::string s = gr[cname].as<std::string>();
+				auto s = gr[cname].as<std::string>();
 				if (not s.empty())
 					source.push_back(sname + ": " + s);
 			}
@@ -1930,7 +1931,7 @@ std::string DSSP_impl::GetPDBSOURCELine()
 				std::string cname, sname;
 				tie(cname, sname) = m;
 
-				std::string s = nr[cname].as<std::string>();
+				auto s = nr[cname].as<std::string>();
 				if (not s.empty())
 					source.push_back(sname + ": " + s);
 			}
@@ -2186,7 +2187,7 @@ std::tuple<dssp::residue_info, double> dssp::residue_info::donor(int i) const
 
 dssp::residue_info dssp::residue_info::next() const
 {
-	return residue_info(m_impl ? m_impl->mNext : nullptr);
+	return { m_impl ? m_impl->mNext : nullptr };
 }
 
 // --------------------------------------------------------------------
@@ -2220,7 +2221,8 @@ dssp::dssp(const cif::datablock &db, int model_nr, int min_poly_proline_stretch,
 {
 	if (calculateSurfaceAccessibility)
 	{
-		std::thread t(std::bind(&DSSP_impl::calculateSurface, m_impl));
+		std::thread t([this]
+			{ m_impl->calculateSurface(); });
 		m_impl->calculateSecondaryStructure();
 		t.join();
 	}
@@ -2235,7 +2237,7 @@ dssp::~dssp()
 
 dssp::iterator dssp::begin() const
 {
-	return iterator(m_impl->mResidues.empty() ? nullptr : m_impl->mResidues.data());
+	return { m_impl->mResidues.empty() ? nullptr : m_impl->mResidues.data() };
 }
 
 dssp::iterator dssp::end() const
@@ -2248,12 +2250,12 @@ dssp::iterator dssp::end() const
 		res += m_impl->mResidues.size();
 	}
 
-	return iterator(res);
+	return { res };
 }
 
 dssp::residue_info dssp::operator[](const key_type &key) const
 {
-	auto i = std::find_if(begin(), end(),
+	auto i = std::ranges::find_if(*this,
 		[key](const residue_info &res)
 		{ return res.asym_id() == std::get<0>(key) and res.seq_id() == std::get<1>(key); });
 

@@ -2,6 +2,7 @@
 #include <Python.h>
 
 #include <dssp.hpp>
+#include <memory>
 
 struct statistics_wrapper
 {
@@ -42,7 +43,7 @@ class dssp_wrapper
 		std::istream is(&buffer);
 
 		auto f = cif::pdb::read(is);
-		m_dssp.reset(new dssp(f.front(), model_nr, min_poly_proline_stretch_length, calculateSurfaceAccessibility));
+		m_dssp = std::make_shared<dssp>(f.front(), model_nr, min_poly_proline_stretch_length, calculateSurfaceAccessibility);
 	}
 
 	dssp_wrapper(const dssp_wrapper &) = default;
@@ -83,7 +84,7 @@ class dssp_wrapper
 		iterator(const iterator &i) = default;
 		iterator &operator=(const iterator &i) = default;
 
-		reference operator*() { return residue_info_handle(m_current); }
+		reference operator*() { return {m_current}; }
 		pointer operator->() { return &m_current; }
 
 		iterator &operator++()
@@ -126,12 +127,12 @@ class dssp_wrapper
 // Custom exceptions
 struct AttributeError : std::exception
 {
-	const char *what() const throw() { return "AttributeError exception"; }
+	[[nodiscard]] const char *what() const noexcept override { return "AttributeError exception"; }
 };
 
 struct TypeError : std::exception
 {
-	const char *what() const throw() { return "TypeError exception"; }
+	[[nodiscard]] const char *what() const noexcept override { return "TypeError exception"; }
 };
 
 // Set python exceptions

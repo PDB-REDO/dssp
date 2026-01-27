@@ -32,6 +32,8 @@
 #include <cif++.hpp>
 
 #include <filesystem>
+#include <iterator>
+#include <ranges>
 
 class dssp
 {
@@ -105,7 +107,7 @@ class dssp
 	dssp(const dssp &) = delete;
 	dssp &operator=(const dssp &) = delete;
 
-	statistics get_statistics() const;
+	[[nodiscard]] statistics get_statistics() const;
 
 	class iterator;
 	using res_iterator = typename std::vector<residue>::iterator;
@@ -120,37 +122,37 @@ class dssp
 		residue_info &operator=(const residue_info &rhs) = default;
 
 		explicit operator bool() const { return not empty(); }
-		bool empty() const { return m_impl == nullptr; }
+		[[nodiscard]] bool empty() const { return m_impl == nullptr; }
 
-		std::string asym_id() const;
-		int seq_id() const;
-		std::string alt_id() const;
-		std::string compound_id() const;
-		char compound_letter() const; // Single letter for residue compound type, or 'X' in case it is not known
+		[[nodiscard]] std::string asym_id() const;
+		[[nodiscard]] int seq_id() const;
+		[[nodiscard]] std::string alt_id() const;
+		[[nodiscard]] std::string compound_id() const;
+		[[nodiscard]] char compound_letter() const; // Single letter for residue compound type, or 'X' in case it is not known
 
-		std::string auth_asym_id() const;
-		int auth_seq_id() const;
+		[[nodiscard]] std::string auth_asym_id() const;
+		[[nodiscard]] int auth_seq_id() const;
 
-		std::string pdb_strand_id() const;
-		int pdb_seq_num() const;
-		std::string pdb_ins_code() const;
+		[[nodiscard]] std::string pdb_strand_id() const;
+		[[nodiscard]] int pdb_seq_num() const;
+		[[nodiscard]] std::string pdb_ins_code() const;
 
-		std::optional<float> alpha() const;
-		std::optional<float> kappa() const;
-		std::optional<float> phi() const;
-		std::optional<float> psi() const;
-		std::optional<float> tco() const;
-		std::optional<float> omega() const;
+		[[nodiscard]] std::optional<float> alpha() const;
+		[[nodiscard]] std::optional<float> kappa() const;
+		[[nodiscard]] std::optional<float> phi() const;
+		[[nodiscard]] std::optional<float> psi() const;
+		[[nodiscard]] std::optional<float> tco() const;
+		[[nodiscard]] std::optional<float> omega() const;
 
-		bool is_pre_pro() const;
-		bool is_cis() const { return std::abs(omega().value_or(360)) < 30.0f; }
+		[[nodiscard]] bool is_pre_pro() const;
+		[[nodiscard]] bool is_cis() const { return std::abs(omega().value_or(360)) < 30.0f; }
 
-		float chiral_volume() const;
+		[[nodiscard]] float chiral_volume() const;
 
-		std::size_t nr_of_chis() const;
-		float chi(std::size_t index) const;
+		[[nodiscard]] std::size_t nr_of_chis() const;
+		[[nodiscard]] float chi(std::size_t index) const;
 
-		std::vector<float> chis() const
+		[[nodiscard]] std::vector<float> chis() const
 		{
 			std::vector<float> result;
 			for (size_t i = 0; i < nr_of_chis(); ++i)
@@ -158,34 +160,34 @@ class dssp
 			return result;
 		}
 
-		std::tuple<float, float, float> ca_location() const;
+		[[nodiscard]] std::tuple<float, float, float> ca_location() const;
 
-		chain_break_type chain_break() const;
+		[[nodiscard]] chain_break_type chain_break() const;
 
 		/// \brief the internal number in DSSP
-		int nr() const;
+		[[nodiscard]] int nr() const;
 
-		structure_type type() const;
+		[[nodiscard]] structure_type type() const;
 
-		int ssBridgeNr() const;
+		[[nodiscard]] int ssBridgeNr() const;
 
-		helix_position_type helix(helix_type helixType) const;
+		[[nodiscard]] helix_position_type helix(helix_type helixType) const;
 
-		bool is_alpha_helix_end_before_start() const;
+		[[nodiscard]] bool is_alpha_helix_end_before_start() const;
 
-		bool bend() const;
+		[[nodiscard]] bool bend() const;
 
-		double accessibility() const;
+		[[nodiscard]] double accessibility() const;
 
 		/// \brief returns resinfo, ladder and parallel
-		std::tuple<residue_info, int, bool> bridge_partner(int i) const;
+		[[nodiscard]] std::tuple<residue_info, int, bool> bridge_partner(int i) const;
 
-		int sheet() const;
-		int strand() const;
+		[[nodiscard]] int sheet() const;
+		[[nodiscard]] int strand() const;
 
 		/// \brief return resinfo and the energy of the bond
-		std::tuple<residue_info, double> acceptor(int i) const;
-		std::tuple<residue_info, double> donor(int i) const;
+		[[nodiscard]] std::tuple<residue_info, double> acceptor(int i) const;
+		[[nodiscard]] std::tuple<residue_info, double> donor(int i) const;
 
 		/// \brief Simple compare equals
 		bool operator==(const residue_info &rhs) const
@@ -196,7 +198,7 @@ class dssp
 		/// \brief Returns \result true if there is a bond between two residues
 		friend bool test_bond(residue_info const &a, residue_info const &b);
 
-		residue_info next() const;
+		[[nodiscard]] residue_info next() const;
 
 	  private:
 		residue_info(residue *res)
@@ -211,17 +213,18 @@ class dssp
 	{
 	  public:
 		using iterator_category = std::bidirectional_iterator_tag;
-		using value_type = residue_info;
+		using value_type = const residue_info;
 		using difference_type = std::ptrdiff_t;
 		using pointer = value_type *;
 		using reference = value_type &;
 
+		iterator() = default;
 		iterator(const iterator &i) = default;
 		iterator(residue *res);
 		iterator &operator=(const iterator &i) = default;
 
-		reference operator*() { return m_current; }
-		pointer operator->() { return &m_current; }
+		reference operator*() const { return m_current; }
+		pointer operator->() const { return &m_current; }
 
 		iterator &operator++();
 		iterator operator++(int)
@@ -246,17 +249,22 @@ class dssp
 		residue_info m_current;
 	};
 
+	static_assert(std::input_iterator<iterator>);
+
 	using value_type = residue_info;
 
 	// To access residue info by key, i.e. LabelAsymID and LabelSeqID
 	using key_type = std::tuple<std::string, int>;
 
-	iterator begin() const;
-	iterator end() const;
+	[[nodiscard]] iterator begin() const;
+	[[nodiscard]] iterator end() const;
+
+	[[nodiscard]] iterator cbegin() const;
+	[[nodiscard]] iterator cend() const;
 
 	residue_info operator[](const key_type &key) const;
 
-	bool empty() const { return begin() == end(); }
+	[[nodiscard]] bool empty() const { return begin() == end(); }
 
 	// --------------------------------------------------------------------
 	// Writing out the data, either in legacy format...
@@ -276,8 +284,10 @@ class dssp
 		AUTHOR
 	};
 
-	std::string get_pdb_header_line(pdb_record_type pdb_record) const;
+	[[nodiscard]] std::string get_pdb_header_line(pdb_record_type pdb_record) const;
 
   private:
 	struct DSSP_impl *m_impl;
 };
+
+static_assert(std::ranges::input_range<dssp>);

@@ -1,0 +1,22 @@
+BasedOnStyle: LLVM
+UseTab: AlignWithSpaces
+IndentWidth: 4
+TabWidth: 4
+BreakBeforeBraces: Allman
+ColumnLimit: 0
+NamespaceIndentation: Inner
+FixNamespaceComments: true
+AccessModifierOffset: -2
+AllowShortCaseLabelsOnASingleLine: true
+IndentCaseLabels: true
+BreakConstructorInitializers: BeforeComma
+BraceWrapping:
+  BeforeLambdaBody: false
+AlignAfterOpenBracket: DontAlign
+Cpp11BracedListStyle: false
+IncludeBlocks: Regroup
+LambdaBodyIndentation: Signature
+AllowShortLambdasOnASingleLine: Inline
+EmptyLineBeforeAccessModifier: LogicalBlock
+IndentPPDirectives: AfterHash
+PPIndentWidth: 1

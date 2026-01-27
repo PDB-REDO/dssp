@@ -24,16 +24,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdexcept>
-
 #define CATCH_CONFIG_RUNNER
-
-#include <catch2/catch_all.hpp>
 
 #include "../libdssp/src/dssp-io.hpp"
 #include "../src/revision.hpp"
 #include "dssp.hpp"
 
+#include <catch2/catch_all.hpp>
 #include <cif++/dictionary_parser.hpp>
 
 namespace fs = std::filesystem;
@@ -56,10 +53,12 @@ cif::file operator""_cf(const char *text, size_t length)
 
 // --------------------------------------------------------------------
 
-std::filesystem::path gTestDir = std::filesystem::current_path();
+std::filesystem::path gTestDir;
 
 int main(int argc, char *argv[])
 {
+	gTestDir = std::filesystem::current_path();
+
 	Catch::Session session; // There must be exactly one instance
 
 	// Build a new parser on top of Catch2's
@@ -156,8 +155,6 @@ TEST_CASE("ut_mmcif_2")
 
 	dssp dssp(f.front(), 1, 3, true);
 
-	std::stringstream test;
-
 	dssp.annotate(f.front(), true, true);
 
 	cif::file rf(gTestDir / "1cbs-dssp.cif");
@@ -166,12 +163,12 @@ TEST_CASE("ut_mmcif_2")
 	auto &db2 = rf.front();
 
 	db1["software"].erase("name"_key == "dssp");
-	db1.erase(find_if(db1.begin(), db1.end(), [](cif::category &cat)
-		{ return cat.name() == "audit_conform"; }));
+	std::erase_if(db1, [](cif::category &cat)
+		{ return cat.name() == "audit_conform"; });
 
 	db2["software"].erase("name"_key == "dssp");
-	db2.erase(find_if(db2.begin(), db2.end(), [](cif::category &cat)
-		{ return cat.name() == "audit_conform"; }));
+	std::erase_if(db2, [](cif::category &cat)
+		{ return cat.name() == "audit_conform"; });
 
 	// generate some output on different files:
 	// cif::VERBOSE = 2;
