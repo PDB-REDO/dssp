@@ -26,6 +26,8 @@
 
 #include "dssp-io.hpp"
 
+#include "cif++/category.hpp"
+#include "cif++/validate.hpp"
 #include "revision.hpp"
 
 #include <algorithm>
@@ -33,6 +35,7 @@
 #include <cif++/dictionary_parser.hpp>
 #include <format>
 #include <iostream>
+#include <type_traits>
 
 // --------------------------------------------------------------------
 
@@ -437,7 +440,7 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 
 				assert(l.parallel == parallel);
 
-				if (find_if(l.pairs.begin(), l.pairs.end(), [na = p.nr(), nb = res.nr()](const auto &p)
+				if (std::ranges::find_if(l.pairs, [na = p.nr(), nb = res.nr()](const auto &p)
 						{ return p.first.nr() == na and p.second.nr() == nb; }) != l.pairs.end())
 				{
 					is_new = false;
@@ -543,7 +546,7 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 
 	for (int k = 0; k < 11; ++k)
 		dssp_struct_hbonds.emplace({ { "entry_id", db.name() },
-			{ "type", "O(I)-->H-N(I"s + char(k - 5 < 0 ? '-' : '+') + std::to_string(abs(k - 5)) + ")" },
+			{ "type", "O(I)-->H-N(I"s + (k - 5 < 0 ? '-' : '+') + std::to_string(abs(k - 5)) + ")" },
 			{ "count", stats.count.H_Bonds_per_distance[k] },
 			{ "count_per_100", stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues, 1 } });
 
@@ -735,6 +738,17 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 	}
 }
 
+// Work around stupid change in signature of cif::validator_factory::get...
+template <typename ValidatorFactory>
+void fill_audit_conform(cif::category &audit_conform)
+{
+	auto &cf = ValidatorFactory::instance();
+	if constexpr (std::is_pointer_v<decltype(std::declval<cif::validator_factory>().get(""))>)
+		cf.get("mmcif_pdbx.dic")->fill_audit_conform(audit_conform);
+	else
+		cf.get("mmcif_pdbx.dic").fill_audit_conform(audit_conform);
+}
+
 void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool writeNewFormat)
 {
 	using namespace std::literals;
@@ -743,8 +757,8 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 
 	if (audit_conform.empty())
 	{
-		auto &cf = cif::validator_factory::instance();
-		cf.get("mmcif_pdbx.dic")->fill_audit_conform(audit_conform);
+		static_assert(std::is_reference_v<decltype(std::declval<cif::validator_factory>().get(""))>);
+		fill_audit_conform<cif::validator_factory>(audit_conform);
 	}
 
 	audit_conform.erase(cif::key("dict_name") == "dssp-extension.dic");
