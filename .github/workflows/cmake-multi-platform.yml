@@ -41,6 +41,7 @@ jobs:
       id: install-boost
       with:
         boost_version: 1.88.0
+        link: static
         
     - name: Install Catch2 Ubuntu
       if: matrix.os == 'ubuntu-latest'
@@ -71,6 +72,8 @@ jobs:
         -DBUILD_PYTHON_MODULE=ON
         -S ${{ github.workspace }}
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/local
+        -DBoost_INCLUDE_DIR=${{steps.install-boost.outputs.BOOST_ROOT}}/include
+        -DBoost_LIBRARY_DIRS=${{steps.install-boost.outputs.BOOST_ROOT}}/lib
       env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }} 
 
