@@ -30,10 +30,16 @@ endif()
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
-# Boost 1.84 is required since it contains code required to use numpy 2.x
-find_package(Boost 1.84 QUIET COMPONENTS python)
+if(NOT EXISTS ${Python_LIBRARIES})
+	message(FATAL_ERROR "The python library ${Python_LIBRARIES} does not seem to exist?")
+endif()
 
-if(NOT Boost_FOUND)
+# Boost 1.84 is required since it contains code required to use numpy 2.x
+if(NOT WIN32)	# On Windows we need to build boost ourselves, to find the correct python lib
+	find_package(Boost 1.84 QUIET COMPONENTS python)
+endif()
+
+if(WIN32 OR NOT Boost_FOUND)
 	# boost is a huge project and directly downloading the 'alternate release'
 	# from github is much faster than recursively cloning the repo.
 	CPMAddPackage(
