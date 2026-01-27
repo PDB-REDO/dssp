@@ -93,6 +93,13 @@ if(MSVC)
 	# make msvc standards compliant...
 	add_compile_options(/permissive- /bigobj)
 	add_link_options(/NODEFAULTLIB:library)
+
+	# This is dubious...
+	if(BUILD_SHARED_LIBS)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+	else()
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	endif()
 endif()
 
 # Create a revision file, containing the current git version info
@@ -118,11 +125,15 @@ CPMFindPackage(
 	EXCLUDE_FROM_ALL YES)
 
 # No longer using CPM for libcifpp. It is now simply required to install it first.
-find_package(cifpp 9.0.5 QUIET)
+find_package(cifpp 9.0.6 QUIET)
 
 if(NOT (cifpp_FOUND OR TARGET cifpp))
 	# message(FATAL_ERROR "Could not find libcifpp. Please make sure you install libcifpp first, code can be found at https://github.com/PDB-REDO/libcifpp")
-	CPMAddPackage("gh:PDB-REDO/libcifpp#7a9d94b")
+	CPMAddPackage(
+		NAME cifpp
+		GIT_REPOSITORY "https://github.com/PDB-REDO/libcifpp"
+		GIT_TAG v9.0.6
+		EXCLUDE_FROM_ALL YES)
 endif()
 
 if(TARGET cifpp)
