@@ -20,7 +20,7 @@ endif()
 
 add_test(NAME unit-test-dssp COMMAND $<TARGET_FILE:unit-test-dssp>
 	--data-dir ${CMAKE_CURRENT_SOURCE_DIR}
-	--rsrc-dir ${CMAKE_CURRENT_SOURCE_DIR}/../libdssp/mmcif_pdbx/)
+	--rsrc-dir ${CIFPP_DATA_DIR})
 
 if(BUILD_PYTHON_MODULE)
 	find_package(Python REQUIRED Interpreter)
