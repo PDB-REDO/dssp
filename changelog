@@ -1,3 +1,7 @@
+Version 4.5.8
+- Using newer version of Boost for the python plugin,
+  this was needed to be able to use Numpy >= 2.x
+
 Version 4.5.7
 - Fix for unit-test in Debian repository
 
