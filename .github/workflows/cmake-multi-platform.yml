@@ -36,17 +36,10 @@ jobs:
       shell: bash
       run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Install boost
-      if: matrix.os == 'windows-latest'
-      uses: MarkusJx/install-boost@v2
-      id: install-boost
-      with:
-        boost_version: 1.88.0
-        
     - name: Install Catch2 Ubuntu
       if: matrix.os == 'ubuntu-latest'
       run: >
-        sudo apt-get update && sudo apt-get install catch2 libpython3-all-dev libboost1.88-all-dev
+        sudo apt-get update && sudo apt-get install catch2 libpython3-all-dev
 
     - name: setup python
       uses: actions/setup-python@v6
@@ -56,7 +49,7 @@ jobs:
     - name: Install Catch2 macOS
       if: matrix.os == 'macos-latest'
       run: >
-        brew install catch2 boost
+        brew install catch2
 
     - name: Install dependencies Window
       if: matrix.os == 'windows-latest'
@@ -67,7 +60,6 @@ jobs:
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_PREFIX_PATH=${{ steps.install-boost.outputs.BOOST_ROOT }} 
         -DCMAKE_BUILD_TYPE=Release
         -DBUILD_TESTING=ON
         -DBUILD_PYTHON_MODULE=ON
