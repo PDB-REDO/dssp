@@ -25,66 +25,41 @@
 include(CPM)
 
 if(CMAKE_VERSION GREATER_EQUAL 3.30)
-	cmake_policy(SET CMP0167 NEW)
+    cmake_policy(SET CMP0167 NEW)
 endif()
 
 find_package(Python 3.13 REQUIRED COMPONENTS Interpreter Development)
 
 if(NOT EXISTS ${Python_LIBRARIES})
-	message(FATAL_ERROR "The python library ${Python_LIBRARIES} does not seem to exist?")
+    message(FATAL_ERROR "The python library ${Python_LIBRARIES} does not seem to exist?")
 endif()
+
+find_package(Boost 1.86 REQUIRED COMPONENTS python)
 
 # ---------
 add_library(mkdssp_module SHARED dssp-python-plugin.cpp)
 
 target_compile_features(mkdssp_module PUBLIC cxx_std_20)
 target_include_directories(mkdssp_module PRIVATE ${Python_INCLUDE_DIRS})
-target_link_libraries(mkdssp_module dssp::dssp ${Python_LIBRARIES})
-
-
-
-# Boost 1.86 is required since it contains code required to use numpy 2.x
-if(NOT WIN32)	# On Windows we need to build boost ourselves, to find the correct python lib
-	find_package(Boost 1.86 QUIET COMPONENTS python)
-	if (boost_FOUND)
-		target_link_libraries(mkdssp_module Boost::python)
-	endif()
-endif()
-
-if(WIN32 OR NOT boost_FOUND)
-	# boost is a huge project and directly downloading the 'alternate release'
-	# from github is much faster than recursively cloning the repo.
-	CPMAddPackage(
-		NAME Boost
-		VERSION 1.90.0
-		URL https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.bz2
-		URL_HASH SHA256=49551aff3b22cbc5c5a9ed3dbc92f0e23ea50a0f7325b0d198b705e8ee3fc305
-		OPTIONS
-		"BOOST_ENABLE_CMAKE ON"
-		"BOOST_INCLUDE_LIBRARIES python"
-		"BOOST_ENABLE_PYTHON ON"
-		"CMAKE_POSITION_INDEPENDENT_CODE ON"
-	)
-	target_link_libraries(mkdssp_module Boost)
-endif()
+target_link_libraries(mkdssp_module PRIVATE dssp::dssp ${Python_LIBRARIES} Boost::python)
 
 set_target_properties(mkdssp_module
-	PROPERTIES
-	PREFIX ""
-	SUFFIX ".so"
-	OUTPUT_NAME mkdssp
-	LINKER_LANGUAGE CXX
-	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+    PROPERTIES
+    PREFIX ""
+    SUFFIX ".so"
+    OUTPUT_NAME mkdssp
+    LINKER_LANGUAGE CXX
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 if(WIN32)
-	# python modules use this on Windows
-	set_target_properties(
-		mkdssp_module
-		PROPERTIES
-		SUFFIX ".pyd"
-		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin	)
+    # python modules use this on Windows
+    set_target_properties(
+        mkdssp_module
+        PROPERTIES
+        SUFFIX ".pyd"
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-	install(TARGETS mkdssp_module RUNTIME DESTINATION "${Python_SITELIB}")
+    install(TARGETS mkdssp_module RUNTIME DESTINATION "${Python_SITELIB}")
 else()
-	install(TARGETS mkdssp_module LIBRARY DESTINATION "${Python_SITELIB}")
+    install(TARGETS mkdssp_module LIBRARY DESTINATION "${Python_SITELIB}")
 endif()
