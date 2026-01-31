@@ -34,9 +34,9 @@ if(NOT EXISTS ${Python_LIBRARIES})
 	message(FATAL_ERROR "The python library ${Python_LIBRARIES} does not seem to exist?")
 endif()
 
-# Boost 1.84 is required since it contains code required to use numpy 2.x
+# Boost 1.86 is required since it contains code required to use numpy 2.x
 if(NOT WIN32)	# On Windows we need to build boost ourselves, to find the correct python lib
-	find_package(Boost 1.84 QUIET COMPONENTS python)
+	find_package(Boost 1.86 QUIET COMPONENTS python)
 endif()
 
 if(WIN32 OR NOT Boost_FOUND)
@@ -44,9 +44,9 @@ if(WIN32 OR NOT Boost_FOUND)
 	# from github is much faster than recursively cloning the repo.
 	CPMAddPackage(
 		NAME Boost
-		VERSION 1.84.0
-		URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
-		URL_HASH SHA256=2e64e5d79a738d0fa6fb546c6e5c2bd28f88d268a2a080546f74e5ff98f29d0e
+		VERSION 1.90.0
+		URL https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.bz2
+		URL_HASH SHA256=49551aff3b22cbc5c5a9ed3dbc92f0e23ea50a0f7325b0d198b705e8ee3fc305
 		OPTIONS
 		"BOOST_ENABLE_CMAKE ON"
 		"BOOST_INCLUDE_LIBRARIES python"
