@@ -64,9 +64,6 @@ jobs:
       shell: cmd
 
     - name: Configure CMake
-      uses: actions/setup-python@v6
-      with:
-        python-version: ${{ matrix.python-version }}
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}

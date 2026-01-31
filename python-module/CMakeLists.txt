@@ -28,7 +28,7 @@ if(CMAKE_VERSION GREATER_EQUAL 3.30)
 	cmake_policy(SET CMP0167 NEW)
 endif()
 
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+find_package(Python 3.13 REQUIRED COMPONENTS Interpreter Development)
 
 if(NOT EXISTS ${Python_LIBRARIES})
 	message(FATAL_ERROR "The python library ${Python_LIBRARIES} does not seem to exist?")
