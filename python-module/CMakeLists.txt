@@ -35,25 +35,7 @@ if(NOT EXISTS ${Python_LIBRARIES})
 endif()
 
 # Boost 1.86 is required since it contains code required to use numpy 2.x
-if(NOT WIN32)	# On Windows we need to build boost ourselves, to find the correct python lib
-	find_package(Boost 1.86 QUIET COMPONENTS python)
-endif()
-
-if(WIN32 OR NOT Boost_FOUND)
-	# boost is a huge project and directly downloading the 'alternate release'
-	# from github is much faster than recursively cloning the repo.
-	CPMAddPackage(
-		NAME Boost
-		VERSION 1.90.0
-		URL https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.bz2
-		URL_HASH SHA256=49551aff3b22cbc5c5a9ed3dbc92f0e23ea50a0f7325b0d198b705e8ee3fc305
-		OPTIONS
-		"BOOST_ENABLE_CMAKE ON"
-		"BOOST_INCLUDE_LIBRARIES python"
-		"BOOST_ENABLE_PYTHON ON"
-		"CMAKE_POSITION_INDEPENDENT_CODE ON"
-	)
-endif()
+find_package(Boost 1.86 REQUIRED COMPONENTS python)
 
 # ---------
 add_library(mkdssp_module SHARED dssp-python-plugin.cpp)

@@ -756,10 +756,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 	auto &audit_conform = db["audit_conform"];
 
 	if (audit_conform.empty())
-	{
-		static_assert(std::is_reference_v<decltype(std::declval<cif::validator_factory>().get(""))>);
 		fill_audit_conform<cif::validator_factory>(audit_conform);
-	}
 
 	audit_conform.erase(cif::key("dict_name") == "dssp-extension.dic");
 	audit_conform.emplace({ //
