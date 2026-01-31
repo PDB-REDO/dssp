@@ -34,12 +34,24 @@ if(NOT EXISTS ${Python_LIBRARIES})
 	message(FATAL_ERROR "The python library ${Python_LIBRARIES} does not seem to exist?")
 endif()
 
+# ---------
+add_library(mkdssp_module SHARED dssp-python-plugin.cpp)
+
+target_compile_features(mkdssp_module PUBLIC cxx_std_20)
+target_include_directories(mkdssp_module PRIVATE ${Python_INCLUDE_DIRS})
+target_link_libraries(mkdssp_module dssp::dssp ${Python_LIBRARIES})
+
+
+
 # Boost 1.86 is required since it contains code required to use numpy 2.x
 if(NOT WIN32)	# On Windows we need to build boost ourselves, to find the correct python lib
 	find_package(Boost 1.86 QUIET COMPONENTS python)
+	if (boost_FOUND)
+		target_link_libraries(mkdssp_module Boost::python)
+	endif()
 endif()
 
-if(WIN32 OR NOT Boost_FOUND)
+if(WIN32 OR NOT boost_FOUND)
 	# boost is a huge project and directly downloading the 'alternate release'
 	# from github is much faster than recursively cloning the repo.
 	CPMAddPackage(
@@ -53,15 +65,8 @@ if(WIN32 OR NOT Boost_FOUND)
 		"BOOST_ENABLE_PYTHON ON"
 		"CMAKE_POSITION_INDEPENDENT_CODE ON"
 	)
+	target_link_libraries(mkdssp_module Boost)
 endif()
-
-# ---------
-add_library(mkdssp_module SHARED dssp-python-plugin.cpp)
-
-target_compile_features(mkdssp_module PUBLIC cxx_std_20)
-
-target_include_directories(mkdssp_module PRIVATE ${Python_INCLUDE_DIRS})
-target_link_libraries(mkdssp_module dssp::dssp Boost::python ${Python_LIBRARIES})
 
 set_target_properties(mkdssp_module
 	PROPERTIES
@@ -69,8 +74,7 @@ set_target_properties(mkdssp_module
 	SUFFIX ".so"
 	OUTPUT_NAME mkdssp
 	LINKER_LANGUAGE CXX
-	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-)
+	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 if(WIN32)
 	# python modules use this on Windows
@@ -78,8 +82,7 @@ if(WIN32)
 		mkdssp_module
 		PROPERTIES
 		SUFFIX ".pyd"
-		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-	)
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin	)
 
 	install(TARGETS mkdssp_module RUNTIME DESTINATION "${Python_SITELIB}")
 else()
