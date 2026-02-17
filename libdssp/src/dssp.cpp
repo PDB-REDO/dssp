@@ -278,7 +278,7 @@ struct dssp::residue
 			p = {};
 	}
 
-	void addAtom(cif::row_handle atom)
+	void addAtom(cif::const_row_handle atom)
 	{
 		std::string asymID, compID, atomID, type, authAsymID;
 		std::optional<std::string> altID;
