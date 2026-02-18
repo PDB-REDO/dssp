@@ -33,7 +33,7 @@
 #include <fstream>
 #include <iostream>
 
-#include <cif++.hpp>
+#include <cif++/cif++.hpp>
 #include <mcfp/mcfp.hpp>
 
 #include "dssp.hpp"
