@@ -1752,14 +1752,14 @@ std::string DSSP_impl::GetPDBHEADERLine()
 
 	for (auto r : cat1)
 	{
-		keywords = FixStringLength(r["pdbx_keywords"].as<std::string>(), 40);
+		keywords = FixStringLength(r["pdbx_keywords"].get<std::string>(), 40);
 		break;
 	}
 
 	std::string date;
 	for (auto r : mDB["pdbx_database_status"])
 	{
-		date = r["recvd_initial_deposition_date"].as<std::string>();
+		date = r["recvd_initial_deposition_date"].get<std::string>();
 		if (date.empty())
 			continue;
 		date = cif2pdbDate(date);
@@ -1770,7 +1770,7 @@ std::string DSSP_impl::GetPDBHEADERLine()
 	{
 		for (auto r : mDB["database_PDB_rev"])
 		{
-			date = r["date_original"].as<std::string>();
+			date = r["date_original"].get<std::string>();
 			if (date.empty())
 				continue;
 			date = cif2pdbDate(date);
@@ -1810,45 +1810,45 @@ std::string DSSP_impl::GetPDBCOMPNDLine()
 
 	for (auto r : mDB["entity"].find("type"_key == "polymer"))
 	{
-		auto entityID = r["id"].as<std::string>();
+		auto entityID = r["id"].get<std::string>();
 
 		++molID;
 		cmpnd.push_back("MOL_ID: " + std::to_string(molID));
 
-		auto molecule = r["pdbx_description"].as<std::string>();
+		auto molecule = r["pdbx_description"].get<std::string>();
 		cmpnd.push_back("MOLECULE: " + molecule);
 
 		auto poly = mDB["entity_poly"].find("entity_id"_key == entityID);
 		if (not poly.empty())
 		{
-			auto chains = poly.front()["pdbx_strand_id"].as<std::string>();
+			auto chains = poly.front()["pdbx_strand_id"].get<std::string>();
 			cif::replace_all(chains, ",", ", ");
 			cmpnd.push_back("CHAIN: " + chains);
 		}
 
-		auto fragment = r["pdbx_fragment"].as<std::string>();
+		auto fragment = r["pdbx_fragment"].get<std::string>();
 		if (not fragment.empty())
 			cmpnd.push_back("FRAGMENT: " + fragment);
 
 		for (auto sr : mDB["entity_name_com"].find("entity_id"_key == entityID))
 		{
-			auto syn = sr["name"].as<std::string>();
+			auto syn = sr["name"].get<std::string>();
 			if (not syn.empty())
 				cmpnd.push_back("SYNONYM: " + syn);
 		}
 
-		auto mutation = r["pdbx_mutation"].as<std::string>();
+		auto mutation = r["pdbx_mutation"].get<std::string>();
 		if (not mutation.empty())
 			cmpnd.push_back("MUTATION: " + mutation);
 
-		auto ec = r["pdbx_ec"].as<std::string>();
+		auto ec = r["pdbx_ec"].get<std::string>();
 		if (not ec.empty())
 			cmpnd.push_back("EC: " + ec);
 
 		if (r["src_method"] == "man" or r["src_method"] == "syn")
 			cmpnd.emplace_back("ENGINEERED: YES");
 
-		auto details = r["details"].as<std::string>();
+		auto details = r["details"].get<std::string>();
 		if (not details.empty())
 			cmpnd.push_back("OTHER_DETAILS: " + details);
 	}
@@ -1870,7 +1870,7 @@ std::string DSSP_impl::GetPDBSOURCELine()
 		if (r["type"] != "polymer")
 			continue;
 
-		auto entityID = r["id"].as<std::string>();
+		auto entityID = r["id"].get<std::string>();
 
 		++molID;
 		source.push_back("MOL_ID: " + std::to_string(molID));
@@ -1906,7 +1906,7 @@ std::string DSSP_impl::GetPDBSOURCELine()
 				std::string cname, sname;
 				tie(cname, sname) = m;
 
-				auto s = gr[cname].as<std::string>();
+				auto s = gr[cname].get<std::string>();
 				if (not s.empty())
 					source.push_back(sname + ": " + s);
 			}
@@ -1931,7 +1931,7 @@ std::string DSSP_impl::GetPDBSOURCELine()
 				std::string cname, sname;
 				tie(cname, sname) = m;
 
-				auto s = nr[cname].as<std::string>();
+				auto s = nr[cname].get<std::string>();
 				if (not s.empty())
 					source.push_back(sname + ": " + s);
 			}
@@ -1946,7 +1946,7 @@ std::string DSSP_impl::GetPDBAUTHORLine()
 	// AUTHOR
 	std::vector<std::string> author;
 	for (auto r : mDB["audit_author"])
-		author.push_back(cif2pdbAuth(r["name"].as<std::string>()));
+		author.push_back(cif2pdbAuth(r["name"].get<std::string>()));
 
 	return FixStringLength("AUTHOR    " + cif::join(author, "; "), kTruncateAt);
 }
