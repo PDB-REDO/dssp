@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <cif++/cif++.hpp>
 #include <cif++/dictionary_parser.hpp>
+#include <cif++/row.hpp>
 #include <format>
 #include <iostream>
 #include <type_traits>
@@ -519,8 +520,7 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 	if (stats.accessible_surface > 0)
 		surface_accessibility = stats.accessible_surface;
 
-	auto stats_i = dssp_statistics.emplace({ //
-		{ "entry_id", db.name() },
+	auto stats_i = dssp_statistics.emplace({ { "entry_id", db.name() },
 		{ "nr_of_residues", stats.count.residues },
 		{ "nr_of_chains", stats.count.chains },
 		{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
@@ -708,30 +708,30 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 		};
 
 		if (writeAccessibility)
-			data.set_value("accessibility", { res.accessibility(), 1 });
+			data.emplace_back("accessibility", { res.accessibility(), 1 });
 
 		if (res.tco().has_value())
-			data.set_value("TCO", { *res.tco(), 3 });
+			data.emplace_back("TCO", { *res.tco(), 3 });
 		else
 			data.set_value("TCO", cif::item_value_type::INAPPLICABLE);
 
 		if (res.kappa().has_value())
-			data.set_value("kappa", { *res.kappa(), 1 });
+			data.emplace_back("kappa", { *res.kappa(), 1 });
 		else
 			data.set_value("kappa", cif::item_value_type::INAPPLICABLE);
 
 		if (res.alpha().has_value())
-			data.set_value("alpha", { *res.alpha(), 1 });
+			data.emplace_back("alpha", { *res.alpha(), 1 });
 		else
 			data.set_value("alpha", cif::item_value_type::INAPPLICABLE);
 
 		if (res.phi().has_value())
-			data.set_value("phi", { *res.phi(), 1 });
+			data.emplace_back("phi", { *res.phi(), 1 });
 		else
 			data.set_value("phi", cif::item_value_type::INAPPLICABLE);
 
 		if (res.psi().has_value())
-			data.set_value("psi", { *res.psi(), 1 });
+			data.emplace_back("psi", { *res.psi(), 1 });
 		else
 			data.set_value("psi", cif::item_value_type::INAPPLICABLE);
 
