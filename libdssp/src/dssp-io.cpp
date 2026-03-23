@@ -27,11 +27,12 @@
 #include "dssp-io.hpp"
 
 #include "cif++/category.hpp"
+#include "cif++/item.hpp"
 #include "cif++/validate.hpp"
 #include "revision.hpp"
 
 #include <algorithm>
-#include <cif++.hpp>
+#include <cif++/cif++.hpp>
 #include <cif++/dictionary_parser.hpp>
 #include <format>
 #include <iostream>
@@ -276,7 +277,7 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 					data.emplace_back("acceptor_1_auth_seq_id", acceptor.auth_seq_id());
 					data.emplace_back("acceptor_1_auth_asym_id", acceptor.auth_asym_id());
 					data.emplace_back("acceptor_1_pdbx_PDB_ins_code", acceptor.pdb_ins_code());
-					data.emplace_back("acceptor_1_energy", acceptorEnergy, 1);
+					data.emplace_back("acceptor_1_energy", { acceptorEnergy, 1 });
 				}
 				else
 				{
@@ -287,7 +288,7 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 					data.emplace_back("acceptor_2_auth_seq_id", acceptor.auth_seq_id());
 					data.emplace_back("acceptor_2_auth_asym_id", acceptor.auth_asym_id());
 					data.emplace_back("acceptor_2_pdbx_PDB_ins_code", acceptor.pdb_ins_code());
-					data.emplace_back("acceptor_2_energy", acceptorEnergy, 1);
+					data.emplace_back("acceptor_2_energy", { acceptorEnergy, 1 });
 				}
 			}
 
@@ -302,7 +303,7 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 					data.emplace_back("donor_1_auth_seq_id", donor.auth_seq_id());
 					data.emplace_back("donor_1_auth_asym_id", donor.auth_asym_id());
 					data.emplace_back("donor_1_pdbx_PDB_ins_code", donor.pdb_ins_code());
-					data.emplace_back("donor_1_energy", donorEnergy, 1);
+					data.emplace_back("donor_1_energy", { donorEnergy, 1 });
 				}
 				else
 				{
@@ -313,7 +314,7 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 					data.emplace_back("donor_2_auth_seq_id", donor.auth_seq_id());
 					data.emplace_back("donor_2_auth_asym_id", donor.auth_asym_id());
 					data.emplace_back("donor_2_pdbx_PDB_ins_code", donor.pdb_ins_code());
-					data.emplace_back("donor_2_energy", donorEnergy, 1);
+					data.emplace_back("donor_2_energy", { donorEnergy, 1 });
 				}
 			}
 		}
@@ -389,10 +390,10 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 				{ "pdbx_end_PDB_ins_code", end.pdb_ins_code() },
 				{ "beg_auth_comp_id", beg.compound_id() },
 				{ "beg_auth_asym_id", beg.auth_asym_id() },
-				{ "beg_auth_seq_id", beg.auth_seq_id() },
+				{ "beg_auth_seq_id", std::to_string(beg.auth_seq_id()) },
 				{ "end_auth_comp_id", end.compound_id() },
 				{ "end_auth_asym_id", end.auth_asym_id() },
-				{ "end_auth_seq_id", end.auth_seq_id() } });
+				{ "end_auth_seq_id", std::to_string(end.auth_seq_id()) } });
 		}
 	}
 }
@@ -525,30 +526,30 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 		{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
 		{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
 		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges },
-		{ "accessible_surface_of_protein", surface_accessibility, 2 } });
+		{ "accessible_surface_of_protein", { surface_accessibility, 2 } } });
 
 	auto &dssp_struct_hbonds = db["dssp_statistics_hbond"];
 
 	dssp_struct_hbonds.emplace({ { "entry_id", db.name() },
 		{ "type", "O(I)-->H-N(J)" },
 		{ "count", stats.count.H_bonds },
-		{ "count_per_100", stats.count.H_bonds * 100.0 / stats.count.residues, 1 } });
+		{ "count_per_100", { stats.count.H_bonds * 100.0 / stats.count.residues, 1 } } });
 
 	dssp_struct_hbonds.emplace({ { "entry_id", db.name() },
 		{ "type", "PARALLEL BRIDGES" },
 		{ "count", stats.count.H_bonds_in_parallel_bridges },
-		{ "count_per_100", stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues, 1 } });
+		{ "count_per_100", { stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues, 1 } } });
 
 	dssp_struct_hbonds.emplace({ { "entry_id", db.name() },
 		{ "type", "ANTIPARALLEL BRIDGES" },
 		{ "count", stats.count.H_bonds_in_antiparallel_bridges },
-		{ "count_per_100", stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues, 1 } });
+		{ "count_per_100", { stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues, 1 } } });
 
 	for (int k = 0; k < 11; ++k)
 		dssp_struct_hbonds.emplace({ { "entry_id", db.name() },
 			{ "type", "O(I)-->H-N(I"s + (k - 5 < 0 ? '-' : '+') + std::to_string(abs(k - 5)) + ")" },
 			{ "count", stats.count.H_Bonds_per_distance[k] },
-			{ "count_per_100", stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues, 1 } });
+			{ "count_per_100", { stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues, 1 } } });
 
 	auto &dssp_statistics_histogram = db["dssp_statistics_histogram"];
 
@@ -701,38 +702,38 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 			{ "ladder_1", ladders[0] },
 			{ "ladder_2", ladders[1] },
 
-			{ "x_ca", cax, 1 },
-			{ "y_ca", cay, 1 },
-			{ "z_ca", caz, 1 },
+			{ "x_ca", { cax, 1 } },
+			{ "y_ca", { cay, 1 } },
+			{ "z_ca", { caz, 1 } },
 		};
 
 		if (writeAccessibility)
-			data.emplace_back("accessibility", res.accessibility(), 1);
+			data.set_value("accessibility", { res.accessibility(), 1 });
 
 		if (res.tco().has_value())
-			data.emplace_back("TCO", *res.tco(), 3);
+			data.set_value("TCO", { *res.tco(), 3 });
 		else
-			data.emplace_back("TCO", ".");
+			data.set_value("TCO", cif::item_value_type::INAPPLICABLE);
 
 		if (res.kappa().has_value())
-			data.emplace_back("kappa", *res.kappa(), 1);
+			data.set_value("kappa", { *res.kappa(), 1 });
 		else
-			data.emplace_back("kappa", ".");
+			data.set_value("kappa", cif::item_value_type::INAPPLICABLE);
 
 		if (res.alpha().has_value())
-			data.emplace_back("alpha", *res.alpha(), 1);
+			data.set_value("alpha", { *res.alpha(), 1 });
 		else
-			data.emplace_back("alpha", ".");
+			data.set_value("alpha", cif::item_value_type::INAPPLICABLE);
 
 		if (res.phi().has_value())
-			data.emplace_back("phi", *res.phi(), 1);
+			data.set_value("phi", { *res.phi(), 1 });
 		else
-			data.emplace_back("phi", ".");
+			data.set_value("phi", cif::item_value_type::INAPPLICABLE);
 
 		if (res.psi().has_value())
-			data.emplace_back("psi", *res.psi(), 1);
+			data.set_value("psi", { *res.psi(), 1 });
 		else
-			data.emplace_back("psi", ".");
+			data.set_value("psi", cif::item_value_type::INAPPLICABLE);
 
 		dssp_struct_summary.emplace(std::move(data));
 	}
@@ -877,10 +878,10 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 
 					{ "beg_auth_comp_id", rb.compound_id() },
 					{ "beg_auth_asym_id", rb.auth_asym_id() },
-					{ "beg_auth_seq_id", rb.auth_seq_id() },
+					{ "beg_auth_seq_id", std::to_string(rb.auth_seq_id()) },
 					{ "end_auth_comp_id", re.compound_id() },
 					{ "end_auth_asym_id", re.auth_asym_id() },
-					{ "end_auth_seq_id", re.auth_seq_id() } });
+					{ "end_auth_seq_id", std::to_string(re.auth_seq_id()) } });
 
 				st = t;
 			}

@@ -29,7 +29,7 @@
 /// \file DSSP.hpp
 /// Calculate DSSP-like secondary structure information.
 
-#include <cif++.hpp>
+#include <cif++/cif++.hpp>
 
 #include <filesystem>
 #include <iterator>
