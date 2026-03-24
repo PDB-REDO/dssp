@@ -56,6 +56,13 @@ jobs:
       run: ./tools/depends.cmd
       shell: cmd
 
+    # boost...
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2
+      id: install-boost
+      with:
+        boost_version: 1.88.0
+
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
@@ -64,7 +71,7 @@ jobs:
         -DBUILD_TESTING=ON
         -S ${{ github.workspace }}
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/local
-        # -DBUILD_PYTHON_MODULE=ON
+        -DBUILD_PYTHON_MODULE=ON
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
