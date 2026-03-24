@@ -49,7 +49,7 @@ jobs:
     - name: Install Catch2 macOS
       if: matrix.os == 'macos-latest'
       run: >
-        brew install catch2 fastfloat
+        brew install catch2 fast_float
 
     - name: Install dependencies Window
       if: matrix.os == 'windows-latest'
