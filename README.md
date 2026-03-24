@@ -1,7 +1,7 @@
 [![github CI](https://github.com/pdb-redo/dssp/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/pdb-redo/dssp/actions)
 [![GitHub License](https://img.shields.io/github/license/pdb-redo/dssp)](https://github.com/pdb-redo/dssp/LICENSE)
 
-DSSP 4.5
+DSSP 4.6
 ========
 
 This is a rewrite of DSSP, now offering full mmCIF support. The difference
