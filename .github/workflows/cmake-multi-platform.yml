@@ -56,8 +56,7 @@ jobs:
       run: ./tools/depends.cmd
       shell: cmd
 
-    - name: Install boost Windows
-      if: matrix.os == 'windows-latest'
+    - name: Install boost
       uses: MarkusJx/install-boost@v2
       id: install-boost
       with:
