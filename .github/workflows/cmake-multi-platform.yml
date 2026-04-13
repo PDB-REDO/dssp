@@ -39,7 +39,7 @@ jobs:
     - name: Install Catch2 Ubuntu
       if: matrix.os == 'ubuntu-latest'
       run: >
-        sudo apt-get update && sudo apt-get install catch2 libpython3-all-dev
+        sudo apt-get update && sudo apt-get install catch2 libpython3-all-dev libboost-all-dev
 
     - name: setup python
       uses: actions/setup-python@v6
@@ -49,12 +49,17 @@ jobs:
     - name: Install Catch2 macOS
       if: matrix.os == 'macos-latest'
       run: >
-        brew install catch2
+        brew install catch2 fast_float
 
-    - name: Install dependencies Window
+    - name: Install dependencies Windows
       if: matrix.os == 'windows-latest'
       run: ./tools/depends.cmd
       shell: cmd
+
+    - name: Install boost Windows
+      if: matrix.os == 'windows-latest'
+      uses: MarkusJx/install-boost@v2
+      id: install-boost
 
     - name: Configure CMake
       run: >
@@ -65,6 +70,8 @@ jobs:
         -DBUILD_PYTHON_MODULE=ON
         -S ${{ github.workspace }}
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/local
+      env:
+        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
