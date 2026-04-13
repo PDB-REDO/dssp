@@ -46,7 +46,7 @@ namespace fs = std::filesystem;
 // recursively print exception whats:
 void print_what(const std::exception &e)
 {
-	std::cerr << e.what() << std::endl;
+	std::cerr << e.what() << '\n';
 	try
 	{
 		std::rethrow_if_nested(e);
@@ -95,13 +95,13 @@ int d_main(int argc, const char *argv[])
 
 	if (config.has("help") or config.operands().empty())
 	{
-		std::cerr << config << std::endl;
+		std::cerr << config << '\n';
 		exit(config.has("help") ? 0 : 1);
 	}
 
 	if (config.has("output-format") and config.get<std::string>("output-format") != "dssp" and config.get<std::string>("output-format") != "mmcif")
 	{
-		std::cerr << "Output format should be one of 'dssp' or 'mmcif'" << std::endl;
+		std::cerr << "Output format should be one of 'dssp' or 'mmcif'\n";
 		exit(1);
 	}
 
@@ -132,7 +132,7 @@ int d_main(int argc, const char *argv[])
 		cif::gzio::ifstream in(config.operands().front());
 		if (not in.is_open())
 		{
-			std::cerr << "Could not open file" << std::endl;
+			std::cerr << "Could not open file\n";
 			exit(1);
 		}
 
@@ -195,7 +195,7 @@ int d_main(int argc, const char *argv[])
 		{
 			if (chain_id.length() > 1 or seq_nr > 99999)
 			{
-				std::cerr << "The data in this file won't fit in the old DSSP format, please use the mmCIF format instead." << std::endl;
+				std::cerr << "The data in this file won't fit in the old DSSP format, please use the mmCIF format instead.\n";
 				exit(2);
 			}
 		}
@@ -209,7 +209,7 @@ int d_main(int argc, const char *argv[])
 
 		if (not out.is_open())
 		{
-			std::cerr << "Could not open output file" << std::endl;
+			std::cerr << "Could not open output file\n";
 			exit(1);
 		}
 

@@ -872,7 +872,7 @@ bool Linked(const bridge &a, const bridge &b)
 void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, std::vector<std::tuple<uint32_t, uint32_t>> &q)
 {
 	// if (cif::VERBOSE)
-	// 	std::cerr << "calculating beta sheets" << std::endl;
+	// 	std::cerr << "calculating beta sheets\n";
 
 	std::unique_ptr<cif::progress_bar> progress;
 	if (cif::VERBOSE >= 0)
@@ -1133,7 +1133,7 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, st
 void CalculateAlphaHelices(std::vector<residue> &inResidues, statistics &stats, bool inPreferPiHelices = true)
 {
 	if (cif::VERBOSE)
-		std::cerr << "calculating alpha helices" << std::endl;
+		std::cerr << "calculating alpha helices\n";
 
 	// Helix and Turn
 	for (helix_type helixType : { helix_type::_3_10, helix_type::alpha, helix_type::pi })
@@ -1252,7 +1252,7 @@ void CalculateAlphaHelices(std::vector<residue> &inResidues, statistics &stats, 
 void CalculatePPHelices(std::vector<residue> &inResidues, statistics &stats, int stretch_length)
 {
 	if (cif::VERBOSE)
-		std::cerr << "calculating pp helices" << std::endl;
+		std::cerr << "calculating pp helices\n";
 
 	size_t N = inResidues.size();
 
@@ -1420,7 +1420,7 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 	using namespace cif::literals;
 
 	if (cif::VERBOSE)
-		std::cerr << "loading residues" << std::endl;
+		std::cerr << "loading residues\n";
 
 	int resNumber = 0;
 
@@ -1557,7 +1557,7 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 void DSSP_impl::calculateSecondaryStructure()
 {
 	if (cif::VERBOSE)
-		std::cerr << "calculating secondary structure" << std::endl;
+		std::cerr << "calculating secondary structure\n";
 
 	using namespace cif::literals;
 
@@ -1568,7 +1568,7 @@ void DSSP_impl::calculateSecondaryStructure()
 		if (r1 == mResidues.end())
 		{
 			if (cif::VERBOSE > 0)
-				std::cerr << "Missing (incomplete?) residue for SS bond when trying to find " << asym1 << '/' << seq1 << std::endl;
+				std::cerr << "Missing (incomplete?) residue for SS bond when trying to find " << asym1 << '/' << seq1 << '\n';
 			continue;
 			// throw std::runtime_error("Invalid file, missing residue for SS bond");
 		}
@@ -1577,7 +1577,7 @@ void DSSP_impl::calculateSecondaryStructure()
 		if (r2 == mResidues.end())
 		{
 			if (cif::VERBOSE > 0)
-				std::cerr << "Missing (incomplete?) residue for SS bond when trying to find " << asym2 << '/' << seq2 << std::endl;
+				std::cerr << "Missing (incomplete?) residue for SS bond when trying to find " << asym2 << '/' << seq2 << '\n';
 			continue;
 			// throw std::runtime_error("Invalid file, missing residue for SS bond");
 		}
@@ -1618,7 +1618,7 @@ void DSSP_impl::calculateSecondaryStructure()
 	}
 
 	if (cif::VERBOSE > 0)
-		std::cerr << "Considering " << near.size() << " pairs of residues" << std::endl;
+		std::cerr << "Considering " << near.size() << " pairs of residues\n";
 
 	progress.reset(nullptr);
 
@@ -1649,7 +1649,7 @@ void DSSP_impl::calculateSecondaryStructure()
 			std::cerr << id << std::string(12 - id.length(), ' ')
 					  << static_cast<char>(r.mSecondaryStructure) << ' '
 					  << helix
-					  << std::endl;
+					  << '\n';
 		}
 	}
 
@@ -1663,7 +1663,7 @@ void DSSP_impl::calculateSecondaryStructure()
 		if (a == b)
 		{
 			if (cif::VERBOSE > 0)
-				std::cerr << "In the SS bonds list, the residue " << a->mAsymID << ':' << a->mSeqID << " is bonded to itself" << std::endl;
+				std::cerr << "In the SS bonds list, the residue " << a->mAsymID << ':' << a->mSeqID << " is bonded to itself\n";
 			continue;
 		}
 
@@ -1783,16 +1783,18 @@ std::string DSSP_impl::GetPDBHEADERLine()
 	//   0         1         2         3         4         5         6         7         8
 	//   HEADER    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxDDDDDDDDD   IIII
 	char header[] =
-		"HEADER    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxDDDDDDDDD   IIII";
+		"HEADER    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxDDDDDDDDD   IIIIiiii";
 
 	std::ranges::copy(keywords, header + 10);
 	std::ranges::copy(date, header + 50);
 
 	std::string id = mDB.name();
+	if (id.starts_with("pdb_"))
+		id.erase(0, 4);
 	if (id.length() < 4)
 		id.insert(id.end(), 4 - id.length(), ' ');
-	else if (id.length() > 4)
-		id.erase(id.begin() + 4, id.end());
+	else if (id.length() > 8)
+		id.erase(id.begin() + 8, id.end());
 
 	std::ranges::copy(id, header + 62);
 
