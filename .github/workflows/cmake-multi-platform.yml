@@ -23,10 +23,10 @@ jobs:
         include:
           - os: windows-latest
             cpp_compiler: cl
-            try_python: ON
+            try_python: OFF
           - os: ubuntu-latest
             cpp_compiler: g++
-            try_python: OFF
+            try_python: ON
           - os: macos-latest
             cpp_compiler: clang++
             try_python: OFF
@@ -45,6 +45,7 @@ jobs:
         sudo apt-get update && sudo apt-get install catch2 libpython3-all-dev
 
     - name: setup python
+      if: matrix.os == 'ubuntu-latest'
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
@@ -61,6 +62,7 @@ jobs:
       shell: cmd
 
     - name: Install boost
+      if: matrix.os == 'ubuntu-latest'
       uses: MarkusJx/install-boost@v2
       id: install-boost
       with:
