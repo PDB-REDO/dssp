@@ -45,16 +45,23 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
+        pip-install: numpy
 
     - name: Install Catch2 macOS
       if: matrix.os == 'macos-latest'
       run: >
-        brew install catch2
+        brew install catch2 fast_float
 
-    - name: Install dependencies Window
+    - name: Install dependencies Windows
       if: matrix.os == 'windows-latest'
       run: ./tools/depends.cmd
       shell: cmd
+
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2
+      id: install-boost
+      with:
+        boost_version: 1.86.0
 
     - name: Configure CMake
       run: >
@@ -65,6 +72,7 @@ jobs:
         -DBUILD_PYTHON_MODULE=ON
         -S ${{ github.workspace }}
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/local
+        -DCMAKE_PREFIX_PATH=${{ steps.install-boost.outputs.BOOST_ROOT }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
