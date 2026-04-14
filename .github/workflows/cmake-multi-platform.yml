@@ -23,10 +23,13 @@ jobs:
         include:
           - os: windows-latest
             cpp_compiler: cl
+            try_python: OFF
           - os: ubuntu-latest
             cpp_compiler: g++
+            try_python: ON
           - os: macos-latest
             cpp_compiler: clang++
+            try_python: OFF
 
     steps:
     - uses: actions/checkout@v6
@@ -42,26 +45,29 @@ jobs:
         sudo apt-get update && sudo apt-get install catch2 libpython3-all-dev
 
     - name: setup python
+      if: matrix.os == 'ubuntu-latest'
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
+        pip-install: numpy
 
     - name: Install Catch2 macOS
       if: matrix.os == 'macos-latest'
       run: >
         brew install catch2 fast_float
+        brew install catch2 fast_float
 
-    - name: Install dependencies Window
+    - name: Install dependencies Windows
       if: matrix.os == 'windows-latest'
       run: ./tools/depends.cmd
       shell: cmd
 
-    # boost...
     - name: Install boost
+      if: matrix.os == 'ubuntu-latest'
       uses: MarkusJx/install-boost@v2
       id: install-boost
       with:
-        boost_version: 1.88.0
+        boost_version: 1.86.0
 
     - name: Configure CMake
       run: >
@@ -69,9 +75,9 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=Release
         -DBUILD_TESTING=ON
+        -DBUILD_PYTHON_MODULE=${{ matrix.try_python }}
         -S ${{ github.workspace }}
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/local
-        -DBUILD_PYTHON_MODULE=ON
         -DCMAKE_PREFIX_PATH=${{ steps.install-boost.outputs.BOOST_ROOT }}
 
     - name: Build
