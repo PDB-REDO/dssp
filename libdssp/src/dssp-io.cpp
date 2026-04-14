@@ -866,7 +866,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 				structConf.emplace({ //
 					{ "conf_type_id", id },
 					{ "id", id + std::to_string(foundTypes[id]++) },
-					// { "pdbx_PDB_helix_id", vS(12, 14) },
+					{ "pdbx_PDB_helix_id", cif::item_value_type::INAPPLICABLE },
 					{ "beg_label_comp_id", rb.compound_id() },
 					{ "beg_label_asym_id", rb.asym_id() },
 					{ "beg_label_seq_id", rb.seq_id() },
@@ -881,7 +881,9 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 					{ "beg_auth_seq_id", std::to_string(rb.auth_seq_id()) },
 					{ "end_auth_comp_id", re.compound_id() },
 					{ "end_auth_asym_id", re.auth_asym_id() },
-					{ "end_auth_seq_id", std::to_string(re.auth_seq_id()) } });
+					{ "end_auth_seq_id", std::to_string(re.auth_seq_id()) }
+
+				});
 
 				st = t;
 			}
@@ -900,7 +902,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 	auto &software = db["software"];
 	software.emplace({ //
 		{ "pdbx_ordinal", software.get_unique_id("") },
-		{ "name", "dssp" },
+		{ "name", "DSSP" },
 		{ "version", klibdsspVersionNumber },
 		{ "date", klibdsspRevisionDate },
 		{ "classification", "model annotation" } });
