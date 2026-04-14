@@ -84,6 +84,10 @@ int main(int argc, char *argv[])
 	if (not rsrc_dir.empty() and std::filesystem::exists(rsrc_dir))
 		cif::add_data_directory(rsrc_dir);
 
+	cif::add_data_directory(gTestDir / "libdssp" / "mmcif_pdbx");
+
+	cif::add_file_resource("components.cif", gTestDir / "minimal-components.cif");
+
 	return session.run();
 }
 
@@ -129,16 +133,12 @@ TEST_CASE("ut_dssp")
 			if (cif::starts_with(line_t, "REFERENCE ") and cif::starts_with(line_r, "REFERENCE "))
 				continue;
 
-			std::cerr << line_nr << '\n'
-					  << line_t << '\n'
-					  << line_r << '\n';
+			// std::cerr << line_nr << '\n'
+			// 		  << line_t << '\n'
+			// 		  << line_r << '\n';
 		}
 
-		if (line_t != line_r)
-		{
-			CHECK(line_t == line_r);
-			break;
-		}
+		REQUIRE(line_t == line_r);
 	}
 
 	CHECK(test.eof());
@@ -162,18 +162,25 @@ TEST_CASE("ut_mmcif_2")
 	auto &db1 = f.front();
 	auto &db2 = rf.front();
 
-	db1["software"].erase("name"_key == "dssp");
+	db1["software"].erase("name"_key == "DSSP");
 	std::erase_if(db1, [](cif::category &cat)
 		{ return cat.name() == "audit_conform"; });
 
-	db2["software"].erase("name"_key == "dssp");
+	db2["software"].erase("name"_key == "DSSP");
 	std::erase_if(db2, [](cif::category &cat)
 		{ return cat.name() == "audit_conform"; });
 
-	// generate some output on different files:
-	// cif::VERBOSE = 2;
+	if (not (f.front() == rf.front()))
+	{
+		// std::ofstream a(std::filesystem::temp_directory_path() / "dssp-test-a.cif");
+		// a << f.front();
+		// a.close();
+		// std::ofstream b(std::filesystem::temp_directory_path() / "dssp-test-b.cif");
+		// b << rf.front();
+		// b.close();
 
-	CHECK(f.front() == rf.front());
+		CHECK(false);
+	}
 }
 
 // --------------------------------------------------------------------
