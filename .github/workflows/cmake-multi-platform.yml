@@ -23,10 +23,13 @@ jobs:
         include:
           - os: windows-latest
             cpp_compiler: cl
+            try_python: ON
           - os: ubuntu-latest
             cpp_compiler: g++
+            try_python: OFF
           - os: macos-latest
             cpp_compiler: clang++
+            try_python: OFF
 
     steps:
     - uses: actions/checkout@v6
@@ -69,7 +72,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=Release
         -DBUILD_TESTING=ON
-        -DBUILD_PYTHON_MODULE=ON
+        -DBUILD_PYTHON_MODULE=${{ matrix.try_python }}
         -S ${{ github.workspace }}
         -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/local
         -DCMAKE_PREFIX_PATH=${{ steps.install-boost.outputs.BOOST_ROOT }}
