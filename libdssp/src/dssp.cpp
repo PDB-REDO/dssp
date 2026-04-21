@@ -1783,18 +1783,14 @@ std::string DSSP_impl::GetPDBHEADERLine()
 	//   0         1         2         3         4         5         6         7         8
 	//   HEADER    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxDDDDDDDDD   IIII
 	char header[] =
-		"HEADER    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxDDDDDDDDD   IIII        ";
+		"HEADER    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxDDDDDDDDD   IIII              ";
 
 	std::ranges::copy(keywords, header + 10);
 	std::ranges::copy(date, header + 50);
 
 	std::string id = mDB.name();
-	if (id.starts_with("pdb_"))
-		id.erase(0, 4);
-	if (id.length() < 4)
-		id.insert(id.end(), 4 - id.length(), ' ');
-	else if (id.length() > 8)
-		id.erase(id.begin() + 8, id.end());
+	if (id.length() > 18)
+		id.erase(id.begin() + 18, id.end());
 
 	std::ranges::copy(id, header + 62);
 

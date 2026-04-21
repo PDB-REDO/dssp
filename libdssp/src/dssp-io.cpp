@@ -165,7 +165,7 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 		version.insert(version.end(), 10 - version.length(), ' ');
 
 	os << "==== Secondary Structure Definition by the program DSSP, NKI version " << version << "                    ==== DATE=" << std::put_time(tm, "%F") << "        .\n"
-	   << "REFERENCE M.L. HEKKELMAN ET AL, PROTEIN SCIENCE 34.8 (2025) e70208; W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637    .\n"
+	   << "REFERENCE M.L. HEKKELMAN ET AL, PROTEIN SCIENCE 34.8 (2025) e70208; W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637    .\n"
 	   << dssp.get_pdb_header_line(dssp::pdb_record_type::HEADER) << ".\n"
 	   << dssp.get_pdb_header_line(dssp::pdb_record_type::COMPND) << ".\n"
 	   << dssp.get_pdb_header_line(dssp::pdb_record_type::SOURCE) << ".\n"
