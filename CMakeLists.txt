@@ -125,7 +125,7 @@ if(NOT (cifpp_FOUND OR TARGET cifpp))
 	CPMAddPackage(
 		NAME cifpp
 		GIT_REPOSITORY "https://github.com/PDB-REDO/libcifpp"
-		GIT_TAG v10.0.2
+		GIT_TAG v10.0.4
 		EXCLUDE_FROM_ALL YES)
 endif()
 
