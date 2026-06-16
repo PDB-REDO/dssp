@@ -13,7 +13,7 @@ constexpr const char k@VAR_PREFIX@RevisionDate[] = "@REVISION_DATE_TIME@";
 #ifndef VERSION_INFO_DEFINED
 #define VERSION_INFO_DEFINED 1
 
-namespace version_info_v1_1
+namespace version_info_v1_2
 {
 
 class version_info_base
@@ -96,26 +96,27 @@ class version_info : public version_info_base
   public:
 	using implementation_type = T;
 
+    // NOLINTNEXTLINE
 	version_info(const char *name, const char *version, int build_number, const char *git_tag, const char *revision_date, bool is_main)
 		: version_info_base(name, version, build_number, git_tag, revision_date, is_main)
 	{
 	}
 };
 
-} // namespace version_info_v1_1
+} // namespace version_info_v1_2
 
 inline void write_version_string(std::ostream &os, bool verbose)
 {
-	version_info_v1_1::version_info_base::write_version_string(os, verbose);
+	version_info_v1_2::version_info_base::write_version_string(os, verbose);
 }
 
 #endif
 
-const class version_info_@IDENT_PREFIX@impl : public version_info_v1_1::version_info<version_info_@IDENT_PREFIX@impl>
+const class version_info_@IDENT_PREFIX@impl : public version_info_v1_2::version_info<version_info_@IDENT_PREFIX@impl>
 {
   public:
 	version_info_@IDENT_PREFIX@impl()
 		: version_info(k@VAR_PREFIX@ProjectName, k@VAR_PREFIX@VersionNumber, k@VAR_PREFIX@BuildNumber, k@VAR_PREFIX@RevisionGitTag, k@VAR_PREFIX@RevisionDate, @BOOL_IS_MAIN@)
 	{
 	}
-} s_version_info_@IDENT_PREFIX@instance;
+} s_version_info_@IDENT_PREFIX@instance; // NOLINT
