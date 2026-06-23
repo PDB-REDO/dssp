@@ -1,3 +1,6 @@
+Version 4.6.0
+- Using new libcifpp version 10.0
+
 Version 4.5.8
 - Using newer version of Boost for the python plugin,
   this was needed to be able to use Numpy >= 2.x
