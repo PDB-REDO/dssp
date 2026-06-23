@@ -164,52 +164,52 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 	if (version.length() < 10)
 		version.insert(version.end(), 10 - version.length(), ' ');
 
-	os << "==== Secondary Structure Definition by the program DSSP, NKI version " << version << "                    ==== DATE=" << std::put_time(tm, "%F") << "        ." << std::endl
-	   << "REFERENCE M.L. HEKKELMAN ET AL, PROTEIN SCIENCE 34.8 (2025) e70208; W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637    ." << std::endl
-	   << dssp.get_pdb_header_line(dssp::pdb_record_type::HEADER) << '.' << std::endl
-	   << dssp.get_pdb_header_line(dssp::pdb_record_type::COMPND) << '.' << std::endl
-	   << dssp.get_pdb_header_line(dssp::pdb_record_type::SOURCE) << '.' << std::endl
-	   << dssp.get_pdb_header_line(dssp::pdb_record_type::AUTHOR) << '.' << std::endl;
+	os << "==== Secondary Structure Definition by the program DSSP, NKI version " << version << "                    ==== DATE=" << std::put_time(tm, "%F") << "        .\n"
+	   << "REFERENCE M.L. HEKKELMAN ET AL, PROTEIN SCIENCE 34.8 (2025) e70208; W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637    .\n"
+	   << dssp.get_pdb_header_line(dssp::pdb_record_type::HEADER) << ".\n"
+	   << dssp.get_pdb_header_line(dssp::pdb_record_type::COMPND) << ".\n"
+	   << dssp.get_pdb_header_line(dssp::pdb_record_type::SOURCE) << ".\n"
+	   << dssp.get_pdb_header_line(dssp::pdb_record_type::AUTHOR) << ".\n";
 
 	os << std::format("{:5d}{:3d}{:3d}{:3d}{:3d} TOTAL NUMBER OF RESIDUES, NUMBER OF CHAINS, NUMBER OF SS-BRIDGES(TOTAL,INTRACHAIN,INTERCHAIN)                .",
 			  stats.count.residues, stats.count.chains, stats.count.SS_bridges, stats.count.intra_chain_SS_bridges, (stats.count.SS_bridges - stats.count.intra_chain_SS_bridges))
-	   << std::endl;
+	   << '\n';
 
-	os << std::format("{:8.1f}   ACCESSIBLE SURFACE OF PROTEIN (ANGSTROM**2)                                                                         .", stats.accessible_surface) << std::endl;
+	os << std::format("{:8.1f}   ACCESSIBLE SURFACE OF PROTEIN (ANGSTROM**2)                                                                         .", stats.accessible_surface) << '\n';
 
 	// hydrogenbond summary
 
-	os << std::format("{:5d}{:5.1f}   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(J)  , SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds, (stats.count.H_bonds * 100.0 / stats.count.residues)) << std::endl;
+	os << std::format("{:5d}{:5.1f}   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(J)  , SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds, (stats.count.H_bonds * 100.0 / stats.count.residues)) << '\n';
 
-	os << std::format("{:5d}{:5.1f}   TOTAL NUMBER OF HYDROGEN BONDS IN     PARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds_in_parallel_bridges, (stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues)) << std::endl;
+	os << std::format("{:5d}{:5.1f}   TOTAL NUMBER OF HYDROGEN BONDS IN     PARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds_in_parallel_bridges, (stats.count.H_bonds_in_parallel_bridges * 100.0 / stats.count.residues)) << '\n';
 
-	os << std::format("{:5d}{:5.1f}   TOTAL NUMBER OF HYDROGEN BONDS IN ANTIPARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds_in_antiparallel_bridges, (stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues)) << std::endl;
+	os << std::format("{:5d}{:5.1f}   TOTAL NUMBER OF HYDROGEN BONDS IN ANTIPARALLEL BRIDGES, SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_bonds_in_antiparallel_bridges, (stats.count.H_bonds_in_antiparallel_bridges * 100.0 / stats.count.residues)) << '\n';
 
 	for (int k = 0; k < 11; ++k)
-		os << std::format("{:5d}{:5.1f}   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(I{:1c}{:1d}), SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_Bonds_per_distance[k], (stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues), (k - 5 < 0 ? '-' : '+'), abs(k - 5)) << std::endl;
+		os << std::format("{:5d}{:5.1f}   TOTAL NUMBER OF HYDROGEN BONDS OF TYPE O(I)-->H-N(I{:1c}{:1d}), SAME NUMBER PER 100 RESIDUES                              .", stats.count.H_Bonds_per_distance[k], (stats.count.H_Bonds_per_distance[k] * 100.0 / stats.count.residues), (k - 5 < 0 ? '-' : '+'), abs(k - 5)) << '\n';
 
 	// histograms...
-	os << "  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30     *** HISTOGRAMS OF ***           ." << std::endl;
+	os << "  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30     *** HISTOGRAMS OF ***           .\n";
 
 	for (auto hi : stats.histogram.residues_per_alpha_helix)
 		os << std::format("{:3d}", hi);
-	os << "    RESIDUES PER ALPHA HELIX         ." << std::endl;
+	os << "    RESIDUES PER ALPHA HELIX         .\n";
 
 	for (auto hi : stats.histogram.parallel_bridges_per_ladder)
 		os << std::format("{:3d}", hi);
-	os << "    PARALLEL BRIDGES PER LADDER      ." << std::endl;
+	os << "    PARALLEL BRIDGES PER LADDER      .\n";
 
 	for (auto hi : stats.histogram.antiparallel_bridges_per_ladder)
 		os << std::format("{:3d}", hi);
-	os << "    ANTIPARALLEL BRIDGES PER LADDER  ." << std::endl;
+	os << "    ANTIPARALLEL BRIDGES PER LADDER  .\n";
 
 	for (auto hi : stats.histogram.ladders_per_sheet)
 		os << std::format("{:3d}", hi);
-	os << "    LADDERS PER SHEET                ." << std::endl;
+	os << "    LADDERS PER SHEET                .\n";
 
 	// per residue information
 
-	os << "  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA" << std::endl;
+	os << "  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA\n";
 
 	int last = 0;
 	for (auto ri : dssp)
@@ -220,9 +220,9 @@ void writeDSSP(const dssp &dssp, std::ostream &os)
 		if (ri.nr() != last + 1)
 			os << std::format("{:5d}        !{:1c}             0   0    0      0, 0.0     0, 0.0     0, 0.0     0, 0.0   0.000 360.0 360.0 360.0 360.0    0.0    0.0    0.0",
 					  (last + 1), (ri.chain_break() == dssp::chain_break_type::NewChain ? '*' : ' '))
-			   << std::endl;
+			   << '\n';
 
-		os << ResidueToDSSPLine(ri) << std::endl;
+		os << ResidueToDSSPLine(ri) << '\n';
 		last = ri.nr();
 	}
 }
@@ -771,7 +771,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 	if (dssp.empty())
 	{
 		if (cif::VERBOSE > 0)
-			std::cout << "No secondary structure information found" << std::endl;
+			std::cout << "No secondary structure information found\n";
 	}
 	else
 	{
@@ -866,7 +866,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 				structConf.emplace({ //
 					{ "conf_type_id", id },
 					{ "id", id + std::to_string(foundTypes[id]++) },
-					// { "pdbx_PDB_helix_id", vS(12, 14) },
+					{ "pdbx_PDB_helix_id", cif::item_value_type::INAPPLICABLE },
 					{ "beg_label_comp_id", rb.compound_id() },
 					{ "beg_label_asym_id", rb.asym_id() },
 					{ "beg_label_seq_id", rb.seq_id() },
@@ -881,7 +881,9 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 					{ "beg_auth_seq_id", std::to_string(rb.auth_seq_id()) },
 					{ "end_auth_comp_id", re.compound_id() },
 					{ "end_auth_asym_id", re.auth_asym_id() },
-					{ "end_auth_seq_id", std::to_string(re.auth_seq_id()) } });
+					{ "end_auth_seq_id", std::to_string(re.auth_seq_id()) }
+
+				});
 
 				st = t;
 			}
@@ -900,7 +902,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 	auto &software = db["software"];
 	software.emplace({ //
 		{ "pdbx_ordinal", software.get_unique_id("") },
-		{ "name", "dssp" },
+		{ "name", "DSSP" },
 		{ "version", klibdsspVersionNumber },
 		{ "date", klibdsspRevisionDate },
 		{ "classification", "model annotation" } });

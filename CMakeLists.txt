@@ -118,14 +118,14 @@ CPMFindPackage(
 	EXCLUDE_FROM_ALL YES)
 
 # No longer using CPM for libcifpp. It is now simply required to install it first.
-find_package(cifpp 10.0.1 QUIET)
+find_package(cifpp 10.0.2 QUIET)
 
 if(NOT (cifpp_FOUND OR TARGET cifpp))
 	# message(FATAL_ERROR "Could not find libcifpp. Please make sure you install libcifpp first, code can be found at https://github.com/PDB-REDO/libcifpp")
 	CPMAddPackage(
 		NAME cifpp
 		GIT_REPOSITORY "https://github.com/PDB-REDO/libcifpp"
-		GIT_TAG v10.0.1
+		GIT_TAG v10.0.2
 		EXCLUDE_FROM_ALL YES)
 endif()
 
