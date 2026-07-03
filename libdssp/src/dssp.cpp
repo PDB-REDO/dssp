@@ -35,7 +35,6 @@
 #include <iomanip>
 #include <memory>
 #include <numbers>
-#include <numeric>
 #include <thread>
 
 #ifdef near
@@ -2045,7 +2044,7 @@ float dssp::residue_info::chiral_volume() const
 	return m_impl->mChiralVolume;
 }
 
-const std::map<residue_type, std::vector<std::string>> kChiAtomsMap = {
+const std::map<residue_type, std::vector<std::string>> kChiAtomsMap = { // NOLINT
 	{ MapResidue("ASP"), { "CG", "OD1" } },
 	{ MapResidue("ASN"), { "CG", "OD1" } },
 	{ MapResidue("ARG"), { "CG", "CD", "NE", "CZ" } },
