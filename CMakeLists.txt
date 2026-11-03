@@ -113,7 +113,7 @@ find_package(Threads)
 
 CPMFindPackage(
 	NAME mcfp
-	GIT_REPOSITORY https://github.com/mhekkel/libmcfp
+	GIT_REPOSITORY https://codeberg.org/mlhekkelman/mcfp
 	GIT_TAG v1.4.2
 	EXCLUDE_FROM_ALL YES)
 
